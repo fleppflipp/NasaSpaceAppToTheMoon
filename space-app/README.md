@@ -2,6 +2,9 @@
 
 React, TypeScript, and Vite.
 
+Shared colors, spacing, typography, and component sizing are documented in
+[the design system guide](docs/design-system.md).
+
 ## Development and checks
 
 Run these commands from the `space-app` directory:
