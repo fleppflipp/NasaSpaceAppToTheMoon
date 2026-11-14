@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import * as maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
@@ -22,6 +23,7 @@ interface BaseMapProps {
 }
 
 export default function BaseMap({ active, target }: BaseMapProps) {
+  const { t } = useTranslation()
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
 
@@ -33,6 +35,13 @@ export default function BaseMap({ active, target }: BaseMapProps) {
 
     const map = new maplibregl.Map({
       container,
+      locale: {
+        'Map.Title': t('map.title'),
+        'NavigationControl.ZoomIn': t('map.zoomIn'),
+        'NavigationControl.ZoomOut': t('map.zoomOut'),
+        'AttributionControl.ToggleAttribution': t('map.attribution'),
+        'AttributionControl.MapFeedback': t('map.feedback'),
+      },
       style: MAP_STYLE_URL,
       center: [19.04, 47.5],
       zoom: 12,
@@ -60,7 +69,11 @@ export default function BaseMap({ active, target }: BaseMapProps) {
       mapRef.current = null
       map.remove()
     }
-  }, [])
+  }, [t])
+
+  useEffect(() => {
+    if (active) mapRef.current?.resize()
+  }, [active])
 
   useEffect(() => {
     const map = mapRef.current

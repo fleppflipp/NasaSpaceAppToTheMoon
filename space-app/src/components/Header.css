@@ -51,15 +51,24 @@
 
 /* Inactive view: outlined; active view: filled (global button style). */
 .view-switch__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--control-size-default);
   padding-inline: var(--space-4);
+  border: var(--border-width-thin) solid var(--color-primary);
+  border-radius: var(--radius-md);
+  color: var(--color-background);
+  background-color: var(--color-primary);
+  text-decoration: none;
 }
 
-.view-switch__button[aria-pressed='false'] {
+.view-switch__button:not([aria-current='page']) {
   color: var(--color-primary);
   background-color: transparent;
 }
 
-.view-switch__button[aria-pressed='false']:hover:not(:disabled) {
+.view-switch__button:not([aria-current='page']):hover {
   color: var(--color-text);
   background-color: var(--color-highlight);
 }

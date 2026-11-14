@@ -48,13 +48,16 @@ instead of `npm`, for example `npm.cmd run check`.
 
 ## App layout
 
-The app is called **FireLock**. `src/App.tsx` renders a fixed header
+The app is called **FireLock**. The shared layout renders a fixed header
 (`src/components/Header.tsx`) with the logo and name, the place search bar in
 the middle, and a **Map / Calendar** switch on the right. The switch toggles
 between the map view and the calendar view (`CalendarView.tsx`, currently an
-empty placeholder). The map stays mounted while the calendar is shown, so its
+empty placeholder). Navigation uses URL routes. The map stays mounted while the calendar is shown, so its
 position is kept, and the search bar is only shown in the map view. The favicon
 is `public/favicon.svg`.
+
+See [routing and localization](docs/routing-i18n.md) for extension and
+deployment instructions.
 
 ## Map
 

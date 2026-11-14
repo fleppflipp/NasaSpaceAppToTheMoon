@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { KeyboardEvent, SubmitEvent } from 'react'
 import { suggestPlaces } from '../services/places'
 import type { Place } from '../services/places'
@@ -16,12 +17,13 @@ function isAbortError(error: unknown): boolean {
 }
 
 export default function SearchBar({ onResult }: SearchBarProps) {
+  const { t } = useTranslation()
   const listId = useId()
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState<Place[]>([])
   const [activeIndex, setActiveIndex] = useState(-1)
   const [open, setOpen] = useState(false)
-  const [message, setMessage] = useState('')
+  const [message, setMessage] = useState<'noResults' | 'error' | null>(null)
 
   const timerRef = useRef<number | undefined>(undefined)
   const abortRef = useRef<AbortController | null>(null)
@@ -40,19 +42,19 @@ export default function SearchBar({ onResult }: SearchBarProps) {
     cancelPending()
     const controller = new AbortController()
     abortRef.current = controller
-    setMessage('')
+    setMessage(null)
     try {
       const places = await suggestPlaces(text, controller.signal)
       setSuggestions(places)
       setActiveIndex(-1)
       setOpen(places.length > 0)
       if (places.length === 0) {
-        setMessage('No place found.')
+        setMessage('noResults')
       }
       return places
     } catch (error: unknown) {
       if (!isAbortError(error)) {
-        setMessage('Search failed. Please try again.')
+        setMessage('error')
       }
       return []
     } finally {
@@ -68,14 +70,14 @@ export default function SearchBar({ onResult }: SearchBarProps) {
     setSuggestions([])
     setActiveIndex(-1)
     setOpen(false)
-    setMessage('')
+    setMessage(null)
     onResult(place)
   }
 
   const handleChange = (value: string) => {
     setQuery(value)
     cancelPending()
-    setMessage('')
+    setMessage(null)
 
     const trimmed = value.trim()
     if (trimmed.length < MIN_QUERY_LENGTH) {
@@ -153,8 +155,8 @@ export default function SearchBar({ onResult }: SearchBarProps) {
         <input
           type="search"
           className="form-control"
-          placeholder="Search for a place"
-          aria-label="Search for a place"
+          placeholder={t('search.label')}
+          aria-label={t('search.label')}
           role="combobox"
           aria-expanded={showList}
           aria-controls={listId}
@@ -177,7 +179,7 @@ export default function SearchBar({ onResult }: SearchBarProps) {
             setOpen(false)
           }}
         />
-        <button type="submit">Search</button>
+        <button type="submit">{t('search.button')}</button>
       </form>
       <ul
         id={listId}
@@ -205,7 +207,7 @@ export default function SearchBar({ onResult }: SearchBarProps) {
         ))}
       </ul>
       <p className="search-bar__message" role="status">
-        {message}
+        {message === null ? null : t(`search.${message}`)}
       </p>
     </search>
   )
