@@ -15,16 +15,21 @@ query parameters; no parameter schema is implemented yet.
 English is `src/locales/eng.ts`, registered under the standard `en` code in
 `src/i18n/index.ts`. Add semantic keys there and use `useTranslation()` in
 components; i18next's type augmentation derives valid keys from this dictionary.
-For Hungarian, create `hun.ts` with an object declared using `satisfies
-Translation` (import the type from `eng.ts`), then register it as `hu` in the
-resources. The type checks the same keys while allowing different string values.
-Once a selector is needed, call `i18n.changeLanguage('hu')` from it; the document
-language and rendered translations update. Only English is registered today.
+English is `src/locales/eng.ts` and is always bundled. 108 languages are listed in
+`src/constants/languages.constants.ts`; every other dictionary lives in
+`src/locales/<code>.ts` (a default export declared with `satisfies PartialTranslation`: keys it
+leaves out fall back to English, and the keys it has are type-checked) and is loaded on
+demand by `setLanguage()` in `src/i18n/index.ts`. To add a language, create the
+locale file, add an entry (flag = a code from `flag-icons`, `dir` = `ltr` or
+`rtl`) to `LANGUAGES`, and it appears in the header's `LanguageSelect`. The
+choice is stored in `localStorage` under `firelock.language`, and the document
+`lang` and `dir` follow it. Untranslated keys fall back to English.
 Language and time zone are independent: future observation dates must follow the
 project's UTC rules. Photon currently requests English place names.
 
-MapLibre UI labels are provided through its `locale` option. Changing language
-recreates the map to apply these labels; route navigation does not. Map labels
+MapLibre UI labels are provided through its `locale` option. MapLibre reads them only
+when the map is created, so the map is created once and its control labels are
+updated in `BaseMap.tsx` when the language changes. Map labels
 inside the external OpenFreeMap style and tiles are not translated by i18next.
 The style and its source data determine which languages are available. External
 attribution remains supplied by the map provider.

@@ -38,6 +38,8 @@ export default function BaseMap({
   onSelectionChange,
 }: BaseMapProps) {
   const { t } = useTranslation()
+  // The map is created once; later language changes only relabel its controls.
+  const tRef = useRef(t)
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
   // Host element of the draw buttons inside MapLibre's top-right control stack.
@@ -48,19 +50,24 @@ export default function BaseMap({
   })
 
   useEffect(() => {
+    tRef.current = t
+  }, [t])
+
+  useEffect(() => {
     const container = containerRef.current
     if (container === null) {
       return
     }
+    const translate = tRef.current
 
     const map = new maplibregl.Map({
       container,
       locale: {
-        'Map.Title': t('map.title'),
-        'NavigationControl.ZoomIn': t('map.zoomIn'),
-        'NavigationControl.ZoomOut': t('map.zoomOut'),
-        'AttributionControl.ToggleAttribution': t('map.attribution'),
-        'AttributionControl.MapFeedback': t('map.feedback'),
+        'Map.Title': translate('map.title'),
+        'NavigationControl.ZoomIn': translate('map.zoomIn'),
+        'NavigationControl.ZoomOut': translate('map.zoomOut'),
+        'AttributionControl.ToggleAttribution': translate('map.attribution'),
+        'AttributionControl.MapFeedback': translate('map.feedback'),
       },
       style: MAP_STYLE_URL,
       center: [19.04, 47.5],
@@ -98,7 +105,27 @@ export default function BaseMap({
       mapRef.current = null
       map.remove()
     }
-  }, [t, controlHost])
+  }, [controlHost])
+
+  // MapLibre only reads its UI strings at creation, so relabel the controls.
+  useEffect(() => {
+    const container = containerRef.current
+    const map = mapRef.current
+    if (container === null || map === null) {
+      return
+    }
+    const relabel = (selector: string, label: string) => {
+      const element = container.querySelector(selector)
+      if (element instanceof HTMLElement) {
+        element.title = label
+        element.setAttribute('aria-label', label)
+      }
+    }
+    relabel('.maplibregl-ctrl-zoom-in', t('map.zoomIn'))
+    relabel('.maplibregl-ctrl-zoom-out', t('map.zoomOut'))
+    relabel('.maplibregl-ctrl-attrib-button', t('map.attribution'))
+    map.getCanvas().setAttribute('aria-label', t('map.title'))
+  }, [t])
 
   useEffect(() => {
     if (active) mapRef.current?.resize()

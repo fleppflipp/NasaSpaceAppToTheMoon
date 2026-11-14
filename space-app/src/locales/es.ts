@@ -1,0 +1,39 @@
+import type { PartialTranslation } from './eng'
+
+export default {
+  navigation: { label: 'Vista', map: 'Mapa', calendar: 'Calendario' },
+  search: {
+    label: 'Buscar un lugar',
+    button: 'Buscar',
+    noResults: 'No se encontró ningún lugar.',
+    error: 'La búsqueda falló. Inténtalo de nuevo.',
+  },
+  map: {
+    title: 'Mapa',
+    zoomIn: 'Acercar',
+    zoomOut: 'Alejar',
+    attribution: 'Mostrar u ocultar atribución',
+    feedback: 'Comentarios sobre el mapa',
+  },
+  draw: {
+    draw: 'Dibujar un área',
+    cancel: 'Cancelar dibujo',
+    remove: 'Quitar selección',
+    zoomHint: 'Acércate para seleccionar un área',
+    zoomHintTitle: 'Acércate para seleccionar un área ({{zoom}}+)',
+    closeShape: 'Cierra la forma para seleccionar un área',
+    selectedArea: 'Área seleccionada: {{area}}',
+  },
+  language: {
+    label: 'Idioma',
+    placeholder: 'Idioma o código',
+    noResults: 'No se encontró ningún idioma.',
+  },
+  calendar: { label: 'Vista de calendario' },
+  notFound: { heading: 'Página no encontrada', backToMap: 'Volver al mapa' },
+  pageTitles: {
+    map: 'Mapa',
+    calendar: 'Calendario',
+    notFound: 'Página no encontrada',
+  },
+} satisfies PartialTranslation

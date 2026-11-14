@@ -22,10 +22,19 @@ export const eng = {
     closeShape: 'Close the shape to select an area',
     selectedArea: 'Selected area: {{area}}',
   },
+  language: {
+    label: 'Language',
+    placeholder: 'Language or code',
+    noResults: 'No language found.',
+  },
   calendar: { label: 'Calendar view' },
   notFound: { heading: 'Page not found', backToMap: 'Back to map' },
   pageTitles: { map: 'Map', calendar: 'Calendar', notFound: 'Page not found' },
 } as const
 export type Translation = {
   [K in keyof typeof eng]: { [P in keyof (typeof eng)[K]]: string }
+}
+/** A dictionary that may leave keys out: they fall back to English. */
+export type PartialTranslation = {
+  [K in keyof Translation]?: Partial<Translation[K]>
 }

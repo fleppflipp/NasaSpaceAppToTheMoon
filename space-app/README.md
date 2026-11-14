@@ -59,6 +59,33 @@ is `public/favicon.svg`.
 See [routing and localization](docs/routing-i18n.md) for extension and
 deployment instructions.
 
+## Language
+
+A language picker sits at the right end of the header, next to the Map and
+Calendar buttons (`src/components/LanguageSelect.tsx`). It shows the flag and
+code of the current language; clicking opens a scrollable list with flag, code
+and the language's own name, and the field can also be typed into: a code
+(`ro`), a language name (English or native) or a country name finds it, arrows
+and Enter select, Escape closes. Flags are SVGs from the `flag-icons` package
+(MIT), loaded lazily; emoji flags do not render on Windows.
+
+`src/constants/languages.constants.ts` lists 108 languages: the main languages of
+every country in the FIRMS data folders. Each has a dictionary in
+`src/locales/<code>.ts` that is loaded only when the language is chosen (English
+is bundled as the fallback). Nine languages have no translation yet (empty
+dictionary, they show English): Sango, Swazi, Northern Ndebele, Hiri Motu,
+Chamorro, Tetum, Tongan, Fijian and Greenlandic. Most translations were written
+by an AI assistant and have not been reviewed by native speakers; fix wording by
+editing the locale file. Right-to-left languages (Arabic, Hebrew, Persian,
+Pashto, Sorani Kurdish, Urdu, Dhivehi) set `dir="rtl"` on the document and the
+layout mirrors, because the CSS uses logical properties.
+
+The choice is saved in `localStorage` and restored on the next visit; on the first
+visit the browser language is used when supported, otherwise English. Switching
+language updates all text, the document `lang`/`dir` and the MapLibre control
+labels without recreating the map, so position and the selected area are kept.
+No external service (the flags are bundled files).
+
 ## Map
 
 `src/components/BaseMap.tsx` renders the base map of the tool: a full-width,

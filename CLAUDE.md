@@ -39,6 +39,10 @@ Work proceeds feature by feature, one feature at a time. Done so far:
 5. URL routing (`/map`, `/calendar`, 404) and English UI strings through
    i18next (`src/locales/eng.ts`); see `space-app/docs/routing-i18n.md`. All
    user-visible text must go through `t()`.
+   Header language picker (`LanguageSelect`) with 108 languages (the main
+   languages of the countries in the data folders), flags from `flag-icons`,
+   lazy-loaded dictionaries, right-to-left support; the choice is stored in
+   `localStorage`.
 6. Data pipeline scripts from the data team (repo root, see "Data pipeline"):
    FIRMS MODIS + VIIRS pixels are joined into daily fires. The harmonized,
    map-ready format (PMTiles etc.) is still being defined by the data team.
@@ -165,6 +169,18 @@ into data for the app. Outputs are local and ignored by git too.
 - Prettier: no semicolons, single quotes, trailing commas, 80 columns, LF line
   endings.
 - Components are function components in `.tsx`; keep files small and focused.
+- **Everything user-visible is translatable.** No literal UI text in components,
+  hooks or services: add a semantic key to `src/locales/eng.ts` and use
+  `useTranslation()` / `t()` (hooks and services return keys or data, not
+  display text). This covers button labels, `aria-label`s, `title`s, placeholders,
+  error and status messages, the document title and MapLibre control labels.
+  Use `t()` interpolation instead of concatenating strings, and keep word order
+  out of the code. Format numbers and dates with `Intl` using the active
+  language (`i18n.language`), not a hardcoded locale such as `'en'`. Dates
+  follow the project's UTC rules regardless of language. A new UI string must be
+  added to `eng.ts` (the source of truth, typed); other dictionaries in
+  `src/locales/` may lag behind and fall back to English, so add the string at
+  least to the languages you can translate; see `space-app/docs/routing-i18n.md`.
 
 ## Checks
 

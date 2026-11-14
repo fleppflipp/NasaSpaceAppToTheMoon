@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { APP_NAME } from '../constants/app.constants'
 import { ROUTES } from '../constants/routes.constants'
 import type { Place } from '../services/places'
+import LanguageSelect from './LanguageSelect'
 import SearchBar from './SearchBar'
 import './Header.css'
 interface HeaderProps {
@@ -20,14 +21,17 @@ export default function Header({ isMap, onPlaceSelect }: HeaderProps) {
       <div className="app-header__search">
         {isMap ? <SearchBar onResult={onPlaceSelect} /> : null}
       </div>
-      <nav className="view-switch" aria-label={t('navigation.label')}>
-        <NavLink className="view-switch__button" to={ROUTES.map}>
-          {t('navigation.map')}
-        </NavLink>
-        <NavLink className="view-switch__button" to={ROUTES.calendar}>
-          {t('navigation.calendar')}
-        </NavLink>
-      </nav>
+      <div className="app-header__actions">
+        <nav className="view-switch" aria-label={t('navigation.label')}>
+          <NavLink className="view-switch__button" to={ROUTES.map}>
+            {t('navigation.map')}
+          </NavLink>
+          <NavLink className="view-switch__button" to={ROUTES.calendar}>
+            {t('navigation.calendar')}
+          </NavLink>
+        </nav>
+        <LanguageSelect />
+      </div>
     </header>
   )
 }
