@@ -34,7 +34,16 @@ export const eng = {
     week: 'Week',
     range: '{{start}} – {{end}}',
   },
-  calendar: { label: 'Calendar view' },
+  calendar: {
+    label: 'Calendar view',
+    close: 'Close calendar',
+    chooseDay: 'Select a day to show its fires on the map.',
+    previousMonth: 'Previous month',
+    nextMonth: 'Next month',
+    showWeek: 'Show the whole week',
+    dailyHint:
+      'Daily view shows fire points. Move the top slider to return to weekly areas.',
+  },
   notFound: { heading: 'Page not found', backToMap: 'Back to map' },
   pageTitles: { map: 'Map', calendar: 'Calendar', notFound: 'Page not found' },
 } as const

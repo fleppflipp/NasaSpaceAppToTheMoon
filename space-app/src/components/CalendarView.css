@@ -1,4 +1,81 @@
-/* Leaves room for the fixed header and time bar. */
-.calendar-view {
-  padding-block-start: var(--layout-top-offset);
+﻿.calendar-view {
+  position: fixed;
+  inset-block: var(--layout-top-offset) 0;
+  inset-inline-end: 0;
+  z-index: var(--z-index-overlay);
+  inline-size: min(100%, var(--layout-calendar-width));
+  padding: var(--space-4);
+  overflow-y: auto;
+  background: var(--color-background);
+  border-inline-start: var(--border-width-thin) solid var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+.calendar-view__heading,
+.calendar-view__navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.calendar-view__heading h2 {
+  margin: 0;
+  font-size: var(--font-size-xl);
+}
+.calendar-view__close {
+  display: grid;
+  place-items: center;
+  min-inline-size: var(--control-size-touch-target);
+  min-block-size: var(--control-size-touch-target);
+  font-size: var(--font-size-xl);
+  text-decoration: none;
+}
+.calendar-view__navigation button {
+  padding: var(--space-1);
+}
+.calendar-view__navigation strong {
+  text-align: center;
+}
+.calendar-view__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-1);
+}
+.calendar-view__weekday {
+  padding-block: var(--space-2);
+  font-size: var(--font-size-xs);
+  text-align: center;
+}
+.calendar-view__day {
+  min-inline-size: 0;
+  padding: var(--space-1);
+  color: var(--color-text);
+  background: transparent;
+  border-color: transparent;
+}
+.calendar-view__day--week {
+  background: var(--color-highlight);
+}
+.calendar-view__day[aria-pressed='true'] {
+  color: var(--color-background);
+  background: var(--color-primary);
+}
+.calendar-view__day:hover:not(:disabled) {
+  color: var(--color-background);
+}
+.calendar-view__selection {
+  padding: var(--space-3);
+  background: var(--color-highlight);
+  border-radius: var(--radius-md);
+  font-weight: var(--font-weight-semibold);
+}
+.calendar-view__hint {
+  font-size: var(--font-size-sm);
+}
+@media (max-width: 48rem) {
+  .calendar-view {
+    inset-block-start: auto;
+    inline-size: 100%;
+    max-block-size: var(--layout-calendar-mobile-height);
+    border-block-start: var(--border-width-thin) solid var(--color-primary);
+  }
 }

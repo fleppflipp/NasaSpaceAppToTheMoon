@@ -37,7 +37,16 @@ export default {
     week: 'Hét',
     range: '{{start}} – {{end}}',
   },
-  calendar: { label: 'Naptár nézet' },
+  calendar: {
+    label: 'Naptár nézet',
+    close: 'Naptár bezárása',
+    chooseDay: 'Válassz egy napot a tüzek térképes megjelenítéséhez.',
+    previousMonth: 'Előző hónap',
+    nextMonth: 'Következő hónap',
+    showWeek: 'Teljes hét megjelenítése',
+    dailyHint:
+      'A napi nézet tűzpontokat mutat. A felső csúszkával visszatérhetsz a heti területekhez.',
+  },
   notFound: {
     heading: 'Az oldal nem található',
     backToMap: 'Vissza a térképre',

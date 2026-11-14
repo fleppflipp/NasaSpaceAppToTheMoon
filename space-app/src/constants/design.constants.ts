@@ -66,6 +66,8 @@ export const LAYOUT = {
   'reading-width': '65ch',
   'grid-min': '16rem',
   'search-width': '26rem',
+  'calendar-width': '23rem',
+  'calendar-mobile-height': '45svh',
   'header-height': '4rem',
   'timeline-height': '3.5rem',
   // Space taken by the fixed bars at the top of every page.

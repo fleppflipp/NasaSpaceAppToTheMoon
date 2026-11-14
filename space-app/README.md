@@ -51,9 +51,9 @@ instead of `npm`, for example `npm.cmd run check`.
 The app is called **FireLock**. The shared layout renders a fixed header
 (`src/components/Header.tsx`) with the logo and name, the place search bar in
 the middle, and a **Map / Calendar** switch on the right. The switch toggles
-between the map view and the calendar view (`CalendarView.tsx`, currently an
-empty placeholder). Navigation uses URL routes. The map stays mounted while the calendar is shown, so its
-position is kept, and the search bar is only shown in the map view. The favicon
+between the full map and a map with a right-hand calendar (`CalendarView.tsx`).
+Navigation uses URL routes. The map, search and selected area remain available
+while the calendar is open. On narrow screens the calendar sits below the map. The favicon
 is `public/favicon.svg`.
 
 See [routing and localization](docs/routing-i18n.md) for extension and
@@ -61,7 +61,7 @@ deployment instructions.
 
 ## Fire layer
 
-The map shows the fires of **one week** at a time. Zoomed out, every fire is a
+The map shows fires of **one week**, or a single day selected in the calendar. Zoomed out, every fire is a
 dot; from zoom 10 on, fires that overlap are merged into one **common polygon**
 (`src/hooks/useFireLayers.ts`). Polygons are flat, see-through fills with a faint
 outline, like the forest patches of a topographic map, colored by the strongest
@@ -131,6 +131,16 @@ the dates of the week in the active language. The period is held in
 `AppLayout.tsx` as `{ year, week }` (`src/services/period.ts`), starts on the
 latest year, week 30, and `periodDateRange()` turns it into first and last day.
 All dates are UTC regardless of the display language. No external service.
+
+The Calendar button opens a monthly day picker alongside the map. Clicking a
+day sets an optional zero-based `day` in the shared period, updates the timeline
+summary and filters fire points by their `day` property (days since 2000-01-01).
+The slider or "Show the whole week" returns to weekly mode. Month navigation is
+limited to available years; weekday and date labels follow the UI language.
+Daily mode uses a separate source capped at zoom 9, overscaling the point tiles
+at higher zooms. Weekly merged polygons are hidden because their geometry cannot
+be filtered accurately to one day. Existing overview tile thinning still applies;
+this is not a complete daily inventory. No new library or external API is used.
 
 ## Language
 

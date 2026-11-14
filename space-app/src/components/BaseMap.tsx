@@ -26,6 +26,7 @@ const FLY_DURATION_MS = 1500
 interface BaseMapProps {
   /** The map is hidden (but kept alive) while another view is shown. */
   active: boolean
+  calendarOpen: boolean
   /** When this changes to a new place, the map flies there. */
   target: Place | null
   /** The selected area (a freehand-drawn polygon), or null. */
@@ -37,6 +38,7 @@ interface BaseMapProps {
 
 export default function BaseMap({
   active,
+  calendarOpen,
   target,
   selection,
   onSelectionChange,
@@ -134,7 +136,17 @@ export default function BaseMap({
 
   useEffect(() => {
     if (active) mapRef.current?.resize()
-  }, [active])
+  }, [active, calendarOpen])
+
+  useEffect(() => {
+    const container = containerRef.current
+    if (container === null) return
+    const observer = new ResizeObserver(() => mapRef.current?.resize())
+    observer.observe(container)
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
 
   const { canDraw, drawing, message, toggleDrawing, clearSelection } =
     useAreaSelection(mapRef, active, selection, onSelectionChange)
@@ -170,7 +182,10 @@ export default function BaseMap({
   }, [target])
 
   return (
-    <div className="map-view" hidden={!active}>
+    <div
+      className={`map-view${calendarOpen ? ' map-view--calendar' : ''}`}
+      hidden={!active}
+    >
       {/* MapLibre adds its own accessible "Map" region inside this container. */}
       <div ref={containerRef} className="base-map" />
       {createPortal(

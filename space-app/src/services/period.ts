@@ -9,6 +9,8 @@ import { DEFAULT_WEEK } from '../constants/period.constants'
 export interface Period {
   year: number
   week: number
+  /** Zero-based day of the year; omitted when showing the whole week. */
+  day?: number
 }
 
 export const DEFAULT_PERIOD: Period = {
@@ -24,13 +26,31 @@ function toIsoDate(milliseconds: number): string {
 }
 
 /** The first and last day (ISO, both included) of a period. */
-export function periodDateRange({ year, week }: Period): {
+export function periodDateRange({ year, week, day }: Period): {
   startDate: string
   endDate: string
 } {
-  const start = Date.UTC(year, 0, 1 + 7 * week)
-  const end = Math.min(start + 6 * MS_PER_DAY, Date.UTC(year, 11, 31))
+  const start = Date.UTC(year, 0, 1 + (day ?? 7 * week))
+  const end =
+    day === undefined
+      ? Math.min(start + 6 * MS_PER_DAY, Date.UTC(year, 11, 31))
+      : start
   return { startDate: toIsoDate(start), endDate: toIsoDate(end) }
+}
+
+/** Select a UTC calendar date and its containing weekly tile file. */
+export function periodForDate(date: Date): Period {
+  const year = date.getUTCFullYear()
+  const day = Math.floor((date.getTime() - Date.UTC(year, 0, 1)) / MS_PER_DAY)
+  return { year, week: Math.floor(day / 7), day }
+}
+
+/** The date encoding used by the fire point tiles. */
+export function fireDay(period: Period): number | null {
+  return period.day === undefined
+    ? null
+    : (Date.UTC(period.year, 0, 1 + period.day) - Date.UTC(2000, 0, 1)) /
+        MS_PER_DAY
 }
 
 /** An ISO date written in the given language. */

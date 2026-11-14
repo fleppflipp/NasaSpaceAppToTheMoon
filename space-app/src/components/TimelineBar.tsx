@@ -24,10 +24,13 @@ interface TimelineBarProps {
 export default function TimelineBar({ period, onChange }: TimelineBarProps) {
   const { t, i18n } = useTranslation()
   const { startDate, endDate } = periodDateRange(period)
-  const summary = t('timeline.range', {
-    start: formatDate(startDate, i18n.language),
-    end: formatDate(endDate, i18n.language),
-  })
+  const summary =
+    period.day === undefined
+      ? t('timeline.range', {
+          start: formatDate(startDate, i18n.language),
+          end: formatDate(endDate, i18n.language),
+        })
+      : formatDate(startDate, i18n.language)
 
   return (
     <div className="timeline" role="group" aria-label={t('timeline.label')}>

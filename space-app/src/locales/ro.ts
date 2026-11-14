@@ -39,7 +39,16 @@ export default {
     week: 'Săptămâna',
     range: '{{start}} – {{end}}',
   },
-  calendar: { label: 'Vizualizare calendar' },
+  calendar: {
+    label: 'Vizualizare calendar',
+    close: 'Închide calendarul',
+    chooseDay: 'Selectează o zi pentru a afișa incendiile pe hartă.',
+    previousMonth: 'Luna precedentă',
+    nextMonth: 'Luna următoare',
+    showWeek: 'Afișează întreaga săptămână',
+    dailyHint:
+      'Vizualizarea zilnică afișează punctele de incendiu. Folosește glisorul de sus pentru a reveni la zonele săptămânale.',
+  },
   notFound: {
     heading: 'Pagina nu a fost găsită',
     backToMap: 'Înapoi la hartă',

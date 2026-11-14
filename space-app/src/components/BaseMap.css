@@ -48,3 +48,13 @@
 .map-status__readout {
   border: var(--border-width-strong) solid var(--color-selection-outline);
 }
+
+.map-view--calendar {
+  inset-inline-end: var(--layout-calendar-width);
+}
+@media (max-width: 48rem) {
+  .map-view--calendar {
+    inset-inline-end: 0;
+    inset-block-end: var(--layout-calendar-mobile-height);
+  }
+}

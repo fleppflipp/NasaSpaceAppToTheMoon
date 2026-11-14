@@ -20,6 +20,7 @@ import {
   registerPmtilesProtocol,
 } from '../services/fireTiles'
 import type { Period } from '../services/period'
+import { fireDay } from '../services/period'
 
 registerPmtilesProtocol()
 
@@ -28,6 +29,8 @@ const POINTS = 'fires-points'
 const AREAS = 'fires-areas'
 const OUTLINE = 'fires-areas-outline'
 const LAYERS = [POINTS, AREAS, OUTLINE]
+const DAILY_SOURCE = 'fires-daily'
+const DAILY_POINTS = 'fires-daily-points'
 
 /** Pixels per kilometre at zoom 0; it doubles with every zoom level. */
 const PX_PER_KM_AT_ZOOM_0 = 1000 / METRES_PER_PIXEL_AT_ZOOM_0
@@ -82,11 +85,52 @@ function setVisibility(map: MapLibreMap, visible: boolean): void {
  * are dots, from it on they are the merged polygons.
  */
 function showPeriod(map: MapLibreMap, period: Period): void {
+  if (map.getLayer(DAILY_POINTS)) {
+    map.setLayoutProperty(DAILY_POINTS, 'visibility', 'none')
+  }
   if (!hasFireData(period)) {
     setVisibility(map, false)
     return
   }
   const url = fireTileUrl(period)
+  const day = fireDay(period)
+  if (day !== null) {
+    setVisibility(map, false)
+    const dailySource = map.getSource(DAILY_SOURCE)
+    if (dailySource === undefined) {
+      // Points only exist through z9. Overscale those tiles for daily detail;
+      // weekly merged polygons cannot accurately represent a single day.
+      map.addSource(DAILY_SOURCE, {
+        type: 'vector',
+        url,
+        maxzoom: FIRE_AREAS_MIN_ZOOM - 1,
+      })
+    } else if (
+      dailySource instanceof VectorTileSource &&
+      dailySource.url !== url
+    ) {
+      dailySource.setUrl(url)
+    }
+    if (!map.getLayer(DAILY_POINTS)) {
+      map.addLayer(
+        {
+          id: DAILY_POINTS,
+          type: 'circle',
+          source: DAILY_SOURCE,
+          'source-layer': FIRE_POINTS_LAYER,
+          paint: {
+            'circle-radius': RADIUS,
+            'circle-color': COLOR,
+            'circle-opacity': FIRE_FILL_OPACITY + 0.1,
+          },
+        },
+        firstSymbolLayerId(map),
+      )
+    }
+    map.setFilter(DAILY_POINTS, ['==', ['get', 'day'], day])
+    map.setLayoutProperty(DAILY_POINTS, 'visibility', 'visible')
+    return
+  }
   const source = map.getSource(SOURCE)
   if (source === undefined) {
     map.addSource(SOURCE, { type: 'vector', url })
