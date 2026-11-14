@@ -1,0 +1,8 @@
+.flag {
+  flex: none;
+  inline-size: var(--space-6);
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border: var(--border-width-thin) solid var(--color-primary);
+  border-radius: var(--radius-sm);
+}

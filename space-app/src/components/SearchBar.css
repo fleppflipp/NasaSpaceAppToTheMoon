@@ -1,0 +1,63 @@
+/* Lives inside the header; the suggestion list and message float below it. */
+.search-bar {
+  position: relative;
+  inline-size: 100%;
+  max-inline-size: var(--layout-search-width);
+}
+
+.search-bar__form {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.search-bar__list {
+  position: absolute;
+  inset-block-start: 100%;
+  inset-inline: var(--space-0);
+  margin-block: var(--space-2) var(--space-0);
+  padding: var(--space-0);
+  list-style: none;
+  border: var(--border-width-thin) solid var(--color-primary);
+  border-radius: var(--radius-md);
+  background-color: var(--color-background);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.search-bar__list[hidden] {
+  display: none;
+}
+
+.search-bar__option {
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+}
+
+.search-bar__list > .search-bar__option + .search-bar__option {
+  margin-block-start: var(--space-0);
+  border-block-start: var(--border-width-thin) solid var(--color-highlight);
+}
+
+.search-bar__option:hover,
+.search-bar__option[aria-selected='true'] {
+  background-color: var(--color-highlight);
+}
+
+.search-bar__message {
+  position: absolute;
+  inset-block-start: 100%;
+  inset-inline-start: 50%;
+  translate: -50% 0;
+  inline-size: max-content;
+  max-inline-size: 100%;
+  margin-block: var(--space-2) var(--space-0);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--color-background);
+  box-shadow: var(--shadow-sm);
+  font-size: var(--font-size-sm);
+}
+
+.search-bar__message:empty {
+  display: none;
+}

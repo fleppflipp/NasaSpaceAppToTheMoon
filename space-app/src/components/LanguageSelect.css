@@ -1,0 +1,110 @@
+.language-select {
+  position: relative;
+  flex: none;
+  inline-size: var(--space-32);
+}
+
+.language-select__current-flag {
+  position: absolute;
+  inset-block: var(--space-0);
+  inset-inline-start: var(--space-3);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.form-control.language-select__input {
+  padding-inline: calc(var(--space-3) + var(--space-6) + var(--space-2))
+    var(--space-6);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+/* The current code is shown as the placeholder, so typing starts from empty. */
+.language-select__input::placeholder {
+  color: var(--color-text);
+  opacity: 1;
+}
+
+/* Down arrow drawn with borders, so it follows the text color. */
+.language-select__chevron {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: var(--space-3);
+  inline-size: var(--space-2);
+  block-size: var(--space-2);
+  border-inline-end: var(--border-width-strong) solid var(--color-text);
+  border-block-end: var(--border-width-strong) solid var(--color-text);
+  translate: 0 -75%;
+  rotate: 45deg;
+  pointer-events: none;
+}
+
+.language-select__list {
+  position: absolute;
+  inset-block-start: 100%;
+  inset-inline-end: var(--space-0);
+  z-index: var(--z-index-dropdown);
+  min-inline-size: 100%;
+  margin-block: var(--space-2) var(--space-0);
+  padding: var(--space-0);
+  list-style: none;
+  border: var(--border-width-thin) solid var(--color-primary);
+  border-radius: var(--radius-md);
+  background-color: var(--color-background);
+  box-shadow: var(--shadow-md);
+  max-block-size: min(60vh, 28rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.language-select__list[hidden] {
+  display: none;
+}
+
+.language-select__option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.language-select__list > .language-select__option + .language-select__option {
+  border-block-start: var(--border-width-thin) solid var(--color-highlight);
+}
+
+.language-select__option:hover,
+.language-select__option[data-active='true'] {
+  background-color: var(--color-highlight);
+}
+
+.language-select__option[aria-selected='true'] .language-select__short {
+  text-decoration: underline;
+}
+
+.language-select__short {
+  font-weight: var(--font-weight-semibold);
+}
+
+.language-select__name {
+  font-size: var(--font-size-sm);
+}
+
+.language-select__message {
+  position: absolute;
+  inset-block-start: 100%;
+  inset-inline-end: var(--space-0);
+  inline-size: max-content;
+  margin-block: var(--space-2) var(--space-0);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--color-background);
+  box-shadow: var(--shadow-sm);
+  font-size: var(--font-size-sm);
+}
+
+.language-select__message:empty {
+  display: none;
+}

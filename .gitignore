@@ -56,7 +56,10 @@ cache/
 /modis_*_all_countries.zip
 /viirs-*_all_countries.zip
 
-# Local analysis, derived data and generated pages (keep HTML templates)
+# Local analysis, derived data and generated pages (keep HTML templates in src/viz/)
+# Per-country fire files written by fire_calendar.py; only the format guide is tracked.
+/new_outputs/*
+!/new_outputs/README_fire_files_2025.txt
 /slop/
 /outputs/
 /fits/
@@ -65,8 +68,6 @@ cache/
 /*.csv.gz
 *.npz
 *.npy
-/viz/overview.html
-/viz/daily/daily.html
 
 # Local secrets (sanitized environment templates may be committed)
 .env
@@ -83,6 +84,9 @@ cache/
 *.key
 *.p12
 *.pfx
+
+# Per-user tool settings (space-app/.claude/launch.json is shared and stays tracked)
+.claude/settings.local.json
 
 # Logs and temporary runtime files
 logs/
