@@ -1,62 +1,58 @@
-import { FIRE_TILE_YEARS } from '../constants/fires.constants'
-import { DEFAULT_WEEK } from '../constants/period.constants'
+import { DEFAULT_MONTH } from '../constants/period.constants'
 
-/**
- * The period of time the app shows: one week of one year. Week `week` (0 to
- * 52) starts on January 1st plus 7 x `week` days and lasts 7 days; the last
- * week of the year is shorter. All dates are UTC, independent of the language.
- */
+/** The period of time the app shows: one month (1 to 12) of one year. */
 export interface Period {
   year: number
-  week: number
-  /** Zero-based day of the year; omitted when showing the whole week. */
+  month: number
+  /** Day of the month (1 to 31); omitted when the whole month is shown. */
   day?: number
-}
-
-export const DEFAULT_PERIOD: Period = {
-  // The latest year that has fire tiles.
-  year: FIRE_TILE_YEARS.at(-1) ?? 2012,
-  week: DEFAULT_WEEK,
 }
 
 const MS_PER_DAY = 86_400_000
 
-function toIsoDate(milliseconds: number): string {
-  return new Date(milliseconds).toISOString().slice(0, 10)
+export function isSamePeriod(a: Period, b: Period): boolean {
+  return a.year === b.year && a.month === b.month
 }
 
-/** The first and last day (ISO, both included) of a period. */
-export function periodDateRange({ year, week, day }: Period): {
-  startDate: string
-  endDate: string
-} {
-  const start = Date.UTC(year, 0, 1 + (day ?? 7 * week))
-  const end =
-    day === undefined
-      ? Math.min(start + 6 * MS_PER_DAY, Date.UTC(year, 11, 31))
-      : start
-  return { startDate: toIsoDate(start), endDate: toIsoDate(end) }
+/** Sort order of periods: earlier first. */
+export function comparePeriods(a: Period, b: Period): number {
+  return a.year - b.year || a.month - b.month
 }
 
-/** Select a UTC calendar date and its containing weekly tile file. */
-export function periodForDate(date: Date): Period {
-  const year = date.getUTCFullYear()
-  const day = Math.floor((date.getTime() - Date.UTC(year, 0, 1)) / MS_PER_DAY)
-  return { year, week: Math.floor(day / 7), day }
+/**
+ * The period shown at start: in the latest year that has data, the month
+ * closest to the default one. Null when there is no data at all.
+ */
+export function defaultPeriod(periods: readonly Period[]): Period | null {
+  const latestYear = Math.max(...periods.map((period) => period.year))
+  const inLatestYear = periods.filter((period) => period.year === latestYear)
+  return (
+    inLatestYear.toSorted(
+      (a, b) =>
+        Math.abs(a.month - DEFAULT_MONTH) - Math.abs(b.month - DEFAULT_MONTH),
+    )[0] ?? null
+  )
 }
 
-/** The date encoding used by the fire point tiles. */
-export function fireDay(period: Period): number | null {
-  return period.day === undefined
-    ? null
-    : (Date.UTC(period.year, 0, 1 + period.day) - Date.UTC(2000, 0, 1)) /
-        MS_PER_DAY
-}
-
-/** An ISO date written in the given language. */
-export function formatDate(isoDate: string, language: string): string {
+/**
+ * A month written in the given language, like "July 2016", or a full date
+ * like "July 14, 2016" when a day is chosen. The date is UTC.
+ */
+export function formatPeriod(
+  { year, month, day }: Period,
+  language: string,
+): string {
   return new Intl.DateTimeFormat(language, {
-    dateStyle: 'medium',
+    ...(day === undefined ? {} : { day: 'numeric' }),
+    month: 'long',
+    year: 'numeric',
     timeZone: 'UTC',
-  }).format(new Date(`${isoDate}T00:00:00Z`))
+  }).format(new Date(Date.UTC(year, month - 1, day ?? 1)))
+}
+
+/** The date encoding used by the fire point tiles: days since 2000-01-01. */
+export function fireDay({ year, month, day }: Period): number | null {
+  return day === undefined
+    ? null
+    : (Date.UTC(year, month - 1, day) - Date.UTC(2000, 0, 1)) / MS_PER_DAY
 }

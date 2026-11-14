@@ -1,6 +1,6 @@
 ﻿.calendar-view {
   position: fixed;
-  inset-block: var(--layout-top-offset) 0;
+  inset-block: var(--layout-top-offset) var(--layout-timeline-height);
   inset-inline-end: 0;
   z-index: var(--z-index-overlay);
   inline-size: min(100%, var(--layout-calendar-width));
@@ -51,9 +51,6 @@
   color: var(--color-text);
   background: transparent;
   border-color: transparent;
-}
-.calendar-view__day--week {
-  background: var(--color-highlight);
 }
 .calendar-view__day[aria-pressed='true'] {
   color: var(--color-background);

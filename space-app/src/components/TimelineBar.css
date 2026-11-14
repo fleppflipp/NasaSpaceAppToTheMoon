@@ -1,28 +1,25 @@
-/* Fixed bar right under the header: a summary line with the year, and the week slider. */
+/* Full-width strip at the bottom: the month on the left, then the slider over all months with data and year labels under it. */
 .timeline {
   position: fixed;
-  inset-block-start: var(--layout-header-height);
+  inset-block-end: var(--space-0);
   inset-inline: var(--space-0);
   z-index: var(--z-index-dropdown);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--space-1);
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(var(--space-32), max-content) 1fr;
+  align-content: center;
+  align-items: center;
+  column-gap: var(--space-5);
   block-size: var(--layout-timeline-height);
   padding-inline: var(--space-4);
-  border-block-end: var(--border-width-thin) solid var(--color-primary);
+  border-block-start: var(--border-width-thin) solid var(--color-primary);
   background-color: var(--color-background);
   box-shadow: var(--shadow-sm);
 }
 
-.timeline__top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-}
-
 .timeline__summary {
+  grid-column: 1;
+  grid-row: 1 / span 2;
   min-inline-size: 0;
   margin-block: var(--space-0);
   font-size: var(--font-size-sm);
@@ -32,23 +29,15 @@
   white-space: nowrap;
 }
 
-.form-control.timeline__year {
-  flex: none;
-  inline-size: auto;
-  min-block-size: auto;
-  padding: var(--space-1) var(--space-3);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-}
-
 /*
- * One range input over the weeks. The visible track (with a mark at each month
+ * One range input over the months. The visible track (with a mark at each year
  * start) sits half a handle in from each edge, where the centre of the handle
  * travels.
  */
 .timeline__slider {
   --timeline-thumb: var(--space-5);
+  grid-column: 2;
+  grid-row: 1;
   position: relative;
   flex: none;
   block-size: var(--timeline-thumb);
@@ -70,6 +59,25 @@
   inline-size: var(--border-width-thin);
   block-size: var(--space-1);
   background-color: var(--color-primary);
+}
+
+/* Year labels, centred under the marks of the slider track. */
+.timeline__years {
+  grid-column: 2;
+  grid-row: 2;
+  position: relative;
+  flex: none;
+  block-size: var(--font-size-xs);
+  margin-inline: calc(var(--space-5) / 2);
+}
+
+.timeline__year-label {
+  position: absolute;
+  inset-block-start: var(--space-0);
+  translate: -50% 0;
+  font-size: var(--font-size-xs);
+  line-height: 1;
+  color: var(--color-primary);
 }
 
 .timeline__range {

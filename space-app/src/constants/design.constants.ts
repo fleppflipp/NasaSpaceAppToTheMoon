@@ -69,10 +69,9 @@ export const LAYOUT = {
   'calendar-width': '23rem',
   'calendar-mobile-height': '45svh',
   'header-height': '4rem',
-  'timeline-height': '3.5rem',
-  // Space taken by the fixed bars at the top of every page.
-  'top-offset':
-    'calc(var(--layout-header-height) + var(--layout-timeline-height))',
+  'timeline-height': '3.25rem',
+  // Space taken by the fixed header; the time bar is a full-width strip at the bottom.
+  'top-offset': 'var(--layout-header-height)',
   'page-gutter': 'clamp(var(--space-4), 4vw, var(--space-16))',
   'section-gap': 'clamp(var(--space-8), 6vw, var(--space-24))',
   'content-gap': 'var(--space-4)',

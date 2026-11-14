@@ -14,7 +14,7 @@ docker compose logs -f   # see requests
 docker compose down      # stop
 ```
 
-Put the `fires_<year>_w<NN>.pmtiles` files into `tile-server/data/` (the build
+Put the `fires_<year>_<MM>.pmtiles` files into `tile-server/data/` (the build
 script `tiles/build_fire_tiles.py --out tile-server/data` writes them there). The
 folder is git-ignored. Other settings (environment variables): `TILE_PORT`
 (default 8080) and `TILE_DATA_DIR` (default `./data`).
@@ -33,12 +33,12 @@ The app reads `VITE_TILE_BASE_URL` (default `http://localhost:8080/tiles`; see
 
 ```sh
 curl http://localhost:8080/health
-curl -sI -H "Range: bytes=0-16383" http://localhost:8080/tiles/fires_2012_w30.pmtiles
+curl -sI -H "Range: bytes=0-16383" http://localhost:8080/tiles/fires_2012_07.pmtiles
 ```
 
 The second one must answer `206 Partial Content` with `Content-Range`,
 `Accept-Ranges: bytes` and `Access-Control-Allow-Origin: *`. `http://localhost:8080/tiles/`
-lists the files.
+lists the files as JSON: the app reads this list to know which months exist.
 
 ## Notes
 

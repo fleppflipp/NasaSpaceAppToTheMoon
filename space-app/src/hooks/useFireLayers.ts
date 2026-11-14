@@ -4,54 +4,84 @@ import { VectorTileSource } from 'maplibre-gl'
 import type { ExpressionSpecification, Map as MapLibreMap } from 'maplibre-gl'
 import { COLOR_PALETTE } from '../constants/colorpallette.constatns'
 import {
-  FIRE_AREAS_LAYER,
-  FIRE_AREAS_MIN_ZOOM,
   FIRE_FILL_OPACITY,
   FIRE_FRP_STOPS,
+  FIRE_MIN_FRP_BY_ZOOM,
   FIRE_MIN_RADIUS_PX,
-  FIRE_OUTLINE_OPACITY,
-  FIRE_OUTLINE_WIDTH_PX,
+  FIRE_PERIOD_DEBOUNCE_MS,
   FIRE_POINTS_LAYER,
+  FIRE_POINTS_MAX_ZOOM,
   METRES_PER_PIXEL_AT_ZOOM_0,
 } from '../constants/fires.constants'
-import {
-  fireTileUrl,
-  hasFireData,
-  registerPmtilesProtocol,
-} from '../services/fireTiles'
-import type { Period } from '../services/period'
+import { fireTileUrl, registerPmtilesProtocol } from '../services/fireTiles'
 import { fireDay } from '../services/period'
+import type { Period } from '../services/period'
 
 registerPmtilesProtocol()
 
 const SOURCE = 'fires'
 const POINTS = 'fires-points'
-const AREAS = 'fires-areas'
-const OUTLINE = 'fires-areas-outline'
-const LAYERS = [POINTS, AREAS, OUTLINE]
-const DAILY_SOURCE = 'fires-daily'
-const DAILY_POINTS = 'fires-daily-points'
 
 /** Pixels per kilometre at zoom 0; it doubles with every zoom level. */
 const PX_PER_KM_AT_ZOOM_0 = 1000 / METRES_PER_PIXEL_AT_ZOOM_0
 const MAX_ZOOM = 24
+/** Last zoom with its own radius step; beyond it the radius just keeps doubling. */
+const LAST_STEP_ZOOM = 16
+/** The minimum dot size fades out between these zooms: the real size takes over. */
+const FLOOR_FADE_FROM_ZOOM = 8
+const FLOOR_FADE_TO_ZOOM = 12
 
-/** Dot radius: the fire's real radius (`r`, km) at this zoom, but never tiny. */
+/** The weakest fire (MW) that is drawn at this zoom. */
+function minFrpAt(zoom: number): number {
+  let result = 0
+  for (const [fromZoom, frp] of FIRE_MIN_FRP_BY_ZOOM) {
+    if (zoom >= fromZoom) {
+      result = frp
+    }
+  }
+  return result
+}
+
+/** The smallest dot radius (px) at this zoom. */
+function floorRadiusAt(zoom: number): number {
+  const fade =
+    (zoom - FLOOR_FADE_FROM_ZOOM) / (FLOOR_FADE_TO_ZOOM - FLOOR_FADE_FROM_ZOOM)
+  return FIRE_MIN_RADIUS_PX * (1 - Math.min(Math.max(fade, 0), 1))
+}
+
+/** Radius of a dot at one zoom: 0 when the fire is too weak to show yet. */
+function radiusAt(zoom: number): ExpressionSpecification {
+  const real: ExpressionSpecification = [
+    '*',
+    ['get', 'r'],
+    PX_PER_KM_AT_ZOOM_0 * 2 ** zoom,
+  ]
+  return [
+    'case',
+    ['>=', ['get', 'f'], minFrpAt(zoom)],
+    ['max', floorRadiusAt(zoom), real],
+    0,
+  ]
+}
+
+/**
+ * Dot radius: the fire's real size (`r`, km), with a small floor while zoomed
+ * out. Fires weaker than the zoom's limit have radius 0, so they grow in
+ * smoothly while zooming closer instead of popping up.
+ */
 const RADIUS: ExpressionSpecification = [
   'interpolate',
   ['exponential', 2],
   ['zoom'],
-  0,
-  ['+', FIRE_MIN_RADIUS_PX, ['*', ['get', 'r'], PX_PER_KM_AT_ZOOM_0]],
+  ...Array.from({ length: LAST_STEP_ZOOM + 1 }, (_, zoom) => [
+    zoom,
+    radiusAt(zoom),
+  ]).flat(),
   MAX_ZOOM,
-  [
-    '+',
-    FIRE_MIN_RADIUS_PX,
-    ['*', ['get', 'r'], PX_PER_KM_AT_ZOOM_0 * 2 ** MAX_ZOOM],
-  ],
-]
+  radiusAt(MAX_ZOOM),
+] as ExpressionSpecification
 
-/** Color by the fire radiative power `f` (MW; for a polygon the largest of its fires). */
+/** Color by the fire radiative power `f` (MW). */
 const COLOR: ExpressionSpecification = [
   'interpolate',
   ['linear'],
@@ -71,128 +101,58 @@ function firstSymbolLayerId(map: MapLibreMap): string | undefined {
   return map.getStyle().layers.find((layer) => layer.type === 'symbol')?.id
 }
 
-function setVisibility(map: MapLibreMap, visible: boolean): void {
-  for (const id of LAYERS) {
-    if (map.getLayer(id)) {
-      map.setLayoutProperty(id, 'visibility', visible ? 'visible' : 'none')
-    }
-  }
-}
-
 /**
- * Shows the fires of the period: one weekly tile file is the source; changing
- * the week points the source at another file. Below the area zoom the fires
- * are dots, from it on they are the merged polygons.
+ * Shows the fires of the period: one monthly tile file is the source; changing
+ * the month points the source at another file. A chosen day only filters the
+ * dots of that file. The tiles hold dots up to zoom 9; closer in they are
+ * overscaled.
  */
-function showPeriod(map: MapLibreMap, period: Period): void {
-  if (map.getLayer(DAILY_POINTS)) {
-    map.setLayoutProperty(DAILY_POINTS, 'visibility', 'none')
-  }
-  if (!hasFireData(period)) {
-    setVisibility(map, false)
+function showPeriod(map: MapLibreMap, period: Period | null): void {
+  if (period === null) {
+    if (map.getLayer(POINTS)) {
+      map.setLayoutProperty(POINTS, 'visibility', 'none')
+    }
     return
   }
   const url = fireTileUrl(period)
-  const day = fireDay(period)
-  if (day !== null) {
-    setVisibility(map, false)
-    const dailySource = map.getSource(DAILY_SOURCE)
-    if (dailySource === undefined) {
-      // Points only exist through z9. Overscale those tiles for daily detail;
-      // weekly merged polygons cannot accurately represent a single day.
-      map.addSource(DAILY_SOURCE, {
-        type: 'vector',
-        url,
-        maxzoom: FIRE_AREAS_MIN_ZOOM - 1,
-      })
-    } else if (
-      dailySource instanceof VectorTileSource &&
-      dailySource.url !== url
-    ) {
-      dailySource.setUrl(url)
-    }
-    if (!map.getLayer(DAILY_POINTS)) {
-      map.addLayer(
-        {
-          id: DAILY_POINTS,
-          type: 'circle',
-          source: DAILY_SOURCE,
-          'source-layer': FIRE_POINTS_LAYER,
-          paint: {
-            'circle-radius': RADIUS,
-            'circle-color': COLOR,
-            'circle-opacity': FIRE_FILL_OPACITY + 0.1,
-          },
-        },
-        firstSymbolLayerId(map),
-      )
-    }
-    map.setFilter(DAILY_POINTS, ['==', ['get', 'day'], day])
-    map.setLayoutProperty(DAILY_POINTS, 'visibility', 'visible')
-    return
-  }
   const source = map.getSource(SOURCE)
   if (source === undefined) {
-    map.addSource(SOURCE, { type: 'vector', url })
+    map.addSource(SOURCE, {
+      type: 'vector',
+      url,
+      maxzoom: FIRE_POINTS_MAX_ZOOM,
+    })
   } else if (source instanceof VectorTileSource && source.url !== url) {
     source.setUrl(url)
   }
-
   if (!map.getLayer(POINTS)) {
-    const before = firstSymbolLayerId(map)
     map.addLayer(
       {
         id: POINTS,
         type: 'circle',
         source: SOURCE,
         'source-layer': FIRE_POINTS_LAYER,
-        maxzoom: FIRE_AREAS_MIN_ZOOM,
         paint: {
           'circle-radius': RADIUS,
           'circle-color': COLOR,
-          'circle-opacity': FIRE_FILL_OPACITY + 0.1,
+          'circle-opacity': FIRE_FILL_OPACITY,
         },
       },
-      before,
-    )
-    map.addLayer(
-      {
-        id: AREAS,
-        type: 'fill',
-        source: SOURCE,
-        'source-layer': FIRE_AREAS_LAYER,
-        minzoom: FIRE_AREAS_MIN_ZOOM,
-        paint: { 'fill-color': COLOR, 'fill-opacity': FIRE_FILL_OPACITY },
-      },
-      before,
-    )
-    map.addLayer(
-      {
-        id: OUTLINE,
-        type: 'line',
-        source: SOURCE,
-        'source-layer': FIRE_AREAS_LAYER,
-        minzoom: FIRE_AREAS_MIN_ZOOM,
-        paint: {
-          'line-color': COLOR_PALETTE['fire-outline'],
-          'line-opacity': FIRE_OUTLINE_OPACITY,
-          'line-width': FIRE_OUTLINE_WIDTH_PX,
-        },
-      },
-      before,
+      firstSymbolLayerId(map),
     )
   }
-  setVisibility(map, true)
+  const day = fireDay(period)
+  map.setFilter(POINTS, day === null ? null : ['==', ['get', 'day'], day])
+  map.setLayoutProperty(POINTS, 'visibility', 'visible')
 }
 
 /**
- * Draws the fires of the week in the period. Returns whether the period has
- * any fire data at all.
+ * Draws the fires of the month; nothing is drawn while there is no period.
  */
 export function useFireLayers(
   mapRef: RefObject<MapLibreMap | null>,
-  period: Period,
-): { hasData: boolean } {
+  period: Period | null,
+): void {
   const periodRef = useRef(period)
   // Layers can only be changed once the style has loaded.
   const styleReadyRef = useRef(false)
@@ -217,14 +177,20 @@ export function useFireLayers(
     }
   }, [mapRef])
 
-  // The period changed: point the source at the new week.
+  // The period changed: point the source at the new month. While the slider is
+  // dragged it passes through many months; only the one it rests on is loaded,
+  // otherwise every step would start a new tile file and freeze the page.
   useEffect(() => {
     periodRef.current = period
     const map = mapRef.current
-    if (map !== null && styleReadyRef.current) {
+    if (map === null || !styleReadyRef.current) {
+      return
+    }
+    const timer = window.setTimeout(() => {
       showPeriod(map, period)
+    }, FIRE_PERIOD_DEBOUNCE_MS)
+    return () => {
+      window.clearTimeout(timer)
     }
   }, [mapRef, period])
-
-  return { hasData: hasFireData(period) }
 }

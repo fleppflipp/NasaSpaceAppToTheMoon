@@ -30,12 +30,15 @@ export default {
     placeholder: 'Nyelv vagy kód',
     noResults: 'Nincs ilyen nyelv.',
   },
-  fires: { noData: 'Erre az időszakra még nincs tűzadat.' },
+  fires: {
+    noData: 'Még nincs tűzadat.',
+    unavailable: 'A tűzadatok nem tölthetők be. Fut a tile szerver?',
+  },
   timeline: {
     label: 'Időszak',
-    year: 'Év',
-    week: 'Hét',
-    range: '{{start}} – {{end}}',
+    month: 'Hónap',
+    loading: 'Hónapok betöltése…',
+    empty: 'Nincs hónap tűzadattal',
   },
   calendar: {
     label: 'Naptár nézet',
@@ -43,9 +46,9 @@ export default {
     chooseDay: 'Válassz egy napot a tüzek térképes megjelenítéséhez.',
     previousMonth: 'Előző hónap',
     nextMonth: 'Következő hónap',
-    showWeek: 'Teljes hét megjelenítése',
+    showMonth: 'Teljes hónap megjelenítése',
     dailyHint:
-      'A napi nézet tűzpontokat mutat. A felső csúszkával visszatérhetsz a heti területekhez.',
+      'A napi nézet csak tűzpontokat mutat. Jelenítsd meg a teljes hónapot az összevont tűzterületekhez.',
   },
   notFound: {
     heading: 'Az oldal nem található',

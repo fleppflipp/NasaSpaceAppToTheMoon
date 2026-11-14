@@ -31,13 +31,15 @@ export default {
     noResults: 'Nicio limbă găsită.',
   },
   fires: {
-    noData: 'Nu există încă date despre incendii pentru această perioadă.',
+    noData: 'Nu există încă date despre incendii.',
+    unavailable:
+      'Datele despre incendii nu pot fi încărcate. Rulează serverul de tile-uri?',
   },
   timeline: {
     label: 'Perioadă',
-    year: 'An',
-    week: 'Săptămâna',
-    range: '{{start}} – {{end}}',
+    month: 'Luna',
+    loading: 'Se încarcă lunile…',
+    empty: 'Nicio lună cu date despre incendii',
   },
   calendar: {
     label: 'Vizualizare calendar',
@@ -45,9 +47,9 @@ export default {
     chooseDay: 'Selectează o zi pentru a afișa incendiile pe hartă.',
     previousMonth: 'Luna precedentă',
     nextMonth: 'Luna următoare',
-    showWeek: 'Afișează întreaga săptămână',
+    showMonth: 'Afișează întreaga lună',
     dailyHint:
-      'Vizualizarea zilnică afișează punctele de incendiu. Folosește glisorul de sus pentru a reveni la zonele săptămânale.',
+      'Vizualizarea zilnică afișează doar punctele de incendiu. Afișează întreaga lună pentru zonele de incendiu combinate.',
   },
   notFound: {
     heading: 'Pagina nu a fost găsită',

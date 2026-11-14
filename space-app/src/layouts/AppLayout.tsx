@@ -9,14 +9,22 @@ import CalendarView from '../components/CalendarView'
 import { APP_NAME } from '../constants/app.constants'
 import { ROUTES } from '../constants/routes.constants'
 import type { Place } from '../services/places'
-import { DEFAULT_PERIOD } from '../services/period'
+import { useFirePeriods } from '../hooks/useFirePeriods'
+import { defaultPeriod, isSamePeriod } from '../services/period'
 import type { Period } from '../services/period'
+
 export default function AppLayout() {
   const [target, setTarget] = useState<Place | null>(null)
   // The area of interest drawn on the map; future features read it from here.
   const [selection, setSelection] = useState<Polygon | null>(null)
-  // Shared by the timeline, calendar and fire layers.
-  const [period, setPeriod] = useState<Period>(DEFAULT_PERIOD)
+  // The month to show; future features (map layers, calendar) read it. It is
+  // always one of the months that have data, the default until one is picked.
+  const { periods, status } = useFirePeriods()
+  const [chosen, setChosen] = useState<Period | null>(null)
+  const period =
+    chosen !== null && periods.some((p) => isSamePeriod(p, chosen))
+      ? chosen
+      : defaultPeriod(periods)
   const { pathname } = useLocation()
   const { t, i18n } = useTranslation()
   const isMap = pathname === ROUTES.map
@@ -33,7 +41,12 @@ export default function AppLayout() {
   return (
     <>
       <Header isMap={isMap || isCalendar} onPlaceSelect={setTarget} />
-      <TimelineBar period={period} onChange={setPeriod} />
+      <TimelineBar
+        periods={periods}
+        period={period}
+        status={status}
+        onChange={setChosen}
+      />
       <BaseMap
         active={isMap || isCalendar}
         calendarOpen={isCalendar}
@@ -41,9 +54,10 @@ export default function AppLayout() {
         selection={selection}
         onSelectionChange={setSelection}
         period={period}
+        periodsStatus={status}
       />
-      {isCalendar ? (
-        <CalendarView period={period} onChange={setPeriod} />
+      {isCalendar && period !== null ? (
+        <CalendarView periods={periods} period={period} onChange={setChosen} />
       ) : null}
       <Outlet />
     </>

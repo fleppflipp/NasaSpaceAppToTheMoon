@@ -51,9 +51,9 @@ instead of `npm`, for example `npm.cmd run check`.
 The app is called **FireLock**. The shared layout renders a fixed header
 (`src/components/Header.tsx`) with the logo and name, the place search bar in
 the middle, and a **Map / Calendar** switch on the right. The switch toggles
-between the full map and a map with a right-hand calendar (`CalendarView.tsx`).
-Navigation uses URL routes. The map, search and selected area remain available
-while the calendar is open. On narrow screens the calendar sits below the map. The favicon
+between the map view and the calendar view (`CalendarView.tsx`, currently an
+empty placeholder). Navigation uses URL routes. The map stays mounted while the calendar is shown, so its
+position is kept, and the search bar is only shown in the map view. The favicon
 is `public/favicon.svg`.
 
 See [routing and localization](docs/routing-i18n.md) for extension and
@@ -61,35 +61,42 @@ deployment instructions.
 
 ## Fire layer
 
-The map shows fires of **one week**, or a single day selected in the calendar. Zoomed out, every fire is a
-dot; from zoom 10 on, fires that overlap are merged into one **common polygon**
-(`src/hooks/useFireLayers.ts`). Polygons are flat, see-through fills with a faint
-outline, like the forest patches of a topographic map, colored by the strongest
-fire radiative power (FRP) inside: yellow to dark red (tokens `fire-*` in the
-palette). The layers sit under the map labels. Years or weeks without data show
-no fires, and the map says so.
+The map shows the fires of **one month** at a time, every fire as a see-through
+circle (`src/hooks/useFireLayers.ts`); overlapping circles are left as they are.
+The circle is the fire's real size in kilometres (a small pixel floor only while
+zoomed far out, fading away by zoom 12), so it grows smoothly with the zoom and
+never jumps. The color follows the fire radiative power (FRP): yellow to dark red
+(tokens `fire-*` in the palette). **Zoomed out only the strong fires are drawn**;
+the weaker ones grow in from radius 0 while zooming closer (limits in
+`FIRE_MIN_FRP_BY_ZOOM` in `fires.constants.ts`: 100 MW at zoom 0-3, down to every
+fire from zoom 9). It is done in the style only, so the tiles hold every fire.
+The layer sits under the map labels. The map loads a month only after the slider
+has rested on it for 200 ms (`FIRE_PERIOD_DEBOUNCE_MS`), so dragging fast does not
+start a tile file per step. Months without data are not on the slider;
+if there is none at all, the map says so.
 
 ### How the PMTiles work, where they run and how others connect
 
-The data is static files, one PMTiles file per week:
-`tile-server/data/fires_<year>_w<NN>.pmtiles` (`NN` = 00 to 52), plus
-`fires_<year>.json` with the counts per week. They are big, local and git-ignored.
+The data is static files, one PMTiles file per month:
+`tile-server/data/fires_<year>_<MM>.pmtiles` (`MM` = 01 to 12), plus
+`fires_<year>.json` with the counts per month. They are big, local and git-ignored.
 A small **nginx tile server** (Docker, folder `tile-server/`, see its README)
 serves that folder on port 8080 with HTTP range requests and CORS for any origin,
 so the browser reads only the pieces it needs: the `pmtiles` package registers a
 `pmtiles://` protocol in MapLibre, the source URL is
-`pmtiles://http://localhost:8080/tiles/fires_2012_w30.pmtiles`, and changing the
-week just points the source at another file. Start it with
+`pmtiles://http://localhost:8080/tiles/fires_2012_07.pmtiles`, and changing the
+month just points the source at another file. Start it with
 `cd tile-server && docker compose up -d`. The app finds the server through
 `VITE_TILE_BASE_URL` (default `http://localhost:8080/tiles`, see `.env.example`;
 set it in `.env.local` to use a teammate's server). The tiles are not part of
 `dist/`.
 
-Inside a file there are two layers: `fires` (points, zoom 0-9; props `day` = days
+Inside a file the layer `fires` holds the points (zoom 0-9; props `day` = days
 since 2000-01-01, `s` = 0 MODIS only / 1 both / 2 VIIRS only, `f` = FRP in MW, `r`
-= radius in km) and `areas` (polygons, zoom 10-12; props `f` = largest FRP, `n` =
-fires merged, `s`, `d0`/`d1` = first and last day). The overview dots are thinned
-where they are dense; polygons are not.
+= radius in km). The app overscales them above zoom 9. Every fire has a tippecanoe
+`minzoom` from its FRP (100 MW and up from zoom 0, down to the weakest from zoom
+8), matching `FIRE_MIN_FRP_BY_ZOOM` in the app, so the sparse low-zoom tiles hold
+the strong fires and none of them is thinned away.
 
 Other people can connect to them in these ways:
 
@@ -97,7 +104,7 @@ Other people can connect to them in these ways:
   (allow port 8080 in the Windows firewall for private networks) and run their own
   `npm run dev`, or they run the same compose with a copy of `tile-server/data`.
 - Another web app needs the `pmtiles` protocol, a vector source
-  `pmtiles://http://<your-ip>:8080/tiles/fires_2012_w30.pmtiles` and the layers
+  `pmtiles://http://<your-ip>:8080/tiles/fires_2012_07.pmtiles` and the layers
   above; CORS is already open.
 - QGIS (3.32 or newer, untested here) or the `pmtiles` command line tool
   (`pmtiles show`) can open a file by its URL.
@@ -106,41 +113,41 @@ Other people can connect to them in these ways:
 
 ### Building the files
 
-`tiles/build_fire_tiles.py` makes the 53 weekly files of one year from its
-`fire_pixels_<year>.csv` (needs the Python packages `duckdb`, `numpy`, `pyarrow`,
-`shapely`, and `tippecanoe`; on Windows tippecanoe runs inside WSL):
+`tiles/build_fire_tiles.py` makes the 12 monthly files of one year from its
+`fire_pixels_<year>.csv` (needs the Python packages `duckdb`, `numpy`, `pyarrow`
+and `tippecanoe`; on Windows tippecanoe runs inside WSL):
 
 ```sh
 python tiles/build_fire_tiles.py --pixels <fire_pixels_2012.csv> --year 2012   --work-dir <big temp folder> --out tile-server/data
 ```
 
-DuckDB builds one row per daily fire, shapely turns every fire into a circle and
-merges the overlapping ones per week, tippecanoe writes the tiles. One year
-(about 8 million fires) takes about ten minutes and about 2 GB. When all weeks of a
-year exist, add the year to `FIRE_TILE_YEARS` (`src/constants/fires.constants.ts`).
+DuckDB builds one row per daily fire, one point per fire is written per month with
+its `minzoom`, tippecanoe writes the tiles (with `-r1`, otherwise tippecanoe's
+default drop rate removes nearly all dots when zoomed out). One year (about 8
+million fires) takes a few minutes; a month file is about 30 MB. There is nothing to
+register: the app lists the files of the tile server, so a new month appears on the
+slider by itself.
 Rows whose local date falls outside the year (an edge effect of the yearly files)
 are put into the first or last day of the year.
 
 ## Time period
 
-A bar under the header (`src/components/TimelineBar.tsx`) picks the week: a
-**year** list (the years in `FIRE_TILE_YEARS`) and **one slider** over the weeks of
-that year, with a mark at each month start. Week k covers days 7k+1 to 7k+7 of the
-year; the last week (52) is the one or two days that are left. The summary shows
-the dates of the week in the active language. The period is held in
-`AppLayout.tsx` as `{ year, week }` (`src/services/period.ts`), starts on the
-latest year, week 30, and `periodDateRange()` turns it into first and last day.
-All dates are UTC regardless of the display language. No external service.
+A full-width strip at the bottom of the screen (`src/components/TimelineBar.tsx`; the
+map and the calendar panel end above it) has **one slider** over
+every month that has fire tiles (2002 to 2025 once all data exists; months without
+data are skipped), with a mark and a label at the start of each year. The summary
+shows the month in the active language. The list of months comes from the tile
+server's folder listing (`src/hooks/useFirePeriods.ts`, nginx `autoindex_format
+json`). The period is held in `AppLayout.tsx` as `{ year, month }`
+(`src/services/period.ts`); it starts on the month closest to July in the latest
+year that has data. All dates are UTC regardless of the display language. No external service.
 
-The Calendar button opens a monthly day picker alongside the map. Clicking a
-day sets an optional zero-based `day` in the shared period, updates the timeline
-summary and filters fire points by their `day` property (days since 2000-01-01).
-The slider or "Show the whole week" returns to weekly mode. Month navigation is
-limited to available years; weekday and date labels follow the UI language.
-Daily mode uses a separate source capped at zoom 9, overscaling the point tiles
-at higher zooms. Weekly merged polygons are hidden because their geometry cannot
-be filtered accurately to one day. Existing overview tile thinning still applies;
-this is not a complete daily inventory. No new library or external API is used.
+The Calendar button opens a day picker for the selected month beside the map.
+Month arrows step over the months that have data; clicking a day sets an optional
+`day` (1 to 31) in the shared period, shows that date in the timeline summary and
+filters the fire points by their `day` property (days since 2000-01-01). Moving
+the slider or "Show the whole month" returns to the month. No new library or
+external API.
 
 ## Language
 

@@ -1,49 +1,37 @@
-import { useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { FIRE_TILE_YEARS } from '../constants/fires.constants'
 import { ROUTES } from '../constants/routes.constants'
-import { formatDate, periodDateRange, periodForDate } from '../services/period'
+import { comparePeriods, formatPeriod } from '../services/period'
 import type { Period } from '../services/period'
 import './CalendarView.css'
 
 interface CalendarViewProps {
+  /** Every month that has fire data, earliest first. */
+  periods: readonly Period[]
+  /** The month shown, with an optional chosen day. */
   period: Period
   onChange: (period: Period) => void
 }
 
-export default function CalendarView({ period, onChange }: CalendarViewProps) {
+export default function CalendarView({
+  periods,
+  period,
+  onChange,
+}: CalendarViewProps) {
   const { t, i18n } = useTranslation()
-  const { startDate, endDate } = periodDateRange(period)
-  const selectedMonth = new Date(`${startDate}T00:00:00Z`).getUTCMonth()
-  const [view, setView] = useState({ period, month: selectedMonth })
-  if (view.period !== period) {
-    setView({ period, month: selectedMonth })
-  }
-  const month = view.period === period ? view.month : selectedMonth
-  const monthDate = new Date(Date.UTC(period.year, month, 1))
-  const monthLabel = new Intl.DateTimeFormat(i18n.language, {
-    month: 'long',
-    year: 'numeric',
-    timeZone: 'UTC',
-  }).format(monthDate)
+  const { year, month, day } = period
+  const monthDate = new Date(Date.UTC(year, month - 1, 1))
+  const monthLabel = formatPeriod({ year, month }, i18n.language)
   const weekdayFormat = new Intl.DateTimeFormat(i18n.language, {
     weekday: 'short',
     timeZone: 'UTC',
   })
   const numberFormat = new Intl.NumberFormat(i18n.language)
   const firstWeekday = (monthDate.getUTCDay() + 6) % 7
-  const daysInMonth = new Date(Date.UTC(period.year, month + 1, 0)).getUTCDate()
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate()
   const cellCount = Math.ceil((firstWeekday + daysInMonth) / 7) * 7
-
-  function moveMonth(offset: number) {
-    const next = new Date(Date.UTC(period.year, month + offset, 1))
-    if (next.getUTCFullYear() === period.year) {
-      setView({ period, month: next.getUTCMonth() })
-    } else {
-      onChange(periodForDate(next))
-    }
-  }
+  const previous = periods.findLast((p) => comparePeriods(p, period) < 0)
+  const next = periods.find((p) => comparePeriods(p, period) > 0)
 
   return (
     <aside className="calendar-view stack" aria-label={t('calendar.label')}>
@@ -62,9 +50,11 @@ export default function CalendarView({ period, onChange }: CalendarViewProps) {
         <button
           type="button"
           aria-label={t('calendar.previousMonth')}
-          disabled={month === 0 && !FIRE_TILE_YEARS.includes(period.year - 1)}
+          disabled={previous === undefined}
           onClick={() => {
-            moveMonth(-1)
+            if (previous !== undefined) {
+              onChange(previous)
+            }
           }}
         >
           ‹
@@ -73,9 +63,11 @@ export default function CalendarView({ period, onChange }: CalendarViewProps) {
         <button
           type="button"
           aria-label={t('calendar.nextMonth')}
-          disabled={month === 11 && !FIRE_TILE_YEARS.includes(period.year + 1)}
+          disabled={next === undefined}
           onClick={() => {
-            moveMonth(1)
+            if (next !== undefined) {
+              onChange(next)
+            }
           }}
         >
           ›
@@ -88,46 +80,41 @@ export default function CalendarView({ period, onChange }: CalendarViewProps) {
           </span>
         ))}
         {Array.from({ length: cellCount }, (_, index) => {
-          const day = index - firstWeekday + 1
-          if (day < 1 || day > daysInMonth) return <span key={index} />
-          const date = new Date(Date.UTC(period.year, month, day))
-          const iso = date.toISOString().slice(0, 10)
-          const selected = period.day !== undefined && iso === startDate
-          const inWeek =
-            period.day === undefined && iso >= startDate && iso <= endDate
+          const dayOfMonth = index - firstWeekday + 1
+          if (dayOfMonth < 1 || dayOfMonth > daysInMonth) {
+            return <span key={index} />
+          }
           return (
             <button
               key={index}
               type="button"
-              className={`calendar-view__day${inWeek ? ' calendar-view__day--week' : ''}`}
-              aria-label={formatDate(iso, i18n.language)}
-              aria-pressed={selected}
+              className="calendar-view__day"
+              aria-label={formatPeriod(
+                { year, month, day: dayOfMonth },
+                i18n.language,
+              )}
+              aria-pressed={day === dayOfMonth}
               onClick={() => {
-                onChange(periodForDate(date))
+                onChange({ year, month, day: dayOfMonth })
               }}
             >
-              {numberFormat.format(day)}
+              {numberFormat.format(dayOfMonth)}
             </button>
           )
         })}
       </div>
       <p className="calendar-view__selection" role="status">
-        {period.day === undefined
-          ? t('timeline.range', {
-              start: formatDate(startDate, i18n.language),
-              end: formatDate(endDate, i18n.language),
-            })
-          : formatDate(startDate, i18n.language)}
+        {formatPeriod(period, i18n.language)}
       </p>
-      {period.day === undefined ? null : (
+      {day === undefined ? null : (
         <>
           <button
             type="button"
             onClick={() => {
-              onChange({ year: period.year, week: period.week })
+              onChange({ year, month })
             }}
           >
-            {t('calendar.showWeek')}
+            {t('calendar.showMonth')}
           </button>
           <p className="calendar-view__hint">{t('calendar.dailyHint')}</p>
         </>

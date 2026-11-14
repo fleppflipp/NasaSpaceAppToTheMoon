@@ -1,10 +1,3 @@
-/**
- * Years that have fire tiles in `tile-server/data/fires_<year>_w<NN>.pmtiles`, one
- * file per week (built by `tiles/build_fire_tiles.py`, not stored in git). Add
- * a year here once all its weeks exist; the year then appears in the picker.
- */
-export const FIRE_TILE_YEARS: readonly number[] = [2012]
-
 const DEFAULT_TILE_BASE_URL = 'http://localhost:8080/tiles'
 const configuredTileBaseUrl: unknown = import.meta.env['VITE_TILE_BASE_URL']
 
@@ -18,14 +11,30 @@ export const FIRE_TILE_BASE_URL = (
     : DEFAULT_TILE_BASE_URL
 ).replace(/\/+$/, '')
 
-/** The two layers inside every weekly file: overview dots and merged polygons. */
+/** The map waits this long after the last month change before loading its tiles (a dragged slider passes many months). */
+export const FIRE_PERIOD_DEBOUNCE_MS = 200
+
+/** The layer inside every monthly file: one dot per fire (zoom 0-9, overscaled above). */
 export const FIRE_POINTS_LAYER = 'fires'
-export const FIRE_AREAS_LAYER = 'areas'
 
-/** From this zoom the merged polygons are drawn instead of the dots (same as in the tiles). */
-export const FIRE_AREAS_MIN_ZOOM = 10
+/** The tiles hold the dots up to this zoom; closer in, the map enlarges them. */
+export const FIRE_POINTS_MAX_ZOOM = 9
 
-/** Overview dots grow with the map; this is the smallest they are drawn (px). */
+/**
+ * Weakest fire (FRP in MW) drawn from each zoom on, as [zoom, MW] steps. Zoomed
+ * out only the strong fires show; the weaker ones grow in while zooming closer.
+ */
+export const FIRE_MIN_FRP_BY_ZOOM = [
+  [0, 100],
+  [4, 60],
+  [5, 40],
+  [6, 25],
+  [7, 15],
+  [8, 8],
+  [9, 0],
+] as const
+
+/** Dots are never drawn smaller than this (px) when zoomed out; the floor fades out when zoomed in. */
 export const FIRE_MIN_RADIUS_PX = 2.5
 
 /** Metres per pixel at zoom 0 on the equator, for sizing circles in kilometres. */
@@ -34,7 +43,5 @@ export const METRES_PER_PIXEL_AT_ZOOM_0 = 156543.03
 /** FRP (megawatts) at which the color ramp changes. */
 export const FIRE_FRP_STOPS = [0, 20, 100, 500] as const
 
-/** Flat, see-through fills like the forest patches of a topographic map. */
+/** See-through fills, so overlapping fires stay readable. */
 export const FIRE_FILL_OPACITY = 0.55
-export const FIRE_OUTLINE_OPACITY = 0.35
-export const FIRE_OUTLINE_WIDTH_PX = 0.75

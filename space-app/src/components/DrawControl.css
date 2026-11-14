@@ -29,8 +29,18 @@
   block-size: var(--control-size-icon);
 }
 
-/* Always visible while the button is disabled (a disabled button cannot be hovered or focused). */
+/*
+ * Shown only while the pointer is over the disabled button (a disabled button gets
+ * no pointer events itself, so the row around it is what is hovered). It stays in
+ * the page, so screen readers still read it through aria-describedby.
+ */
+.draw-control__button:disabled {
+  pointer-events: none;
+}
+
 .draw-control__hint {
+  opacity: 0;
+  pointer-events: none;
   position: absolute;
   inset-inline-end: 100%;
   inset-block-start: 50%;
@@ -42,4 +52,14 @@
   background-color: var(--color-background);
   box-shadow: var(--shadow-sm);
   font-size: var(--font-size-sm);
+}
+
+.draw-control__row:hover .draw-control__hint {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .draw-control__hint {
+    transition: opacity var(--duration-fast) var(--easing-standard);
+  }
 }

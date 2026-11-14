@@ -1,7 +1,7 @@
-/* Fills the viewport below the fixed header and time bar, regardless of the #root width. */
+/* Fills the viewport between the fixed header and the time bar, regardless of the #root width. */
 .map-view {
   position: fixed;
-  inset-block: var(--layout-top-offset) var(--space-0);
+  inset-block: var(--layout-top-offset) var(--layout-timeline-height);
   inset-inline: var(--space-0);
 }
 
@@ -55,6 +55,8 @@
 @media (max-width: 48rem) {
   .map-view--calendar {
     inset-inline-end: 0;
-    inset-block-end: var(--layout-calendar-mobile-height);
+    inset-block-end: calc(
+      var(--layout-timeline-height) + var(--layout-calendar-mobile-height)
+    );
   }
 }

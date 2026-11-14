@@ -27,12 +27,15 @@ export const eng = {
     placeholder: 'Language or code',
     noResults: 'No language found.',
   },
-  fires: { noData: 'No fire data for this period yet.' },
+  fires: {
+    noData: 'No fire data yet.',
+    unavailable: 'Fire data cannot be loaded. Is the tile server running?',
+  },
   timeline: {
     label: 'Time period',
-    year: 'Year',
-    week: 'Week',
-    range: '{{start}} – {{end}}',
+    month: 'Month',
+    loading: 'Loading months…',
+    empty: 'No months with fire data',
   },
   calendar: {
     label: 'Calendar view',
@@ -40,9 +43,9 @@ export const eng = {
     chooseDay: 'Select a day to show its fires on the map.',
     previousMonth: 'Previous month',
     nextMonth: 'Next month',
-    showWeek: 'Show the whole week',
+    showMonth: 'Show the whole month',
     dailyHint:
-      'Daily view shows fire points. Move the top slider to return to weekly areas.',
+      'Daily view shows fire points only. Show the whole month to see merged fire areas.',
   },
   notFound: { heading: 'Page not found', backToMap: 'Back to map' },
   pageTitles: { map: 'Map', calendar: 'Calendar', notFound: 'Page not found' },
