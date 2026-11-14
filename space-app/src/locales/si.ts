@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'දසුන', map: 'සිතියම', calendar: 'දින දර්ශනය' },
   search: {
     label: 'ස්ථානයක් සොයන්න',
     button: 'සොයන්න',
@@ -29,7 +28,5 @@ export default {
     placeholder: 'භාෂාව හෝ කේතය',
     noResults: 'භාෂාවක් හමු නොවීය.',
   },
-  calendar: { label: 'දින දර්ශන දසුන' },
   notFound: { heading: 'පිටුව හමු නොවීය', backToMap: 'සිතියමට ආපසු' },
-  pageTitles: { map: 'සිතියම', calendar: 'දින දර්ශනය', notFound: 'පිටුව හමු නොවීය' },
 } satisfies PartialTranslation

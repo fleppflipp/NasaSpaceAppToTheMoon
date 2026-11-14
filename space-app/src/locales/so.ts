@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Muuqaal', map: 'Khariidad', calendar: 'Jadwal' },
   search: {
     label: 'Raadi meel',
     button: 'Raadi',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Luqad ama koodh',
     noResults: 'Luqad lama helin.',
   },
-  calendar: { label: 'Muuqaalka jadwalka' },
   notFound: { heading: 'Bogga lama helin', backToMap: 'Ku noqo khariidadda' },
-  pageTitles: {
-    map: 'Khariidad',
-    calendar: 'Jadwal',
-    notFound: 'Bogga lama helin',
-  },
 } satisfies PartialTranslation

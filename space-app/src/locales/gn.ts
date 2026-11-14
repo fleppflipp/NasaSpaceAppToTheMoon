@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Hecha', map: 'Mapa', calendar: 'Arapokõindy' },
   search: {
     label: 'Eheka peteĩ tenda',
     button: 'Heka',
@@ -29,11 +28,5 @@ export default {
     placeholder: "Ñe'ẽ térã kóite",
     noResults: "Ndojejuhúi ñe'ẽ.",
   },
-  calendar: { label: 'Arapokõindy hecha' },
   notFound: { heading: 'Ndojejuhúi kuatiarogue', backToMap: 'Eju jey mapápe' },
-  pageTitles: {
-    map: 'Mapa',
-    calendar: 'Arapokõindy',
-    notFound: 'Ndojejuhúi kuatiarogue',
-  },
 } satisfies PartialTranslation

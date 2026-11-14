@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Көрүнүш', map: 'Карта', calendar: 'Жылнаама' },
   search: {
     label: 'Жерди издөө',
     button: 'Издөө',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Тил же код',
     noResults: 'Тил табылган жок.',
   },
-  calendar: { label: 'Жылнаама көрүнүшү' },
   notFound: { heading: 'Барак табылган жок', backToMap: 'Картага кайтуу' },
-  pageTitles: {
-    map: 'Карта',
-    calendar: 'Жылнаама',
-    notFound: 'Барак табылган жок',
-  },
 } satisfies PartialTranslation

@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Vaade', map: 'Kaart', calendar: 'Kalender' },
   search: {
     label: 'Otsi kohta',
     button: 'Otsi',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Keel või kood',
     noResults: 'Keelt ei leitud.',
   },
-  calendar: { label: 'Kalendrivaade' },
   notFound: { heading: 'Lehte ei leitud', backToMap: 'Tagasi kaardile' },
-  pageTitles: {
-    map: 'Kaart',
-    calendar: 'Kalender',
-    notFound: 'Lehte ei leitud',
-  },
 } satisfies PartialTranslation

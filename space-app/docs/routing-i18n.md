@@ -2,13 +2,13 @@
 
 The declarative React Router tree in `src/router/AppRouter.tsx` uses shared paths
 from `src/constants/routes.constants.ts`. `/` redirects to `/map` with history
-replacement, `/calendar` shows the placeholder, and unknown paths show a 404.
-The shared layout keeps the map mounted across navigation; it resizes when
-shown again. Map position is not persisted across reloads.
+replacement, and unknown paths show a 404. The only view is the map.
+The shared layout keeps the map mounted; it resizes when shown again. Map position is not persisted across reloads.
 
 To add a page, add its path to the route constants, add a route and component,
 and add a `NavLink` and translated label in the header if it needs navigation.
-Add its translated document title to the layout as well. Paths remain independent
+The document title is the same on every page (just the app name), so it needs
+no translation. Paths remain independent
 of language. Future shareable AOI, period and sensor filters are expected in URL
 query parameters; no parameter schema is implemented yet.
 

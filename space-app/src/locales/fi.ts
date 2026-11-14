@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Näkymä', map: 'Kartta', calendar: 'Kalenteri' },
   search: {
     label: 'Hae paikkaa',
     button: 'Hae',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Kieli tai koodi',
     noResults: 'Kieltä ei löytynyt.',
   },
-  calendar: { label: 'Kalenterinäkymä' },
   notFound: { heading: 'Sivua ei löytynyt', backToMap: 'Takaisin karttaan' },
-  pageTitles: {
-    map: 'Kartta',
-    calendar: 'Kalenteri',
-    notFound: 'Sivua ei löytynyt',
-  },
 } satisfies PartialTranslation

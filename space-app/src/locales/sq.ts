@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Pamja', map: 'Harta', calendar: 'Kalendari' },
   search: {
     label: 'Kërko një vend',
     button: 'Kërko',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Gjuha ose kodi',
     noResults: 'Nuk u gjet asnjë gjuhë.',
   },
-  calendar: { label: 'Pamja e kalendarit' },
   notFound: { heading: 'Faqja nuk u gjet', backToMap: 'Kthehu te harta' },
-  pageTitles: {
-    map: 'Harta',
-    calendar: 'Kalendari',
-    notFound: 'Faqja nuk u gjet',
-  },
 } satisfies PartialTranslation

@@ -1,11 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: {
-    label: 'Uko bigaragara',
-    map: 'Ikarita',
-    calendar: 'Kalendari',
-  },
   search: {
     label: 'Shakisha ahantu',
     button: 'Shakisha',
@@ -33,14 +28,8 @@ export default {
     placeholder: 'Ururimi cyangwa kode',
     noResults: 'Nta rurimi rwabonetse.',
   },
-  calendar: { label: 'Uko kalendari igaragara' },
   notFound: {
     heading: 'Urupapuro ntirwabonetse',
     backToMap: 'Subira ku ikarita',
-  },
-  pageTitles: {
-    map: 'Ikarita',
-    calendar: 'Kalendari',
-    notFound: 'Urupapuro ntirwabonetse',
   },
 } satisfies PartialTranslation

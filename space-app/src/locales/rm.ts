@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Vista', map: 'Charta', calendar: 'Chalender' },
   search: {
     label: 'Tschertgar in lieu',
     button: 'Tschertgar',
@@ -29,14 +28,8 @@ export default {
     placeholder: 'Lingua u code',
     noResults: 'Nagina lingua chattada.',
   },
-  calendar: { label: 'Vista dal chalender' },
   notFound: {
     heading: 'Pagina betg chattada',
     backToMap: 'Enavos tar la charta',
-  },
-  pageTitles: {
-    map: 'Charta',
-    calendar: 'Chalender',
-    notFound: 'Pagina betg chattada',
   },
 } satisfies PartialTranslation

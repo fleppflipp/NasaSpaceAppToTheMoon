@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'کتنه', map: 'نقشه', calendar: 'کلیز' },
   search: {
     label: 'یو ځای ولټوئ',
     button: 'لټون',
@@ -29,7 +28,5 @@ export default {
     placeholder: 'ژبه یا کوډ',
     noResults: 'هیڅ ژبه ونه موندل شوه.',
   },
-  calendar: { label: 'د کلیز کتنه' },
   notFound: { heading: 'پاڼه ونه موندل شوه', backToMap: 'نقشې ته بیرته' },
-  pageTitles: { map: 'نقشه', calendar: 'کلیز', notFound: 'پاڼه ونه موندل شوه' },
 } satisfies PartialTranslation

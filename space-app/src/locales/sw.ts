@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Mwonekano', map: 'Ramani', calendar: 'Kalenda' },
   search: {
     label: 'Tafuta mahali',
     button: 'Tafuta',
@@ -29,14 +28,8 @@ export default {
     placeholder: 'Lugha au msimbo',
     noResults: 'Hakuna lugha iliyopatikana.',
   },
-  calendar: { label: 'Mwonekano wa kalenda' },
   notFound: {
     heading: 'Ukurasa haujapatikana',
     backToMap: 'Rudi kwenye ramani',
-  },
-  pageTitles: {
-    map: 'Ramani',
-    calendar: 'Kalenda',
-    notFound: 'Ukurasa haujapatikana',
   },
 } satisfies PartialTranslation

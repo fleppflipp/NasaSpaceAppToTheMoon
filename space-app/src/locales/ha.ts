@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Kallo', map: 'Taswira', calendar: 'Kalanda' },
   search: {
     label: 'Nemo wuri',
     button: 'Bincika',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Harshe ko lamba',
     noResults: 'Ba a sami harshe ba.',
   },
-  calendar: { label: 'Kallon kalanda' },
   notFound: { heading: 'Ba a sami shafi ba', backToMap: 'Koma taswira' },
-  pageTitles: {
-    map: 'Taswira',
-    calendar: 'Kalanda',
-    notFound: 'Ba a sami shafi ba',
-  },
 } satisfies PartialTranslation

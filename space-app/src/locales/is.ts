@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Sýn', map: 'Kort', calendar: 'Dagatal' },
   search: {
     label: 'Leita að stað',
     button: 'Leita',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Tungumál eða kóði',
     noResults: 'Ekkert tungumál fannst.',
   },
-  calendar: { label: 'Dagatalssýn' },
   notFound: { heading: 'Síða fannst ekki', backToMap: 'Aftur á kortið' },
-  pageTitles: {
-    map: 'Kort',
-    calendar: 'Dagatal',
-    notFound: 'Síða fannst ekki',
-  },
 } satisfies PartialTranslation

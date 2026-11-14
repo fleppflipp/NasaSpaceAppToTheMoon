@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'မြင်ကွင်း', map: 'မြေပုံ', calendar: 'ပြက္ခဒိန်' },
   search: {
     label: 'နေရာတစ်ခု ရှာပါ',
     button: 'ရှာရန်',
@@ -29,7 +28,5 @@ export default {
     placeholder: 'ဘာသာစကား သို့မဟုတ် ကုဒ်',
     noResults: 'ဘာသာစကား မတွေ့ပါ။',
   },
-  calendar: { label: 'ပြက္ခဒိန်မြင်ကွင်း' },
   notFound: { heading: 'စာမျက်နှာ မတွေ့ပါ', backToMap: 'မြေပုံသို့ ပြန်သွားရန်' },
-  pageTitles: { map: 'မြေပုံ', calendar: 'ပြက္ခဒိန်', notFound: 'စာမျက်နှာ မတွေ့ပါ' },
 } satisfies PartialTranslation

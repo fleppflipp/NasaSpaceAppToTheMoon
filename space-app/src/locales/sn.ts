@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Maonero', map: 'Mepu', calendar: 'Karenda' },
   search: {
     label: 'Tsvaga nzvimbo',
     button: 'Tsvaga',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Mutauro kana koodhi',
     noResults: 'Hapana mutauro wawanikwa.',
   },
-  calendar: { label: 'Maonero ekarenda' },
   notFound: { heading: 'Peji haina kuwanikwa', backToMap: 'Dzokera kumepu' },
-  pageTitles: {
-    map: 'Mepu',
-    calendar: 'Karenda',
-    notFound: 'Peji haina kuwanikwa',
-  },
 } satisfies PartialTranslation

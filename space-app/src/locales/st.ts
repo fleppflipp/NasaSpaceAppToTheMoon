@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Pono', map: 'Mmapa', calendar: 'Khalendara' },
   search: {
     label: 'Batla sebaka',
     button: 'Batla',
@@ -29,14 +28,8 @@ export default {
     placeholder: 'Puo kapa khoutu',
     noResults: 'Ha ho puo e fumanoeng.',
   },
-  calendar: { label: 'Pono ea khalendara' },
   notFound: {
     heading: 'Leqephe ha le a fumanoa',
     backToMap: 'Khutlela mmapeng',
-  },
-  pageTitles: {
-    map: 'Mmapa',
-    calendar: 'Khalendara',
-    notFound: 'Leqephe ha le a fumanoa',
   },
 } satisfies PartialTranslation

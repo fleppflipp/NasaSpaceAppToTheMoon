@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Amharc', map: 'Léarscáil', calendar: 'Féilire' },
   search: {
     label: 'Cuardaigh áit',
     button: 'Cuardaigh',
@@ -29,14 +28,8 @@ export default {
     placeholder: 'Teanga nó cód',
     noResults: 'Níor aimsíodh aon teanga.',
   },
-  calendar: { label: 'Amharc féilire' },
   notFound: {
     heading: 'Níor aimsíodh an leathanach',
     backToMap: 'Ar ais chuig an léarscáil',
-  },
-  pageTitles: {
-    map: 'Léarscáil',
-    calendar: 'Féilire',
-    notFound: 'Níor aimsíodh an leathanach',
   },
 } satisfies PartialTranslation

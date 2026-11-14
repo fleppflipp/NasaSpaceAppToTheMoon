@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Visning', map: 'Kort', calendar: 'Kalender' },
   search: {
     label: 'Søg efter et sted',
     button: 'Søg',
@@ -29,14 +28,8 @@ export default {
     placeholder: 'Sprog eller kode',
     noResults: 'Intet sprog fundet.',
   },
-  calendar: { label: 'Kalendervisning' },
   notFound: {
     heading: 'Siden blev ikke fundet',
     backToMap: 'Tilbage til kortet',
-  },
-  pageTitles: {
-    map: 'Kort',
-    calendar: 'Kalender',
-    notFound: 'Siden blev ikke fundet',
   },
 } satisfies PartialTranslation

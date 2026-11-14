@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'እይታ', map: 'ካርታ', calendar: 'የቀን መቁጠሪያ' },
   search: {
     label: 'ቦታ ፈልግ',
     button: 'ፈልግ',
@@ -29,7 +28,5 @@ export default {
     placeholder: 'ቋንቋ ወይም ኮድ',
     noResults: 'ምንም ቋንቋ አልተገኘም።',
   },
-  calendar: { label: 'የቀን መቁጠሪያ እይታ' },
   notFound: { heading: 'ገጹ አልተገኘም', backToMap: 'ወደ ካርታው ተመለስ' },
-  pageTitles: { map: 'ካርታ', calendar: 'የቀን መቁጠሪያ', notFound: 'ገጹ አልተገኘም' },
 } satisfies PartialTranslation

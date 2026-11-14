@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Chế độ xem', map: 'Bản đồ', calendar: 'Lịch' },
   search: {
     label: 'Tìm một địa điểm',
     button: 'Tìm kiếm',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Ngôn ngữ hoặc mã',
     noResults: 'Không tìm thấy ngôn ngữ.',
   },
-  calendar: { label: 'Chế độ xem lịch' },
   notFound: { heading: 'Không tìm thấy trang', backToMap: 'Quay lại bản đồ' },
-  pageTitles: {
-    map: 'Bản đồ',
-    calendar: 'Lịch',
-    notFound: 'Không tìm thấy trang',
-  },
 } satisfies PartialTranslation

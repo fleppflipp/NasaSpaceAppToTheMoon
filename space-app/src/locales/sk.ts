@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Zobrazenie', map: 'Mapa', calendar: 'Kalendár' },
   search: {
     label: 'Hľadať miesto',
     button: 'Hľadať',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Jazyk alebo kód',
     noResults: 'Jazyk sa nenašiel.',
   },
-  calendar: { label: 'Zobrazenie kalendára' },
   notFound: { heading: 'Stránka sa nenašla', backToMap: 'Späť na mapu' },
-  pageTitles: {
-    map: 'Mapa',
-    calendar: 'Kalendár',
-    notFound: 'Stránka sa nenašla',
-  },
 } satisfies PartialTranslation

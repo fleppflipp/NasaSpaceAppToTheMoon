@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Görnüş', map: 'Karta', calendar: 'Senenama' },
   search: {
     label: 'Ýer gözle',
     button: 'Gözle',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Dil ýa-da kod',
     noResults: 'Dil tapylmady.',
   },
-  calendar: { label: 'Senenama görnüşi' },
   notFound: { heading: 'Sahypa tapylmady', backToMap: 'Kartany yzyna gaýt' },
-  pageTitles: {
-    map: 'Karta',
-    calendar: 'Senenama',
-    notFound: 'Sahypa tapylmady',
-  },
 } satisfies PartialTranslation

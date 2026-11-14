@@ -11,7 +11,6 @@ export default function AppRouter() {
           element={<Navigate to={ROUTES.map} replace />}
         />
         <Route path={ROUTES.map} element={null} />
-        <Route path={ROUTES.calendar} element={null} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

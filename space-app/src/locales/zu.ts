@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Ukubuka', map: 'Imephu', calendar: 'Ikhalenda' },
   search: {
     label: 'Sesha indawo',
     button: 'Sesha',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Ulimi noma ikhodi',
     noResults: 'Alukho ulimi olutholakele.',
   },
-  calendar: { label: 'Ukubuka ikhalenda' },
   notFound: { heading: 'Ikhasi alitholakalanga', backToMap: 'Buyela kumephu' },
-  pageTitles: {
-    map: 'Imephu',
-    calendar: 'Ikhalenda',
-    notFound: 'Ikhasi alitholakalanga',
-  },
 } satisfies PartialTranslation

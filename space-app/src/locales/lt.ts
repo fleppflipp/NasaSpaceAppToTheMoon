@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Rodinys', map: 'Žemėlapis', calendar: 'Kalendorius' },
   search: {
     label: 'Ieškoti vietos',
     button: 'Ieškoti',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Kalba arba kodas',
     noResults: 'Kalba nerasta.',
   },
-  calendar: { label: 'Kalendoriaus rodinys' },
   notFound: { heading: 'Puslapis nerastas', backToMap: 'Atgal į žemėlapį' },
-  pageTitles: {
-    map: 'Žemėlapis',
-    calendar: 'Kalendorius',
-    notFound: 'Puslapis nerastas',
-  },
 } satisfies PartialTranslation

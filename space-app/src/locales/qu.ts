@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Qhaway', map: 'Mapa', calendar: 'Killa qillqa' },
   search: {
     label: 'Maskay huk kuska',
     button: 'Maskay',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Simi icha kuti',
     noResults: 'Mana simichu tarikurqa.',
   },
-  calendar: { label: 'Killa qillqa qhaway' },
   notFound: { heading: "Mana p'anqachu tarikurqa", backToMap: 'Mapaman kutiy' },
-  pageTitles: {
-    map: 'Mapa',
-    calendar: 'Killa qillqa',
-    notFound: "Mana p'anqachu tarikurqa",
-  },
 } satisfies PartialTranslation

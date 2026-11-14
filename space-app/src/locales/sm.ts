@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: "Va'ai", map: "Fa'afanua", calendar: 'Kalenitā' },
   search: {
     label: "Su'e se mea",
     button: "Su'e",
@@ -29,11 +28,5 @@ export default {
     placeholder: "Gagana po'o le kōta",
     noResults: 'Leai se gagana na maua.',
   },
-  calendar: { label: "Va'ai i le kalenitā" },
   notFound: { heading: 'Leai se itulau', backToMap: "Toe foi i le fa'afanua" },
-  pageTitles: {
-    map: "Fa'afanua",
-    calendar: 'Kalenitā',
-    notFound: 'Leai se itulau',
-  },
 } satisfies PartialTranslation

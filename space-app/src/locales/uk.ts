@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Вигляд', map: 'Карта', calendar: 'Календар' },
   search: {
     label: 'Шукати місце',
     button: 'Шукати',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Мова або код',
     noResults: 'Мову не знайдено.',
   },
-  calendar: { label: 'Вигляд календаря' },
   notFound: { heading: 'Сторінку не знайдено', backToMap: 'Назад до карти' },
-  pageTitles: {
-    map: 'Карта',
-    calendar: 'Календар',
-    notFound: 'Сторінку не знайдено',
-  },
 } satisfies PartialTranslation

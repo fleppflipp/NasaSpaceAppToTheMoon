@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Ìwòran', map: 'Àwòrán ilẹ̀', calendar: 'Kàlẹ́ńdà' },
   search: {
     label: 'Wá ibì kan',
     button: 'Wá',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Èdè tàbí kóòdù',
     noResults: 'A kò rí èdè kankan.',
   },
-  calendar: { label: 'Ìwòran kàlẹ́ńdà' },
   notFound: { heading: 'A kò rí ojú ìwé náà', backToMap: 'Padà sí àwòrán ilẹ̀' },
-  pageTitles: {
-    map: 'Àwòrán ilẹ̀',
-    calendar: 'Kàlẹ́ńdà',
-    notFound: 'A kò rí ojú ìwé náà',
-  },
 } satisfies PartialTranslation

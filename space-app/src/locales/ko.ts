@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: '보기', map: '지도', calendar: '달력' },
   search: {
     label: '장소 검색',
     button: '검색',
@@ -29,14 +28,8 @@ export default {
     placeholder: '언어 또는 코드',
     noResults: '언어를 찾을 수 없습니다.',
   },
-  calendar: { label: '달력 보기' },
   notFound: {
     heading: '페이지를 찾을 수 없습니다',
     backToMap: '지도로 돌아가기',
-  },
-  pageTitles: {
-    map: '지도',
-    calendar: '달력',
-    notFound: '페이지를 찾을 수 없습니다',
   },
 } satisfies PartialTranslation

@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Nlele', map: 'Maapụ', calendar: 'Kalenda' },
   search: {
     label: 'Chọọ ebe',
     button: 'Chọọ',
@@ -29,7 +28,5 @@ export default {
     placeholder: 'Asụsụ ma ọ bụ koodu',
     noResults: 'Ahụghị asụsụ ọ bụla.',
   },
-  calendar: { label: 'Nlele kalenda' },
   notFound: { heading: 'Ahụghị peeji', backToMap: 'Laghachi na maapụ' },
-  pageTitles: { map: 'Maapụ', calendar: 'Kalenda', notFound: 'Ahụghị peeji' },
 } satisfies PartialTranslation

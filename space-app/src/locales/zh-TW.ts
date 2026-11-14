@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: '檢視', map: '地圖', calendar: '日曆' },
   search: {
     label: '搜尋地點',
     button: '搜尋',
@@ -29,7 +28,5 @@ export default {
     placeholder: '語言或代碼',
     noResults: '找不到語言。',
   },
-  calendar: { label: '日曆檢視' },
   notFound: { heading: '找不到頁面', backToMap: '返回地圖' },
-  pageTitles: { map: '地圖', calendar: '日曆', notFound: '找不到頁面' },
 } satisfies PartialTranslation

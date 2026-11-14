@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Paparan', map: 'Peta', calendar: 'Kalendar' },
   search: {
     label: 'Cari tempat',
     button: 'Cari',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Bahasa atau kod',
     noResults: 'Tiada bahasa ditemui.',
   },
-  calendar: { label: 'Paparan kalendar' },
   notFound: { heading: 'Halaman tidak ditemui', backToMap: 'Kembali ke peta' },
-  pageTitles: {
-    map: 'Peta',
-    calendar: 'Kalendar',
-    notFound: 'Halaman tidak ditemui',
-  },
 } satisfies PartialTranslation

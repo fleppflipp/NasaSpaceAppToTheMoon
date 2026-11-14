@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'תצוגה', map: 'מפה', calendar: 'לוח שנה' },
   search: {
     label: 'חיפוש מקום',
     button: 'חיפוש',
@@ -29,7 +28,5 @@ export default {
     placeholder: 'שפה או קוד',
     noResults: 'לא נמצאה שפה.',
   },
-  calendar: { label: 'תצוגת לוח שנה' },
   notFound: { heading: 'הדף לא נמצא', backToMap: 'חזרה למפה' },
-  pageTitles: { map: 'מפה', calendar: 'לוח שנה', notFound: 'הדף לא נמצא' },
 } satisfies PartialTranslation

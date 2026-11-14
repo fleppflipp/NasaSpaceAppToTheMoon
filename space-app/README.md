@@ -50,11 +50,9 @@ instead of `npm`, for example `npm.cmd run check`.
 
 The app is called **FireLock**. The shared layout renders a fixed header
 (`src/components/Header.tsx`) with the logo and name, the place search bar in
-the middle, and a **Map / Calendar** switch on the right. The switch toggles
-between the map view and the calendar view (`CalendarView.tsx`, currently an
-empty placeholder). Navigation uses URL routes. The map stays mounted while the calendar is shown, so its
-position is kept, and the search bar is only shown in the map view. The favicon
-is `public/favicon.svg`.
+the middle and the language picker on the right. There is one view, the map
+(`/map`; `/` redirects there, unknown paths show a 404). The favicon is
+`public/favicon.svg`.
 
 See [routing and localization](docs/routing-i18n.md) for extension and
 deployment instructions.
@@ -79,7 +77,8 @@ if there is none at all, the map says so.
 
 The data is static files, one PMTiles file per month:
 `tile-server/data/fires_<year>_<MM>.pmtiles` (`MM` = 01 to 12), plus
-`fires_<year>.json` with the counts per month. They are big, local and git-ignored.
+`fires_<year>.json` with the numbers of the statistics panel per month (see
+"Statistics"). They are big, local and git-ignored.
 A small **nginx tile server** (Docker, folder `tile-server/`, see its README)
 serves that folder on port 8080 with HTTP range requests and CORS for any origin,
 so the browser reads only the pieces it needs: the `pmtiles` package registers a
@@ -133,7 +132,7 @@ are put into the first or last day of the year.
 ## Time period
 
 A full-width strip at the bottom of the screen (`src/components/TimelineBar.tsx`; the
-map and the calendar panel end above it) has **one slider** over
+map ends above it) has **one slider** over
 every month that has fire tiles (2002 to 2025 once all data exists; months without
 data are skipped), with a mark and a label at the start of each year. The summary
 shows the month in the active language. The list of months comes from the tile
@@ -142,17 +141,52 @@ json`). The period is held in `AppLayout.tsx` as `{ year, month }`
 (`src/services/period.ts`); it starts on the month closest to July in the latest
 year that has data. All dates are UTC regardless of the display language. No external service.
 
-The Calendar button opens a day picker for the selected month beside the map.
-Month arrows step over the months that have data; clicking a day sets an optional
-`day` (1 to 31) in the shared period, shows that date in the timeline summary and
-filters the fire points by their `day` property (days since 2000-01-01). Moving
-the slider or "Show the whole month" returns to the month. No new library or
-external API.
+## Statistics
+
+A tab on the right edge of the screen, halfway down (below the zoom and pencil
+buttons; an arrow that points left), slides out a panel of statistics for the
+shown month (`src/components/StatsPanel.tsx`, 23 rem wide,
+`--layout-stats-width`). The arrow turns to point right; pressing it again
+slides the panel back. The map does not move or resize: the panel covers it, and
+only the zoom and pencil buttons go with the panel's edge. While it is closed the
+panel is `inert`, so it cannot be reached with the keyboard.
+
+It shows: fires and total power (FRP) against the previous month; the fires
+against the same month a year earlier and against the average of that month in
+the earlier years; a chart of the fires per month of the year against the average of
+all years, with the shown month marked (`StatsSeasonChart.tsx`, plain SVG);
+the fires per day (`StatsDays.tsx`); the biggest fire with its place; how the
+fires split by strength (under 20, 20 to 100, 100 to 500, over 500 MW) and by
+satellite (MODIS only, both, VIIRS only; VIIRS sees smaller fires, so counts
+compare best between months with the same mix).
+
+Moving the slider updates the panel with the same 200 ms delay as the map's tiles
+(`useDebouncedValue`). A bar of the daily chart picks that day: it sets an optional
+`day` (1 to 31) in the shared period, shows the date in the timeline summary and
+filters the fire points by their `day` property (days since 2000-01-01); a click
+on the same bar, "Show the whole month" or the slider goes back to the month.
+"Show on map" flies to the biggest fire (`fitBounds` around its radius, centred
+in the part of the map the panel does not cover) and puts a **marker** on it: a
+light ring with a dark edge that pulses twice and then stays, with a label like "38,613 MW
+· Jul 3" (`src/hooks/useFireMarker.ts`, a MapLibre marker that is a button). It
+points the fire out among the many overlapping circles. It goes away when you touch
+the map (click, drag, scroll or zoom by hand; the app's own flight to the fire
+does not count), press the marker, change the month or search for a place.
+
+The numbers are not computed in the browser: `tiles/build_fire_tiles.py` writes
+them per month into `tile-server/data/fires_<year>.json` (fires, frp, days,
+strength, sensors, biggest; the format is in the script's header), and the app
+reads those files (`src/services/stats.ts`, `useYearStats`; validated, a missing
+year is skipped). `python tiles/build_fire_tiles.py ... --stats-only` rewrites just
+these files in seconds from the fire parquet, without tiles. The place of the
+biggest fire comes from the Photon geocoder's reverse lookup (nearest named place
+within 100 km, English names) once at build time; `--no-places` skips it. No new
+library.
 
 ## Language
 
-A language picker sits at the right end of the header, next to the Map and
-Calendar buttons (`src/components/LanguageSelect.tsx`). It shows the flag and
+A language picker sits at the right end of the header
+(`src/components/LanguageSelect.tsx`). It shows the flag and
 code of the current language; clicking opens a scrollable list with flag, code
 and the language's own name, and the field can also be typed into: a code
 (`ro`), a language name (English or native) or a country name finds it, arrows
@@ -185,7 +219,13 @@ Google Maps-like street map showing roads, buildings and labels, built with
 data, no API key), so the map only downloads the vector tiles for the visible
 area. Zooming far out turns it into a globe (MapLibre `globe` projection);
 zooming in blends it back into a flat map. Rotation and pitch are disabled.
-Fire hotspots will be drawn as layers on top of this map.
+A **globe button** (`src/components/HomeControl.tsx`) in the top-left corner,
+under the header, flies the map back to the view it has when the page loads: the whole Earth as a
+globe, seen from afar (`INITIAL_CENTER` and `INITIAL_ZOOM` in
+`constants/map.constants.ts`) and hides the
+fire marker. The browser tab always says just "FireLock" (the title is set in
+`AppLayout.tsx`, not per page).
+Fire hotspots are drawn as layers on top of this map.
 
 ## Search
 
@@ -213,7 +253,7 @@ box, spherical area, formatting).
 - **Drawing**: in draw mode the cursor is a crosshair, drag-pan and double-click
   zoom are off (restored afterwards), and mouse, pen and touch work through
   pointer events. Points closer than 3 px are skipped; the live stroke is a
-  dashed line. Escape, the button, or switching to the calendar view cancels.
+  dashed line. Escape or the button cancels.
   Moving or zooming the map during a stroke drops the stroke.
 - **Closing rules** (all in screen pixels, then converted with
   `map.unproject`, so the globe projection is handled by MapLibre): a stroke
@@ -232,8 +272,7 @@ box, spherical area, formatting).
   a small "Selected area: N km²" readout shows the approximate spherical area.
 - **State for later features**: `src/layouts/AppLayout.tsx` owns `selection: Polygon | null` and
   passes `selection` / `onSelectionChange` to `BaseMap`. `selectionInfo()` in
-  `src/services/geo.ts` returns its bounding box and area. The selection
-  survives switching to the calendar view and back.
+  `src/services/geo.ts` returns its bounding box and area.
 
 Everything runs in the browser; no external service is involved and nothing
 about the drawn area leaves the browser.
@@ -248,5 +287,8 @@ them needs an API key.
 | [OpenFreeMap](https://openfreemap.org/)      | Base map: vector tiles, style, fonts, sprites | `https://tiles.openfreemap.org/styles/liberty`           | Free, no key or request limit; no uptime guarantee. Self-host or switch provider for production.                                             |
 | [Photon](https://photon.komoot.io/) (Komoot) | Search bar place-name autocomplete            | `https://photon.komoot.io/api/?q=<text>&limit=6&lang=en` | Built for search-as-you-type; public instance is for light use. Requests are debounced (250 ms, 2+ characters). Self-host for heavy traffic. |
 
-The text typed in the search bar is sent to Photon. OpenStreetMap data is used
+The text typed in the search bar is sent to Photon. The tile build script also
+asks Photon, once per month at build time, for the place name of the biggest fire
+(only its coordinates are sent).
+OpenStreetMap data is used
 by both services and requires the attribution already shown on the map.

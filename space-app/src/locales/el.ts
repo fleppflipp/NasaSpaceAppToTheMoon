@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Προβολή', map: 'Χάρτης', calendar: 'Ημερολόγιο' },
   search: {
     label: 'Αναζήτηση τοποθεσίας',
     button: 'Αναζήτηση',
@@ -29,14 +28,8 @@ export default {
     placeholder: 'Γλώσσα ή κωδικός',
     noResults: 'Δεν βρέθηκε γλώσσα.',
   },
-  calendar: { label: 'Προβολή ημερολογίου' },
   notFound: {
     heading: 'Η σελίδα δεν βρέθηκε',
     backToMap: 'Επιστροφή στον χάρτη',
-  },
-  pageTitles: {
-    map: 'Χάρτης',
-    calendar: 'Ημερολόγιο',
-    notFound: 'Η σελίδα δεν βρέθηκε',
   },
 } satisfies PartialTranslation

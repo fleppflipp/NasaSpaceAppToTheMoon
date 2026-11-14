@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'ފެންނަ ގޮތް', map: 'ނަޤްޝާ', calendar: 'ކެލެންޑަރު' },
   search: {
     label: 'ތަނެއް ހޯދާ',
     button: 'ހޯދާ',
@@ -29,7 +28,5 @@ export default {
     placeholder: 'ބަސް ނުވަތަ ކޯޑު',
     noResults: 'އެއްވެސް ބަހެއް ނުފެނުނު.',
   },
-  calendar: { label: 'ކެލެންޑަރު ވިއު' },
   notFound: { heading: 'ޕޭޖު ނުފެނުނު', backToMap: 'ނަޤްޝާއަށް ވޭތުވެ' },
-  pageTitles: { map: 'ނަޤްޝާ', calendar: 'ކެލެންޑަރު', notFound: 'ޕޭޖު ނުފެނުނު' },
 } satisfies PartialTranslation

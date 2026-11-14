@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'காட்சி', map: 'வரைபடம்', calendar: 'நாட்காட்டி' },
   search: {
     label: 'இடத்தைத் தேடுங்கள்',
     button: 'தேடு',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'மொழி அல்லது குறியீடு',
     noResults: 'எந்த மொழியும் கிடைக்கவில்லை.',
   },
-  calendar: { label: 'நாட்காட்டி காட்சி' },
   notFound: { heading: 'பக்கம் கிடைக்கவில்லை', backToMap: 'வரைபடத்திற்குத் திரும்பு' },
-  pageTitles: {
-    map: 'வரைபடம்',
-    calendar: 'நாட்காட்டி',
-    notFound: 'பக்கம் கிடைக்கவில்லை',
-  },
 } satisfies PartialTranslation

@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Tanawin', map: 'Mapa', calendar: 'Kalendaryo' },
   search: {
     label: 'Maghanap ng lugar',
     button: 'Hanapin',
@@ -29,14 +28,8 @@ export default {
     placeholder: 'Wika o code',
     noResults: 'Walang nahanap na wika.',
   },
-  calendar: { label: 'Tanawin ng kalendaryo' },
   notFound: {
     heading: 'Hindi nahanap ang pahina',
     backToMap: 'Bumalik sa mapa',
-  },
-  pageTitles: {
-    map: 'Mapa',
-    calendar: 'Kalendaryo',
-    notFound: 'Hindi nahanap ang pahina',
   },
 } satisfies PartialTranslation

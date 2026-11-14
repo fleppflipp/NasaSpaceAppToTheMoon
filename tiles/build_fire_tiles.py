@@ -19,11 +19,16 @@ loads one at a time (the app shows one month of one year).
           that is meant to be visible is never thinned away in the sparse low-zoom tiles.
   STEP 3  tippecanoe (run inside WSL on Windows) builds <out>/fires_<year>_<MM>.pmtiles per month
           (MM = 01..12, zoom 0-9; the app overscales above that) and <out>/fires_<year>.json
-          (fires per month).
+          with the numbers of the statistics panel, per month: fires, frp (sum, MW), days (fires
+          per day of the month), strength (fires under 20 / 20-100 / 100-500 / over 500 MW),
+          sensors (MODIS only / both / VIIRS only), biggest (the strongest fire: frp, r, lat, lon,
+          day and its place name from the Photon geocoder, null when it cannot be looked up).
 
 Run:  python tiles/build_fire_tiles.py --pixels <fire_pixels_2012.csv> --year 2012 \
           --work-dir <folder for the big temporary files> --out tile-server/data
       (--months 7 8 builds only some months, for testing)
+      --stats-only writes just the statistics JSON from the fire parquet (seconds, no tiles);
+      --no-places skips the place-name lookup of the biggest fires (no network).
 
 Needs: python packages duckdb, numpy, pyarrow; tippecanoe (Windows: in WSL,
 `sudo apt install tippecanoe`).
@@ -35,6 +40,9 @@ import shlex
 import shutil
 import subprocess
 import time
+import calendar
+import urllib.parse
+import urllib.request
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from pathlib import Path
 
@@ -49,6 +57,8 @@ TILE_MAX_ZOOM = 9  # the app overscales the dots above this zoom
 # such a fire in one zoom level later (FIRE_MIN_FRP_BY_ZOOM), so its tile exists by then.
 FRP_MIN_ZOOM = [(100.0, 0), (60.0, 3), (40.0, 4), (25.0, 5), (15.0, 6), (8.0, 7)]
 WEAKEST_MIN_ZOOM = 8  # every fire weaker than the last step above
+STRENGTH_LIMITS_MW = (20.0, 100.0, 500.0)  # edges of the fire strength classes of the statistics
+PHOTON_REVERSE_URL = "https://photon.komoot.io/reverse"  # free geocoder, also used by the app
 TIPPECANOE_JOBS = 1  # tippecanoe runs in parallel (it is memory hungry; a month needs 2-3 GB)
 
 
@@ -111,12 +121,50 @@ def min_zoom(frp: np.ndarray) -> np.ndarray:
     return zoom
 
 
-def make_month(parquet: str, month: int, ndjson: str) -> tuple[int, int]:
-    """Writes the newline-delimited GeoJSON of one month. Returns (month, fires)."""
+def month_stats(t, year: int, month: int) -> dict:
+    """The numbers the statistics panel shows for one month (see the module docstring)."""
+    frp, s = t["frp"].to_numpy(), t["s"].to_numpy()
+    lat, lon, r = t["lat"].to_numpy(), t["lon"].to_numpy(), t["r"].to_numpy()
+    # local date of every fire; rows outside the year sit in the first/last day, like in step 1
+    date = np.datetime64("2000-01-01") + t["day"].to_numpy().astype("timedelta64[D]")
+    date = np.minimum(np.maximum(date, np.datetime64(f"{year}-01-01")), np.datetime64(f"{year}-12-31"))
+    day = (date - date.astype("datetime64[M]").astype("datetime64[D]")).astype(int) + 1
+    low, mid, high = STRENGTH_LIMITS_MW
+    top = int(np.argmax(frp))
+    return {
+        "fires": int(len(frp)),
+        "frp": int(round(float(frp.sum()))),
+        "days": np.bincount(day, minlength=calendar.monthrange(year, month)[1] + 1)[1:].tolist(),
+        "strength": [int((frp < low).sum()), int(((frp >= low) & (frp < mid)).sum()),
+                     int(((frp >= mid) & (frp < high)).sum()), int((frp >= high).sum())],
+        "sensors": [int((s == 0).sum()), int((s == 1).sum()), int((s == 2).sum())],
+        "biggest": {"frp": int(round(float(frp[top]))), "r": round(float(r[top]), 1),
+                    "lat": round(float(lat[top]), 2), "lon": round(float(lon[top]), 2),
+                    "day": int(day[top]), "place": None},
+    }
+
+
+def lookup_place(lat: float, lon: float) -> str | None:
+    """Name of the nearest named place (within 100 km) from the Photon geocoder, or None."""
+    query = urllib.parse.urlencode({"lat": lat, "lon": lon, "lang": "en", "radius": 100,
+                                    "limit": 1, "distance_sort": "true"})
+    request = urllib.request.Request(f"{PHOTON_REVERSE_URL}?{query}",
+                                     headers={"User-Agent": "firelock-tile-builder"})
+    try:
+        with urllib.request.urlopen(request, timeout=20) as response:
+            props = json.load(response)["features"][0]["properties"]
+    except Exception:  # offline, rate limited, or nothing found: the app shows the coordinates
+        return None
+    parts = [props.get("name"), props.get("state") or props.get("county"), props.get("country")]
+    return ", ".join(dict.fromkeys(p for p in parts if p)) or None
+
+
+def make_month(parquet: str, month: int, ndjson: str, year: int) -> tuple[int, dict | None]:
+    """Writes the newline-delimited GeoJSON of one month. Returns (month, statistics)."""
     t = pq.read_table(parquet, filters=[("month", "=", month)])
     n = t.num_rows
     if n == 0:
-        return month, 0
+        return month, None
     lon, lat = t["lon"].to_numpy(), t["lat"].to_numpy()
     frp, radius = t["frp"].to_numpy(), t["r"].to_numpy()
     sens, day = t["s"].to_numpy(), t["day"].to_numpy()
@@ -128,7 +176,7 @@ def make_month(parquet: str, month: int, ndjson: str) -> tuple[int, int]:
         for z, x, y, d, s, f, r in zip(min_zoom(frp), lon, lat, day, sens, frp, radius)
     ]
     Path(ndjson).write_text(chr(10).join(lines) + chr(10), encoding="utf-8")
-    return month, n
+    return month, month_stats(t, year, month)
 
 
 # ----------------------------------------------------------------------------- step 3
@@ -163,6 +211,8 @@ def main() -> None:
     parser.add_argument("--out", required=True, type=Path, help="folder for the .pmtiles (tile-server/data)")
     parser.add_argument("--months", type=int, nargs="*", help="only these months (1-12), default all")
     parser.add_argument("--workers", type=int, default=2, help="parallel GeoJSON workers")
+    parser.add_argument("--stats-only", action="store_true", help="only write the statistics JSON (no tiles)")
+    parser.add_argument("--no-places", action="store_true", help="do not look up the place of the biggest fires")
     args = parser.parse_args()
 
     work = args.work_dir / f"months_{args.year}"
@@ -178,21 +228,34 @@ def main() -> None:
         print(f"{n:,} fires -> {parquet.name} ({time.time() - t:.0f} s)", flush=True)
 
     t = time.time()
-    manifest: dict[str, dict[str, int]] = {}
-    with ProcessPoolExecutor(args.workers) as pool, ThreadPoolExecutor(TIPPECANOE_JOBS) as tiles:
-        futures = []
-        jobs = [pool.submit(make_month, str(parquet), m, str(work / f"m{m:02d}.ndjson")) for m in months]
-        for job in jobs:  # as soon as a month's GeoJSON exists, its tiles are built in the background
-            month, n = job.result()
-            if n == 0:
-                continue
-            manifest[str(month)] = {"fires": n}
-            ndjson = work / f"m{month:02d}.ndjson"
-            pmtiles = args.out / f"fires_{args.year}_{month:02d}.pmtiles"
-            futures.append(tiles.submit(_tile_and_clean, ndjson, pmtiles, f"firelock fires {args.year} {month:02d}"))
-            print(f"month {month:2d}: {n:>8,} fires", flush=True)
-        for f in futures:
-            f.result()
+    manifest: dict[str, dict] = {}
+    if args.stats_only:
+        for month in months:
+            table = pq.read_table(parquet, filters=[("month", "=", month)])
+            if table.num_rows:
+                manifest[str(month)] = month_stats(table, args.year, month)
+                print(f"month {month:2d}: {table.num_rows:>8,} fires", flush=True)
+    else:
+        with ProcessPoolExecutor(args.workers) as pool, ThreadPoolExecutor(TIPPECANOE_JOBS) as tiles:
+            futures = []
+            jobs = [pool.submit(make_month, str(parquet), m, str(work / f"m{m:02d}.ndjson"), args.year)
+                    for m in months]
+            for month, job in zip(months, jobs):  # a month's tiles are built as soon as its GeoJSON exists
+                _, stats = job.result()
+                if stats is None:
+                    continue
+                manifest[str(month)] = stats
+                ndjson = work / f"m{month:02d}.ndjson"
+                pmtiles = args.out / f"fires_{args.year}_{month:02d}.pmtiles"
+                futures.append(tiles.submit(_tile_and_clean, ndjson, pmtiles, f"firelock fires {args.year} {month:02d}"))
+                print(f"month {month:2d}: {stats['fires']:>8,} fires", flush=True)
+            for f in futures:
+                f.result()
+    if not args.no_places:
+        for stats in manifest.values():
+            big = stats["biggest"]
+            big["place"] = lookup_place(big["lat"], big["lon"])
+            time.sleep(1)  # the public Photon instance is meant for light use
     manifest_path = args.out / f"fires_{args.year}.json"
     existing = json.loads(manifest_path.read_text()) if manifest_path.exists() and args.months else {}
     existing.update(manifest)

@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Görünüş', map: 'Xəritə', calendar: 'Təqvim' },
   search: {
     label: 'Yer axtarın',
     button: 'Axtar',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Dil və ya kod',
     noResults: 'Dil tapılmadı.',
   },
-  calendar: { label: 'Təqvim görünüşü' },
   notFound: { heading: 'Səhifə tapılmadı', backToMap: 'Xəritəyə qayıt' },
-  pageTitles: {
-    map: 'Xəritə',
-    calendar: 'Təqvim',
-    notFound: 'Səhifə tapılmadı',
-  },
 } satisfies PartialTranslation

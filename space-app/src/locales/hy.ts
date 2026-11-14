@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Տեսք', map: 'Քարտեզ', calendar: 'Օրացույց' },
   search: {
     label: 'Որոնել վայր',
     button: 'Որոնել',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Լեզու կամ կոդ',
     noResults: 'Լեզու չի գտնվել։',
   },
-  calendar: { label: 'Օրացույցի տեսք' },
   notFound: { heading: 'Էջը չի գտնվել', backToMap: 'Վերադառնալ քարտեզին' },
-  pageTitles: {
-    map: 'Քարտեզ',
-    calendar: 'Օրացույց',
-    notFound: 'Էջը չի գտնվել',
-  },
 } satisfies PartialTranslation

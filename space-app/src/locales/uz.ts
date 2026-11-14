@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Koʻrinish', map: 'Xarita', calendar: 'Kalendar' },
   search: {
     label: 'Joy qidirish',
     button: 'Qidirish',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Til yoki kod',
     noResults: 'Til topilmadi.',
   },
-  calendar: { label: 'Kalendar koʻrinishi' },
   notFound: { heading: 'Sahifa topilmadi', backToMap: 'Xaritaga qaytish' },
-  pageTitles: {
-    map: 'Xarita',
-    calendar: 'Kalendar',
-    notFound: 'Sahifa topilmadi',
-  },
 } satisfies PartialTranslation

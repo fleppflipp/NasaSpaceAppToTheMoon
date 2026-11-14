@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Gis-gis', map: 'Kàrt', calendar: 'Arminaat' },
   search: {
     label: 'Wutal bérab',
     button: 'Wut',
@@ -29,7 +28,5 @@ export default {
     placeholder: 'Làkk walla kood',
     noResults: 'Amul làkk bu ñu gis.',
   },
-  calendar: { label: 'Gis-gisu arminaat' },
   notFound: { heading: 'Xët wi gisul', backToMap: 'Dellu ci kàrt bi' },
-  pageTitles: { map: 'Kàrt', calendar: 'Arminaat', notFound: 'Xët wi gisul' },
 } satisfies PartialTranslation

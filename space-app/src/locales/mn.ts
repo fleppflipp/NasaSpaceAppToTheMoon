@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Харагдац', map: 'Газрын зураг', calendar: 'Хуанли' },
   search: {
     label: 'Газар хайх',
     button: 'Хайх',
@@ -29,14 +28,8 @@ export default {
     placeholder: 'Хэл эсвэл код',
     noResults: 'Хэл олдсонгүй.',
   },
-  calendar: { label: 'Хуанлийн харагдац' },
   notFound: {
     heading: 'Хуудас олдсонгүй',
     backToMap: 'Газрын зураг руу буцах',
-  },
-  pageTitles: {
-    map: 'Газрын зураг',
-    calendar: 'Хуанли',
-    notFound: 'Хуудас олдсонгүй',
   },
 } satisfies PartialTranslation

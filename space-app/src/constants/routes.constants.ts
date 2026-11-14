@@ -1,1 +1,1 @@
-export const ROUTES = { home: '/', map: '/map', calendar: '/calendar' } as const
+export const ROUTES = { home: '/', map: '/map' } as const

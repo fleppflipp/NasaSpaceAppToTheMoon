@@ -63,3 +63,20 @@
     transition: opacity var(--duration-fast) var(--easing-standard);
   }
 }
+
+/*
+ * MapLibre washes its own control buttons with a see-through grey on hover and
+ * press, which wins over the global dark hover. Keep the dark hover like the
+ * other buttons (the same rule is in HomeControl.css).
+ */
+.maplibregl-ctrl .draw-control__button:not(:disabled):hover,
+.maplibregl-ctrl .draw-control__button:not(:disabled):active {
+  background-color: var(--color-text);
+}
+
+.maplibregl-ctrl
+  .draw-control__button[aria-pressed='true']:not(:disabled):hover,
+.maplibregl-ctrl
+  .draw-control__button[aria-pressed='true']:not(:disabled):active {
+  background-color: var(--color-accent);
+}

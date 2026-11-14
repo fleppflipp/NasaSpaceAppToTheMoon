@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Imbonakalo', map: 'Imap', calendar: 'Ikhalenda' },
   search: {
     label: 'Khangela indawo',
     button: 'Khangela',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Ulwimi okanye ikhowudi',
     noResults: 'Akukho lwimi lufunyenweyo.',
   },
-  calendar: { label: 'Imbonakalo yekhalenda' },
   notFound: { heading: 'Iphepha alifunyenwanga', backToMap: 'Buyela kwimap' },
-  pageTitles: {
-    map: 'Imap',
-    calendar: 'Ikhalenda',
-    notFound: 'Iphepha alifunyenwanga',
-  },
 } satisfies PartialTranslation

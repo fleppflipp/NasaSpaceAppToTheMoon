@@ -1,0 +1,277 @@
+/*
+ * The panel slides in from the right edge over the map (the map does not move).
+ * MapLibre keeps its controls on the physical right, so the dock stays on the
+ * physical right too, also in right-to-left languages.
+ */
+.stats-dock {
+  position: fixed;
+  inset-block: var(--layout-top-offset) var(--layout-timeline-height);
+  right: var(--space-0);
+  z-index: var(--z-index-panel);
+  inline-size: min(100%, var(--layout-stats-width));
+  translate: 100% 0;
+}
+
+.stats-dock--open {
+  translate: 0 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .stats-dock {
+    transition: translate var(--duration-normal) var(--easing-standard);
+  }
+}
+
+/* The tab on the left edge of the panel, halfway down the screen; it moves with the panel. */
+.stats-toggle {
+  position: absolute;
+  top: 50%;
+  left: var(--space-0);
+  translate: -100% -50%;
+  display: grid;
+  place-items: center;
+  min-inline-size: var(--control-size-touch-target);
+  block-size: var(--space-16);
+  padding: var(--space-0);
+  border-radius: var(--radius-md) var(--space-0) var(--space-0) var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+.stats-toggle__icon {
+  inline-size: var(--control-size-icon);
+  block-size: var(--control-size-icon);
+}
+
+.stats-toggle__icon--open {
+  rotate: 180deg;
+}
+
+.stats-panel {
+  box-sizing: border-box;
+  block-size: 100%;
+  padding: var(--space-4);
+  overflow-y: auto;
+  border-left: var(--border-width-thin) solid var(--color-primary);
+  background-color: var(--color-background);
+  box-shadow: var(--shadow-md);
+  font-variant-numeric: tabular-nums;
+}
+
+.stats-panel__title {
+  margin-block: var(--space-0);
+  font-size: var(--font-size-xl);
+}
+
+.stats-panel__month {
+  margin-block: var(--space-1) var(--space-0);
+  font-size: var(--font-size-sm);
+}
+
+.stats-section {
+  margin-block-start: var(--space-4);
+  padding-block-start: var(--space-3);
+  border-block-start: var(--border-width-thin) solid var(--color-highlight);
+}
+
+.stats-section__title {
+  margin-block: var(--space-0) var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.stats-tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+  margin-block: var(--space-3);
+}
+
+.stats-tile {
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width-thin) solid var(--color-highlight);
+  border-radius: var(--radius-md);
+}
+
+.stats-tile p {
+  margin-block: var(--space-0);
+}
+
+.stats-tile__label {
+  font-size: var(--font-size-xs);
+}
+
+.stats-tile__value {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+.stats-tile__change {
+  font-size: var(--font-size-xs);
+}
+
+.stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  column-gap: var(--space-3);
+  margin-block: var(--space-1);
+  font-size: var(--font-size-sm);
+}
+
+/* The label keeps its words whole; a value that does not fit beside it moves to the next line. */
+.stats-row__label {
+  flex: none;
+  max-inline-size: 100%;
+}
+
+.stats-row > span:last-child {
+  min-inline-size: 0;
+  margin-inline-start: auto;
+  overflow-wrap: break-word;
+  text-align: end;
+}
+
+.stats-change {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-accent);
+}
+
+.stats-change--down {
+  color: var(--color-primary);
+}
+
+.stats-note {
+  margin-block: var(--space-2) var(--space-0);
+  font-size: var(--font-size-xs);
+}
+
+.stats-action {
+  margin-block-start: var(--space-2);
+  min-block-size: var(--control-size-touch-target);
+  font-size: var(--font-size-sm);
+}
+
+/* Fires per month: the year against the average of all years. */
+.stats-season {
+  display: block;
+  inline-size: 100%;
+}
+
+.stats-season__grid {
+  stroke: var(--color-highlight);
+  stroke-width: 1;
+}
+
+.stats-season__label {
+  fill: var(--color-primary);
+  font-size: 11px;
+}
+
+.stats-season__line {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.stats-season__line--year {
+  stroke: var(--color-accent);
+}
+
+.stats-season__line--average {
+  stroke: var(--color-primary);
+  stroke-width: 1.75;
+  stroke-dasharray: 5 4;
+}
+
+.stats-season__dot {
+  fill: var(--color-accent);
+  stroke: var(--color-background);
+  stroke-width: 2;
+}
+
+.stats-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  margin: var(--space-2) var(--space-0) var(--space-0);
+  padding: var(--space-0);
+  list-style: none;
+  font-size: var(--font-size-xs);
+}
+
+.stats-legend__swatch {
+  display: inline-block;
+  inline-size: var(--space-2);
+  block-size: var(--space-2);
+  margin-inline-end: var(--space-1);
+  border-radius: 2px;
+}
+
+.stats-legend__line {
+  display: inline-block;
+  inline-size: var(--space-4);
+  margin-inline-end: var(--space-1);
+  vertical-align: middle;
+  border-block-start: 3px solid var(--color-accent);
+}
+
+.stats-legend__line--average {
+  border-block-start: 2px dashed var(--color-primary);
+}
+
+/* Fires per day: one button per day; the day numbers sit in a second row of the same grid. */
+.stats-days {
+  display: grid;
+  column-gap: 2px;
+  margin-block-end: var(--space-2);
+}
+
+.stats-days__bar {
+  display: flex;
+  align-items: flex-end;
+  min-inline-size: var(--space-0);
+  min-block-size: var(--space-0);
+  block-size: var(--space-16);
+  padding: var(--space-0);
+  border: none;
+  border-radius: 2px;
+  background: transparent;
+}
+
+.stats-days__bar:hover:not(:disabled) {
+  background: var(--color-highlight);
+}
+
+.stats-days__fill {
+  display: block;
+  inline-size: 100%;
+  min-block-size: 2px;
+  border-radius: 2px;
+  background: var(--color-fire-mid);
+  opacity: 0.55;
+}
+
+.stats-days__bar[aria-pressed='true'] .stats-days__fill,
+.stats-days__bar:hover .stats-days__fill {
+  background: var(--color-accent);
+  opacity: 1;
+}
+
+.stats-days__tick {
+  justify-self: center;
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+}
+
+/* A bar cut into shares (strength of the fires, satellites). */
+.stats-split {
+  display: flex;
+  gap: 2px;
+  block-size: var(--space-3);
+}
+
+.stats-split__part {
+  min-inline-size: 2px;
+  border-radius: 2px;
+}

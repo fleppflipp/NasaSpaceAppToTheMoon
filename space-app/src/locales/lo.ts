@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'ມຸມມອງ', map: 'ແຜນທີ່', calendar: 'ປະຕິທິນ' },
   search: {
     label: 'ຄົ້ນຫາສະຖານທີ່',
     button: 'ຄົ້ນຫາ',
@@ -29,7 +28,5 @@ export default {
     placeholder: 'ພາສາ ຫຼື ລະຫັດ',
     noResults: 'ບໍ່ພົບພາສາ.',
   },
-  calendar: { label: 'ມຸມມອງປະຕິທິນ' },
   notFound: { heading: 'ບໍ່ພົບໜ້ານີ້', backToMap: 'ກັບຄືນໄປແຜນທີ່' },
-  pageTitles: { map: 'ແຜນທີ່', calendar: 'ປະຕິທິນ', notFound: 'ບໍ່ພົບໜ້ານີ້' },
 } satisfies PartialTranslation

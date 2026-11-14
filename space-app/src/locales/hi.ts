@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'दृश्य', map: 'मानचित्र', calendar: 'कैलेंडर' },
   search: {
     label: 'कोई स्थान खोजें',
     button: 'खोजें',
@@ -29,7 +28,5 @@ export default {
     placeholder: 'भाषा या कोड',
     noResults: 'कोई भाषा नहीं मिली।',
   },
-  calendar: { label: 'कैलेंडर दृश्य' },
   notFound: { heading: 'पृष्ठ नहीं मिला', backToMap: 'मानचित्र पर वापस जाएँ' },
-  pageTitles: { map: 'मानचित्र', calendar: 'कैलेंडर', notFound: 'पृष्ठ नहीं मिला' },
 } satisfies PartialTranslation

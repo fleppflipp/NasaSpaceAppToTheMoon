@@ -29,14 +29,13 @@ Work proceeds feature by feature, one feature at a time. Done so far:
    into a globe when zoomed far out.
 2. Search bar with place-name autocomplete (Photon geocoder).
 3. Fixed header with the logo, the "Firelock" name, the search bar (map view
-   only) and a Map / Calendar view switch. The calendar view is an empty
-   placeholder for now; the map stays mounted (hidden) while it is shown.
+   only) and the language picker. There is one view, the map.
 
 4. Freehand area selection: a pencil button on the map draws a closed
    shape that becomes the selected area (`selection` state in
    `layouts/AppLayout.tsx`, GeoJSON polygon). Drawing needs zoom >=
    `DRAW_MIN_ZOOM`.
-5. URL routing (`/map`, `/calendar`, 404) and English UI strings through
+5. URL routing (`/map`, 404) and English UI strings through
    i18next (`src/locales/eng.ts`); see `space-app/docs/routing-i18n.md`. All
    user-visible text must go through `t()`.
    Header language picker (`LanguageSelect`) with 108 languages (the main
@@ -56,9 +55,16 @@ Work proceeds feature by feature, one feature at a time. Done so far:
    the strong fires (FRP) show, weaker ones grow in while zooming closer.
    Years 2012 to 2015 so far; more are added as the data team delivers
    `fire_pixels_<year>.csv`.
+9. Statistics panel (`StatsPanel`): a tab on the right edge, halfway down,
+   slides out a panel over the map (the map does not move; the zoom and pencil
+   buttons go with it): change against the previous month, last year and the
+   average, a seasonal chart (this year against the average of all years), fires
+   per day (a bar picks a day), the biggest fire with its place ("Show on map"
+   flies there and puts a labelled ring on it that pulses twice and stays until you touch the map), strength and satellite split. The numbers come from `tile-server/data/fires_<year>.json`,
+   written by `tiles/build_fire_tiles.py` (`--stats-only` rewrites just them).
 
 Planned next: selecting an area by latitude/longitude, FIRMS data
-harmonization, hotspot layers, the calendar and charts, CSV export.
+harmonization, statistics for a selected area, CSV export.
 
 ## Workflow: planning chat and implementing agent
 
@@ -121,7 +127,7 @@ Rules for the implementing agent:
 - `space-app/src/App.tsx` only mounts the router. `router/AppRouter.tsx` defines
   the routes (paths in `constants/routes.constants.ts`); `layouts/AppLayout.tsx`
   holds the searched place, the selected area and the time period and renders
-  `Header`, `TimelineBar`, `BaseMap` and the routed page (`CalendarView`, `pages/NotFound.tsx`).
+  `Header`, `TimelineBar`, `BaseMap`, `StatsPanel` and the routed page (`pages/NotFound.tsx`).
 - `space-app/src/i18n/`, `space-app/src/locales/`: i18next setup and the English
   dictionary (`eng.ts`).
 - Data pipeline (Python, repo root, not part of the web app): see below.
@@ -192,7 +198,8 @@ into data for the app. Outputs are local and ignored by git too.
   hooks or services: add a semantic key to `src/locales/eng.ts` and use
   `useTranslation()` / `t()` (hooks and services return keys or data, not
   display text). This covers button labels, `aria-label`s, `title`s, placeholders,
-  error and status messages, the document title and MapLibre control labels.
+  error and status messages and MapLibre control labels (the document title is just
+  the app name, "FireLock", on every page).
   Use `t()` interpolation instead of concatenating strings, and keep word order
   out of the code. Format numbers and dates with `Intl` using the active
   language (`i18n.language`), not a hardcoded locale such as `'en'`. Dates

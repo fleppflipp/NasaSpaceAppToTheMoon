@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Vista', map: 'Mapa', calendar: 'Calendario' },
   search: {
     label: 'Buscar un lugar',
     button: 'Buscar',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Idioma ou código',
     noResults: 'Non se atopou ningún idioma.',
   },
-  calendar: { label: 'Vista de calendario' },
   notFound: { heading: 'Non se atopou a páxina', backToMap: 'Volver ao mapa' },
-  pageTitles: {
-    map: 'Mapa',
-    calendar: 'Calendario',
-    notFound: 'Non se atopou a páxina',
-  },
 } satisfies PartialTranslation

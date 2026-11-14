@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'दृश्य', map: 'नक्सा', calendar: 'पात्रो' },
   search: {
     label: 'ठाउँ खोज्नुहोस्',
     button: 'खोज्नुहोस्',
@@ -29,7 +28,5 @@ export default {
     placeholder: 'भाषा वा कोड',
     noResults: 'कुनै भाषा फेला परेन।',
   },
-  calendar: { label: 'पात्रो दृश्य' },
   notFound: { heading: 'पृष्ठ फेला परेन', backToMap: 'नक्सामा फर्कनुहोस्' },
-  pageTitles: { map: 'नक्सा', calendar: 'पात्रो', notFound: 'पृष्ठ फेला परेन' },
 } satisfies PartialTranslation

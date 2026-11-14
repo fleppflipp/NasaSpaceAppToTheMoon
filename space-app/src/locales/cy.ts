@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Golwg', map: 'Map', calendar: 'Calendr' },
   search: {
     label: 'Chwilio am le',
     button: 'Chwilio',
@@ -29,14 +28,8 @@ export default {
     placeholder: 'Iaith neu god',
     noResults: 'Heb ddod o hyd i iaith.',
   },
-  calendar: { label: 'Golwg calendr' },
   notFound: {
     heading: "Heb ddod o hyd i'r dudalen",
     backToMap: "Yn ôl i'r map",
-  },
-  pageTitles: {
-    map: 'Map',
-    calendar: 'Calendr',
-    notFound: "Heb ddod o hyd i'r dudalen",
   },
 } satisfies PartialTranslation

@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Намоиш', map: 'Харита', calendar: 'Тақвим' },
   search: {
     label: 'Ҷойро ҷустуҷӯ кунед',
     button: 'Ҷустуҷӯ',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Забон ё код',
     noResults: 'Забон ёфт нашуд.',
   },
-  calendar: { label: 'Намоиши тақвим' },
   notFound: { heading: 'Саҳифа ёфт нашуд', backToMap: 'Бозгашт ба харита' },
-  pageTitles: {
-    map: 'Харита',
-    calendar: 'Тақвим',
-    notFound: 'Саҳифа ёфт нашуд',
-  },
 } satisfies PartialTranslation

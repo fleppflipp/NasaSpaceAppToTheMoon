@@ -1,0 +1,20 @@
+/* Rendered inside a MapLibre control container (top-left, under the header). */
+.home-control {
+  display: grid;
+  place-items: center;
+  min-inline-size: var(--control-size-touch-target);
+  min-block-size: var(--control-size-touch-target);
+  padding: var(--space-2);
+  box-shadow: var(--shadow-md);
+}
+
+.home-control__icon {
+  inline-size: var(--control-size-icon);
+  block-size: var(--control-size-icon);
+}
+
+/* MapLibre washes its control buttons see-through on hover; keep the global dark hover instead. */
+.maplibregl-ctrl .home-control:not(:disabled):hover,
+.maplibregl-ctrl .home-control:not(:disabled):active {
+  background-color: var(--color-text);
+}

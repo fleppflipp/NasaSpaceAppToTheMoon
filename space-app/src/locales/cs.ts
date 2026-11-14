@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Zobrazení', map: 'Mapa', calendar: 'Kalendář' },
   search: {
     label: 'Hledat místo',
     button: 'Hledat',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Jazyk nebo kód',
     noResults: 'Jazyk nenalezen.',
   },
-  calendar: { label: 'Zobrazení kalendáře' },
   notFound: { heading: 'Stránka nenalezena', backToMap: 'Zpět na mapu' },
-  pageTitles: {
-    map: 'Mapa',
-    calendar: 'Kalendář',
-    notFound: 'Stránka nenalezena',
-  },
 } satisfies PartialTranslation

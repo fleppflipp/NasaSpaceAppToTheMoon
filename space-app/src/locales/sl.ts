@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Pogled', map: 'Zemljevid', calendar: 'Koledar' },
   search: {
     label: 'Poišči kraj',
     button: 'Išči',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Jezik ali koda',
     noResults: 'Jezik ni najden.',
   },
-  calendar: { label: 'Pogled koledarja' },
   notFound: { heading: 'Stran ni najdena', backToMap: 'Nazaj na zemljevid' },
-  pageTitles: {
-    map: 'Zemljevid',
-    calendar: 'Koledar',
-    notFound: 'Stran ni najdena',
-  },
 } satisfies PartialTranslation

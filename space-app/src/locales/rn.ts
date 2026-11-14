@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Ikigaragara', map: 'Ikarata', calendar: 'Kalendari' },
   search: {
     label: 'Raba ahantu',
     button: 'Raba',
@@ -29,14 +28,8 @@ export default {
     placeholder: 'Ururimi canke kode',
     noResults: 'Nta rurimi rwabonetse.',
   },
-  calendar: { label: 'Ikigaragara ca kalendari' },
   notFound: {
     heading: 'Urupapuro ntirwabonetse',
     backToMap: 'Subira ku karata',
-  },
-  pageTitles: {
-    map: 'Ikarata',
-    calendar: 'Kalendari',
-    notFound: 'Urupapuro ntirwabonetse',
   },
 } satisfies PartialTranslation

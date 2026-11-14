@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'پیشاندان', map: 'نەخشە', calendar: 'ڕۆژژمێر' },
   search: {
     label: 'شوێنێک بدۆزەرەوە',
     button: 'گەڕان',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'زمان یان کۆد',
     noResults: 'هیچ زمانێک نەدۆزرایەوە.',
   },
-  calendar: { label: 'پیشاندانی ڕۆژژمێر' },
   notFound: { heading: 'پەڕە نەدۆزرایەوە', backToMap: 'گەڕانەوە بۆ نەخشە' },
-  pageTitles: {
-    map: 'نەخشە',
-    calendar: 'ڕۆژژمێر',
-    notFound: 'پەڕە نەدۆزرایەوە',
-  },
 } satisfies PartialTranslation

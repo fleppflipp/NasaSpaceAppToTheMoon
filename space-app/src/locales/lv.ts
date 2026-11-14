@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Skats', map: 'Karte', calendar: 'Kalendārs' },
   search: {
     label: 'Meklēt vietu',
     button: 'Meklēt',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Valoda vai kods',
     noResults: 'Valoda nav atrasta.',
   },
-  calendar: { label: 'Kalendāra skats' },
   notFound: { heading: 'Lapa nav atrasta', backToMap: 'Atpakaļ uz karti' },
-  pageTitles: {
-    map: 'Karte',
-    calendar: 'Kalendārs',
-    notFound: 'Lapa nav atrasta',
-  },
 } satisfies PartialTranslation

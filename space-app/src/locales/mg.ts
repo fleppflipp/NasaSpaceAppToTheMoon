@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Fijery', map: 'Sarintany', calendar: 'Kalandrie' },
   search: {
     label: 'Hikaroka toerana',
     button: 'Hikaroka',
@@ -29,14 +28,8 @@ export default {
     placeholder: 'Fiteny na kaody',
     noResults: 'Tsy nahitana fiteny.',
   },
-  calendar: { label: 'Fijerena kalandrie' },
   notFound: {
     heading: 'Tsy hita ny pejy',
     backToMap: "Hiverina amin'ny sarintany",
-  },
-  pageTitles: {
-    map: 'Sarintany',
-    calendar: 'Kalandrie',
-    notFound: 'Tsy hita ny pejy',
   },
 } satisfies PartialTranslation

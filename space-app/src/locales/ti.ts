@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'ርእይቶ', map: 'ካርታ', calendar: 'ካለንደር' },
   search: {
     label: 'ቦታ ድለይ',
     button: 'ድለይ',
@@ -29,7 +28,5 @@ export default {
     placeholder: 'ቋንቋ ወይ ኮድ',
     noResults: 'ዝኾነ ቋንቋ ኣይተረኽበን።',
   },
-  calendar: { label: 'ናይ ካለንደር ርእይቶ' },
   notFound: { heading: 'ገጽ ኣይተረኽበን', backToMap: 'ናብ ካርታ ተመለስ' },
-  pageTitles: { map: 'ካርታ', calendar: 'ካለንደር', notFound: 'ገጽ ኣይተረኽበን' },
 } satisfies PartialTranslation

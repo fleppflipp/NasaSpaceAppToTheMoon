@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Görünüm', map: 'Harita', calendar: 'Takvim' },
   search: {
     label: 'Yer ara',
     button: 'Ara',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Dil veya kod',
     noResults: 'Dil bulunamadı.',
   },
-  calendar: { label: 'Takvim görünümü' },
   notFound: { heading: 'Sayfa bulunamadı', backToMap: 'Haritaya dön' },
-  pageTitles: {
-    map: 'Harita',
-    calendar: 'Takvim',
-    notFound: 'Sayfa bulunamadı',
-  },
 } satisfies PartialTranslation

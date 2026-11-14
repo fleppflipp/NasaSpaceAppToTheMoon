@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Lukluk', map: 'Map', calendar: 'Kalenda' },
   search: {
     label: 'Painim wanpela ples',
     button: 'Painim',
@@ -29,7 +28,5 @@ export default {
     placeholder: 'Tok ples o kod',
     noResults: 'I no gat wanpela tok ples i kamap.',
   },
-  calendar: { label: 'Kalenda lukluk' },
   notFound: { heading: 'I no painim pes', backToMap: 'Go bek long map' },
-  pageTitles: { map: 'Map', calendar: 'Kalenda', notFound: 'I no painim pes' },
 } satisfies PartialTranslation

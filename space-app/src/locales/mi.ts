@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Tirohanga', map: 'Mahere', calendar: 'Maramataka' },
   search: {
     label: 'Rapua he wāhi',
     button: 'Rapua',
@@ -29,14 +28,8 @@ export default {
     placeholder: 'Reo, waehere rānei',
     noResults: 'Kāore he reo i kitea.',
   },
-  calendar: { label: 'Tirohanga maramataka' },
   notFound: {
     heading: 'Kāore i kitea te whārangi',
     backToMap: 'Hoki ki te mahere',
-  },
-  pageTitles: {
-    map: 'Mahere',
-    calendar: 'Maramataka',
-    notFound: 'Kāore i kitea te whārangi',
   },
 } satisfies PartialTranslation

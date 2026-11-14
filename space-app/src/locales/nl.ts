@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Weergave', map: 'Kaart', calendar: 'Kalender' },
   search: {
     label: 'Zoek een plaats',
     button: 'Zoeken',
@@ -29,14 +28,8 @@ export default {
     placeholder: 'Taal of code',
     noResults: 'Geen taal gevonden.',
   },
-  calendar: { label: 'Kalenderweergave' },
   notFound: {
     heading: 'Pagina niet gevonden',
     backToMap: 'Terug naar de kaart',
-  },
-  pageTitles: {
-    map: 'Kaart',
-    calendar: 'Kalender',
-    notFound: 'Pagina niet gevonden',
   },
 } satisfies PartialTranslation

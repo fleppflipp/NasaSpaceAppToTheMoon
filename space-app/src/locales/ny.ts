@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Mawonedwe', map: 'Mapu', calendar: 'Kalendala' },
   search: {
     label: 'Fufuzani malo',
     button: 'Fufuzani',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Chinenero kapena khodi',
     noResults: 'Palibe chinenero chopezeka.',
   },
-  calendar: { label: 'Mawonedwe a kalendala' },
   notFound: { heading: 'Tsamba silinapezeke', backToMap: 'Bwererani ku mapu' },
-  pageTitles: {
-    map: 'Mapu',
-    calendar: 'Kalendala',
-    notFound: 'Tsamba silinapezeke',
-  },
 } satisfies PartialTranslation

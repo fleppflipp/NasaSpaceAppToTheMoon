@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Sealladh', map: 'Mapa', calendar: 'Mìosachan' },
   search: {
     label: 'Lorg àite',
     button: 'Lorg',
@@ -29,14 +28,8 @@ export default {
     placeholder: 'Cànan no còd',
     noResults: 'Cha deach cànan a lorg.',
   },
-  calendar: { label: 'Sealladh mìosachain' },
   notFound: {
     heading: 'Cha deach an duilleag a lorg',
     backToMap: 'Air ais dhan mhapa',
-  },
-  pageTitles: {
-    map: 'Mapa',
-    calendar: 'Mìosachan',
-    notFound: 'Cha deach an duilleag a lorg',
   },
 } satisfies PartialTranslation

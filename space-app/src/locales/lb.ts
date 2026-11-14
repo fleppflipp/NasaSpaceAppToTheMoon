@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Usiicht', map: 'Kaart', calendar: 'Kalenner' },
   search: {
     label: 'Eng Plaz sichen',
     button: 'Sichen',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Sprooch oder Code',
     noResults: 'Keng Sprooch fonnt.',
   },
-  calendar: { label: 'Kalennerusiicht' },
   notFound: { heading: 'Säit net fonnt', backToMap: 'Zréck zur Kaart' },
-  pageTitles: {
-    map: 'Kaart',
-    calendar: 'Kalenner',
-    notFound: 'Säit net fonnt',
-  },
 } satisfies PartialTranslation

@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Ikuspegia', map: 'Mapa', calendar: 'Egutegia' },
   search: {
     label: 'Bilatu leku bat',
     button: 'Bilatu',
@@ -29,11 +28,5 @@ export default {
     placeholder: 'Hizkuntza edo kodea',
     noResults: 'Ez da hizkuntzarik aurkitu.',
   },
-  calendar: { label: 'Egutegiaren ikuspegia' },
   notFound: { heading: 'Ez da orria aurkitu', backToMap: 'Itzuli mapara' },
-  pageTitles: {
-    map: 'Mapa',
-    calendar: 'Egutegia',
-    notFound: 'Ez da orria aurkitu',
-  },
 } satisfies PartialTranslation

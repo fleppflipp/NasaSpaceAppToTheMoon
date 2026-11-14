@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'Преглед', map: 'Карта', calendar: 'Календар' },
   search: {
     label: 'Барај место',
     button: 'Барај',
@@ -29,14 +28,8 @@ export default {
     placeholder: 'Јазик или код',
     noResults: 'Не е пронајден јазик.',
   },
-  calendar: { label: 'Преглед на календар' },
   notFound: {
     heading: 'Страницата не е пронајдена',
     backToMap: 'Назад кон картата',
-  },
-  pageTitles: {
-    map: 'Карта',
-    calendar: 'Календар',
-    notFound: 'Страницата не е пронајдена',
   },
 } satisfies PartialTranslation

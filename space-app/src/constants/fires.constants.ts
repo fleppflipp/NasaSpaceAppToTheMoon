@@ -14,6 +14,10 @@ export const FIRE_TILE_BASE_URL = (
 /** The map waits this long after the last month change before loading its tiles (a dragged slider passes many months). */
 export const FIRE_PERIOD_DEBOUNCE_MS = 200
 
+/** The ring that points out a fire pulses this many times (one pulse lasts the given time), then stays still. */
+export const FIRE_MARKER_PULSES = 2
+export const FIRE_MARKER_PULSE_MS = 1200
+
 /** The layer inside every monthly file: one dot per fire (zoom 0-9, overscaled above). */
 export const FIRE_POINTS_LAYER = 'fires'
 

@@ -1,7 +1,6 @@
 import type { PartialTranslation } from './eng'
 
 export default {
-  navigation: { label: 'ទិដ្ឋភាព', map: 'ផែនទី', calendar: 'ប្រតិទិន' },
   search: {
     label: 'ស្វែងរកទីតាំង',
     button: 'ស្វែងរក',
@@ -29,7 +28,5 @@ export default {
     placeholder: 'ភាសា ឬកូដ',
     noResults: 'រកមិនឃើញភាសាទេ។',
   },
-  calendar: { label: 'ទិដ្ឋភាពប្រតិទិន' },
   notFound: { heading: 'រកមិនឃើញទំព័រ', backToMap: 'ត្រឡប់ទៅផែនទី' },
-  pageTitles: { map: 'ផែនទី', calendar: 'ប្រតិទិន', notFound: 'រកមិនឃើញទំព័រ' },
 } satisfies PartialTranslation

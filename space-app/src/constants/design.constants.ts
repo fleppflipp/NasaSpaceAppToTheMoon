@@ -66,8 +66,7 @@ export const LAYOUT = {
   'reading-width': '65ch',
   'grid-min': '16rem',
   'search-width': '26rem',
-  'calendar-width': '23rem',
-  'calendar-mobile-height': '45svh',
+  'stats-width': '23rem',
   'header-height': '4rem',
   'timeline-height': '3.25rem',
   // Space taken by the fixed header; the time bar is a full-width strip at the bottom.
@@ -143,6 +142,8 @@ export const EASING = {
 export const Z_INDEX = {
   base: '0',
   dropdown: '100',
+  // A panel that slides over the map: above the map and the time bar, below the header (and its menus).
+  panel: '150',
   sticky: '200',
   overlay: '300',
   modal: '400',
