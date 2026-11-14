@@ -130,11 +130,17 @@ def fit_satellite(cv: pd.Series, cm: pd.Series, res: float):
     lat, lon, dindex = decode(both, res)
     P = pd.DataFrame({"V": cv[both].to_numpy(), "M": cm[both].to_numpy(),
                       "region": region_of(lat, lon), "dindex": dindex}, index=both)
+    return fit_pairs(P, unit="cell-days")
 
+
+def fit_pairs(P: pd.DataFrame, unit: str = "pairs"):
+    """Fit + evaluate regional quantile maps on paired observations.
+    P columns: V (VIIRS value), M (MODIS value), region, dindex (day index, for the month table).
+    60/20/20 train / validation / test split; returns (gqm, rmaps, n0), test report."""
     rng = np.random.default_rng(0)
     u = rng.random(len(P))
     tr, va, te = P[u < 0.6], P[(u >= 0.6) & (u < 0.8)], P[u >= 0.8]
-    print(f"cell-days seen by both: {len(P):,}  (train {len(tr):,}, validation {len(va):,}, "
+    print(f"{unit} seen by both: {len(P):,}  (train {len(tr):,}, validation {len(va):,}, "
           f"test {len(te):,})")
 
     gqm = H.fit_qm(tr.V.to_numpy(), tr.M.to_numpy())
