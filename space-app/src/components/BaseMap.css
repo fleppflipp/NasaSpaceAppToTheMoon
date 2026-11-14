@@ -133,3 +133,8 @@
     opacity: 0;
   }
 }
+
+/* The map shows through MapLibre's 75% white scale bar and tints it in patches: make it one solid colour. */
+.maplibregl-ctrl-scale {
+  background-color: var(--color-background);
+}
