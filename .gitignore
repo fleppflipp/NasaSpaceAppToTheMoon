@@ -1,0 +1,33 @@
+# Allow-list: ignore everything, then re-include source, images and HTML.
+# Data, caches and generated tables (csv, npz, json, csv.gz) stay local.
+
+# Raw FIRMS data folders (large; skip them entirely)
+/viirs-jpss1_2025_all_countries/
+/modis/
+
+# Ignore all files...
+*
+
+# ...but keep walking into folders so the rules below can match inside them
+!*/
+
+# Source files
+!*.py
+
+# Images and HTML pages (including the *_template.html files the scripts need)
+!*.png
+!*.jpg
+!*.jpeg
+!*.gif
+!*.svg
+!*.webp
+!*.html
+
+# This file
+!.gitignore
+
+# Python / editor clutter (in case a rule above re-includes something inside these)
+__pycache__/
+cache/
+.venv/
+venv/
