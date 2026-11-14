@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import * as maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 import type { Place } from '../services/places'
-import SearchBar from './SearchBar'
 import './BaseMap.css'
 
 // Required with Vite so MapLibre can find its web worker.
@@ -15,7 +14,14 @@ const MAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty'
 const MAX_SEARCH_ZOOM = 15 // do not zoom in absurdly close on tiny places
 const FLY_DURATION_MS = 1500
 
-export default function BaseMap() {
+interface BaseMapProps {
+  /** The map is hidden (but kept alive) while another view is shown. */
+  active: boolean
+  /** When this changes to a new place, the map flies there. */
+  target: Place | null
+}
+
+export default function BaseMap({ active, target }: BaseMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
 
@@ -56,20 +62,20 @@ export default function BaseMap() {
     }
   }, [])
 
-  const goToPlace = useCallback((place: Place) => {
+  useEffect(() => {
     const map = mapRef.current
-    if (map === null) {
+    if (map === null || target === null) {
       return
     }
-    if (place.bounds === null) {
+    if (target.bounds === null) {
       map.flyTo({
-        center: [place.lng, place.lat],
+        center: [target.lng, target.lat],
         zoom: 12,
         duration: FLY_DURATION_MS,
       })
       return
     }
-    const [west, south, east, north] = place.bounds
+    const [west, south, east, north] = target.bounds
     map.fitBounds(
       [
         [west, south],
@@ -77,12 +83,10 @@ export default function BaseMap() {
       ],
       { maxZoom: MAX_SEARCH_ZOOM, padding: 48, duration: FLY_DURATION_MS },
     )
-  }, [])
+  }, [target])
 
   return (
-    <>
-      <div ref={containerRef} className="base-map" aria-label="Map" />
-      <SearchBar onResult={goToPlace} />
-    </>
+    // MapLibre adds its own accessible "Map" region inside this container.
+    <div ref={containerRef} className="base-map" hidden={!active} />
   )
 }

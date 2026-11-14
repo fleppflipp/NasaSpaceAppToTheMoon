@@ -4,9 +4,10 @@ Guidance for Claude Code when working in this repository.
 
 ## Project
 
-A web tool for firefighters, emergency responders, early-warning teams, land
-managers and scientists: a **harmonized burning activity calendar** built from
-satellite active-fire hotspots.
+**Firelock** is a web tool for firefighters, emergency responders, early-warning
+teams, land managers and scientists: a **harmonized burning activity calendar**
+built from satellite active-fire hotspots. The app name shown in the browser tab
+and header is "Firelock"; the favicon is `space-app/public/favicon.svg`.
 
 - MODIS (Terra/Aqua, 2000s to present) and VIIRS hotspot records from NASA FIRMS
   cannot be compared directly (different resolution, sensitivity, overpass
@@ -24,19 +25,57 @@ satellite active-fire hotspots.
 
 Work proceeds feature by feature, one feature at a time. Done so far:
 
-1. Base map: full-screen MapLibre map (OpenFreeMap `liberty` style) that turns
+1. Base map: full-width MapLibre map (OpenFreeMap `liberty` style) that turns
    into a globe when zoomed far out.
-2. Search bar with place-name autocomplete (Photon geocoder), centered at the top.
+2. Search bar with place-name autocomplete (Photon geocoder).
+3. Fixed header with the logo, the "Firelock" name, the search bar (map view
+   only) and a Map / Calendar view switch. The calendar view is an empty
+   placeholder for now; the map stays mounted (hidden) while it is shown.
 
 Planned next: area-of-interest selection (draw or lat/lon), FIRMS data
 harmonization, hotspot layers, the calendar and charts, CSV export.
 
+## Workflow: planning chat and implementing agent
+
+The team works with two separate Claude sessions:
+
+- **Planning chat** (a Claude chat/desktop session): the user discusses ideas
+  and designs features there, and gets a ready-to-paste prompt for each feature.
+  The planning chat does **not** edit source code; it plans, answers questions
+  and writes prompts. It may edit `CLAUDE.md` when the workflow or conventions
+  change.
+- **Implementing agent** (Claude Code in the terminal, working in the
+  background): receives the prompt and implements the feature in this repo. If
+  you are reading this as the implementing agent, the rules below apply to you.
+
+Rules for the implementing agent:
+
+- Treat the prompt as the full specification. Read this file, `space-app/README.md`
+  and `space-app/docs/design-system.md` first, then look at the existing code
+  before writing anything. Stay within the scope of the prompt.
+- Work autonomously. Do not stop to ask questions that a sensible default can
+  answer; make the decision, and list it in the final report. Only stop and ask
+  when the prompt is contradictory or a choice is hard to undo (for example a
+  new paid service or a big dependency).
+- Follow all agreements and conventions in this file. The standing git rule
+  applies: do not use git to change anything.
+- Before finishing: run the checks (see "Checks"), update `space-app/README.md`
+  for the feature, and update "Current state" and "Repository layout" in this
+  file.
+- Finish with a short report in Hungarian: what was built, which files were
+  added or changed, the result of the checks, decisions you made on your own,
+  anything not verified (for example "not checked visually in a browser"), and
+  open questions or suggested next steps.
+
 ## Working agreements
 
-- **Never commit and never push.** Do not run `git commit`, `git push`, or open
-  pull requests unless the user explicitly asks for it in that message. Creating
-  or switching branches is also the user's call. Leave changes in the working
-  tree and say what changed.
+- **Do not use git to change anything. This is a standing rule: the user does
+  not have to repeat it in every message.** Never run `git add`, `commit`,
+  `push`, `pull`, `merge`, `rebase`, `reset`, `stash`, `checkout`/`switch` or
+  create/delete branches, and never open pull requests. Stay on the current
+  branch and leave all changes in the working tree; say what changed. Read-only
+  commands (`git status`, `git diff`, `git log`) are fine. An explicit request
+  for one git action in a message covers only that action, not later ones.
 - **Update the README for every feature.** When a feature is added or changed,
   update `space-app/README.md` in the same change: what it does, how it works in
   a few sentences, libraries used, and any external API (add it to the "External
@@ -54,6 +93,8 @@ harmonization, hotspot layers, the calendar and charts, CSV export.
 
 - The app lives in `space-app/` (React 19, TypeScript, Vite). Run all npm
   commands from that folder.
+- `space-app/src/App.tsx`: holds the current view (map or calendar) and the
+  searched place, and renders `Header`, `BaseMap` and `CalendarView`.
 - `space-app/src/components/`: React components, each with its own `.css` file.
 - `space-app/src/services/`: calls to external APIs and data parsing.
 - `space-app/src/constants/`: design tokens and the color palette.

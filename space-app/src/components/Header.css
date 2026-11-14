@@ -1,0 +1,65 @@
+.app-header {
+  position: fixed;
+  inset-block-start: var(--space-0);
+  inset-inline: var(--space-0);
+  z-index: var(--z-index-sticky);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  block-size: var(--layout-header-height);
+  padding-inline: var(--space-4);
+  border-block-end: var(--border-width-thin) solid var(--color-primary);
+  background-color: var(--color-background);
+  box-shadow: var(--shadow-sm);
+}
+
+.app-header__brand {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  gap: var(--space-3);
+  min-inline-size: 0;
+}
+
+.app-header__logo {
+  flex: none;
+  inline-size: var(--control-size-icon-lg);
+  block-size: var(--control-size-icon-lg);
+}
+
+.app-header__title {
+  margin-block: var(--space-0);
+  font-size: var(--font-size-xl);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-header__search {
+  display: flex;
+  flex: 0 1 var(--layout-search-width);
+  justify-content: center;
+  min-inline-size: var(--space-32);
+}
+
+.view-switch {
+  display: flex;
+  flex: 1 1 0;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+/* Inactive view: outlined; active view: filled (global button style). */
+.view-switch__button {
+  padding-inline: var(--space-4);
+}
+
+.view-switch__button[aria-pressed='false'] {
+  color: var(--color-primary);
+  background-color: transparent;
+}
+
+.view-switch__button[aria-pressed='false']:hover:not(:disabled) {
+  color: var(--color-text);
+  background-color: var(--color-highlight);
+}

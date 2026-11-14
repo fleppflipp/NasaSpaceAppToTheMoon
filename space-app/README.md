@@ -46,9 +46,19 @@ Use `.ts` and `.tsx` for application source files in `src/`.
 On Windows PowerShell, if execution policy blocks `npm.ps1`, use `npm.cmd`
 instead of `npm`, for example `npm.cmd run check`.
 
+## App layout
+
+The app is called **FireLock**. `src/App.tsx` renders a fixed header
+(`src/components/Header.tsx`) with the logo and name, the place search bar in
+the middle, and a **Map / Calendar** switch on the right. The switch toggles
+between the map view and the calendar view (`CalendarView.tsx`, currently an
+empty placeholder). The map stays mounted while the calendar is shown, so its
+position is kept, and the search bar is only shown in the map view. The favicon
+is `public/favicon.svg`.
+
 ## Map
 
-`src/components/BaseMap.tsx` renders the base map of the tool: a full-screen,
+`src/components/BaseMap.tsx` renders the base map of the tool: a full-width,
 Google Maps-like street map showing roads, buildings and labels, built with
 [MapLibre GL JS](https://maplibre.org/). It uses the free
 [OpenFreeMap](https://openfreemap.org/) `liberty` vector style (OpenStreetMap
@@ -59,7 +69,7 @@ Fire hotspots will be drawn as layers on top of this map.
 
 ## Search
 
-`src/components/SearchBar.tsx` is a search box with place-name autocomplete:
+`src/components/SearchBar.tsx` is the header's search box with place-name autocomplete:
 typing "cluj" suggests "Cluj-Napoca, Cluj, Romania" and similar places.
 Picking a suggestion (click, arrow keys + Enter) flies the map there. Requests
 are debounced and go through `src/services/places.ts`, which queries the free

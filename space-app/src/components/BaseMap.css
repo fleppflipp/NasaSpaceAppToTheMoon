@@ -1,8 +1,11 @@
-/* Fills the whole viewport, regardless of the #root container width. */
+/* Fills the viewport below the fixed header, regardless of the #root width. */
 .base-map {
   position: fixed;
-  inset: var(--space-0);
-  background-color: var(
-    --color-forest
-  ); /* space around the globe when zoomed out */
+  inset-block: var(--layout-header-height) var(--space-0);
+  inset-inline: var(--space-0);
+  background-color: var(--color-forest); /* space around the globe */
+}
+
+.base-map[hidden] {
+  display: none;
 }

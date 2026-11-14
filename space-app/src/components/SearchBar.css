@@ -1,14 +1,8 @@
+/* Lives inside the header; the suggestion list and message float below it. */
 .search-bar {
-  position: fixed;
-  inset-block-start: var(--space-4);
-  inset-inline: var(--space-0);
-  margin-inline: auto; /* centers the fixed box horizontally */
-  z-index: var(--z-index-dropdown);
-  /* Leaves room on both sides for the map's zoom buttons. */
-  inline-size: min(
-    calc(100% - var(--space-16) * 2),
-    var(--layout-search-width)
-  );
+  position: relative;
+  inline-size: 100%;
+  max-inline-size: var(--layout-search-width);
 }
 
 .search-bar__form {
@@ -17,6 +11,9 @@
 }
 
 .search-bar__list {
+  position: absolute;
+  inset-block-start: 100%;
+  inset-inline: var(--space-0);
   margin-block: var(--space-2) var(--space-0);
   padding: var(--space-0);
   list-style: none;
@@ -47,12 +44,17 @@
 }
 
 .search-bar__message {
-  inline-size: fit-content;
+  position: absolute;
+  inset-block-start: 100%;
+  inset-inline-start: 50%;
+  translate: -50% 0;
+  inline-size: max-content;
+  max-inline-size: 100%;
   margin-block: var(--space-2) var(--space-0);
-  margin-inline: auto;
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-md);
   background-color: var(--color-background);
+  box-shadow: var(--shadow-sm);
   font-size: var(--font-size-sm);
 }
 
