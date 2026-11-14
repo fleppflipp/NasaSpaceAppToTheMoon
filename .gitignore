@@ -37,6 +37,7 @@ __pycache__/
 .eggs/
 cache/
 .cache/
+viirs
 
 # Local Julia and Jupyter output
 *.jls
