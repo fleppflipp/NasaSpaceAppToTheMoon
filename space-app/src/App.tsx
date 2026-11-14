@@ -1,3 +1,5 @@
+import BaseMap from './components/BaseMap'
+
 export default function App() {
-  return <h1>Space App</h1>
+  return <BaseMap />
 }

@@ -1,0 +1,61 @@
+.search-bar {
+  position: fixed;
+  inset-block-start: var(--space-4);
+  inset-inline: var(--space-0);
+  margin-inline: auto; /* centers the fixed box horizontally */
+  z-index: var(--z-index-dropdown);
+  /* Leaves room on both sides for the map's zoom buttons. */
+  inline-size: min(
+    calc(100% - var(--space-16) * 2),
+    var(--layout-search-width)
+  );
+}
+
+.search-bar__form {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.search-bar__list {
+  margin-block: var(--space-2) var(--space-0);
+  padding: var(--space-0);
+  list-style: none;
+  border: var(--border-width-thin) solid var(--color-primary);
+  border-radius: var(--radius-md);
+  background-color: var(--color-background);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.search-bar__list[hidden] {
+  display: none;
+}
+
+.search-bar__option {
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+}
+
+.search-bar__list > .search-bar__option + .search-bar__option {
+  margin-block-start: var(--space-0);
+  border-block-start: var(--border-width-thin) solid var(--color-highlight);
+}
+
+.search-bar__option:hover,
+.search-bar__option[aria-selected='true'] {
+  background-color: var(--color-highlight);
+}
+
+.search-bar__message {
+  inline-size: fit-content;
+  margin-block: var(--space-2) var(--space-0);
+  margin-inline: auto;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--color-background);
+  font-size: var(--font-size-sm);
+}
+
+.search-bar__message:empty {
+  display: none;
+}

@@ -1,0 +1,8 @@
+/* Fills the whole viewport, regardless of the #root container width. */
+.base-map {
+  position: fixed;
+  inset: var(--space-0);
+  background-color: var(
+    --color-forest
+  ); /* space around the globe when zoomed out */
+}

@@ -45,3 +45,36 @@ Use `.ts` and `.tsx` for application source files in `src/`.
 
 On Windows PowerShell, if execution policy blocks `npm.ps1`, use `npm.cmd`
 instead of `npm`, for example `npm.cmd run check`.
+
+## Map
+
+`src/components/BaseMap.tsx` renders the base map of the tool: a full-screen,
+Google Maps-like street map showing roads, buildings and labels, built with
+[MapLibre GL JS](https://maplibre.org/). It uses the free
+[OpenFreeMap](https://openfreemap.org/) `liberty` vector style (OpenStreetMap
+data, no API key), so the map only downloads the vector tiles for the visible
+area. Zooming far out turns it into a globe (MapLibre `globe` projection);
+zooming in blends it back into a flat map. Rotation and pitch are disabled.
+Fire hotspots will be drawn as layers on top of this map.
+
+## Search
+
+`src/components/SearchBar.tsx` is a search box with place-name autocomplete:
+typing "cluj" suggests "Cluj-Napoca, Cluj, Romania" and similar places.
+Picking a suggestion (click, arrow keys + Enter) flies the map there. Requests
+are debounced and go through `src/services/places.ts`, which queries the free
+[Photon](https://photon.komoot.io/) geocoder (OpenStreetMap data, no API key).
+The public Photon instance is meant for light use; self-host it for heavy traffic.
+
+## External services
+
+The app calls these third-party services directly from the browser. None of
+them needs an API key.
+
+| Service                                      | Used for                                      | Endpoint                                                 | Notes                                                                                                                                        |
+| -------------------------------------------- | --------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| [OpenFreeMap](https://openfreemap.org/)      | Base map: vector tiles, style, fonts, sprites | `https://tiles.openfreemap.org/styles/liberty`           | Free, no key or request limit; no uptime guarantee. Self-host or switch provider for production.                                             |
+| [Photon](https://photon.komoot.io/) (Komoot) | Search bar place-name autocomplete            | `https://photon.komoot.io/api/?q=<text>&limit=6&lang=en` | Built for search-as-you-type; public instance is for light use. Requests are debounced (250 ms, 2+ characters). Self-host for heavy traffic. |
+
+The text typed in the search bar is sent to Photon. OpenStreetMap data is used
+by both services and requires the attribution already shown on the map.
