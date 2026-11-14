@@ -234,8 +234,8 @@ def main():
 
     cms, models = {}, {}
     for sat in a.modis_sats:
-        print(f"\n######## MODIS {sat} -> VIIRS")
-        cms[sat] = H.cell_day(M[M.aqua] if sat == "Aqua" else M[~M.aqua], a.res)
+        print(f"\n######## {sat} -> VIIRS")
+        cms[sat] = H.cell_day(H.modis_subset(M, sat), a.res)
         models[sat], rep = fit_satellite(cv, cms[sat], a.res)
         save_model(out_dir / f"regional_maps_{sat}.npz", models[sat])
         rep.to_csv(out_dir / f"regional_report_{sat}.csv", index=False)
@@ -246,45 +246,42 @@ def main():
         keys = keys.union(cm.index)
     lat, lon, dindex = decode(keys, a.res)
     reg = region_of(lat, lon)
+    # One FRP per cell-day, on the VIIRS scale: the average of every satellite that saw
+    # the cell (VIIRS as measured, each MODIS satellite after its own conversion).
     v = cv.reindex(keys).to_numpy()
-    cols = {"date": H.index_to_date(dindex).strftime("%Y-%m-%d"),
-            "lat_center": lat.round(3), "lon_center": lon.round(3), "region": reg,
-            "viirs_frp_mw": v.round(2)}
     seen = {"viirs": ~np.isnan(v)}
-    h_sum, h_n = np.zeros(len(keys)), np.zeros(len(keys))
+    total = np.where(seen["viirs"], v, 0.0)
+    count = seen["viirs"].astype(int)
     for sat in a.modis_sats:
         m = cms[sat].reindex(keys).to_numpy()
         ok = ~np.isnan(m)
-        mh = np.full(len(keys), np.nan)
-        mh[ok] = apply_regional(m[ok], reg[ok], *models[sat])
-        cols[f"modis_{sat.lower()}_frp_mw"] = m.round(2)
-        cols[f"modis_{sat.lower()}_harmonized_frp_mw"] = mh.round(2)
-        h_sum[ok] += mh[ok]
-        h_n[ok] += 1
+        total[ok] += apply_regional(m[ok], reg[ok], *models[sat])
+        count += ok
         seen[sat.lower()] = ok
-    # Each harmonized MODIS value estimates the same VIIRS value; average when both saw the cell.
-    mh_all = np.where(h_n > 0, h_sum / np.maximum(h_n, 1), np.nan)
-    cols["modis_harmonized_frp_mw"] = mh_all.round(2)
-    # one value per cell-day on the VIIRS scale: VIIRS if it saw the cell, else harmonized MODIS
-    cols["merged_frp_mw"] = np.where(np.isnan(v), mh_all, v).round(2)
     names = list(seen)
     code = sum(seen[n].astype(int) << i for i, n in enumerate(names))
     labels = {c: "+".join(n for i, n in enumerate(names) if c >> i & 1) for c in np.unique(code)}
-    cols["seen_by"] = pd.Series(code).map(labels).to_numpy()
-    out = pd.DataFrame(cols)
+    seen_by = pd.Series(code).map(labels)          # only for the summary printed below
+    # lat / lon are the centre of the grid cell; frp is in MW on the VIIRS scale
+    out = pd.DataFrame({
+        "date": H.index_to_date(dindex).strftime("%Y-%m-%d"),
+        "lat": lat.round(3), "lon": lon.round(3), "region": reg,
+        "frp": (total / count).round(2),
+    })
 
     fname = f"harmonized_cellday_{a.res}deg.csv"
     out.to_csv(out_dir / fname, index=False)
     size_mb = (out_dir / fname).stat().st_size / 1e6
     print(f"\nwrote {out_dir}:")
     print(f"  {fname}  ({len(out):,} cell-days, {size_mb:,.0f} MB)")
-    for k, n in out.seen_by.value_counts().items():
+    for k, n in seen_by.value_counts().items():
         print(f"     seen by {k:<18} {n:>10,}")
     print("  " + ", ".join(f"regional_maps_{s}.npz, regional_report_{s}.csv" for s in a.modis_sats))
 
 
-def harmonize_regional(modis_cellday_frp, lat, lon, satellite="Aqua", out_dir=H.OUT):
-    """MODIS (Aqua or Terra) cell-day FRP (MW) at cell-centre lat/lon -> VIIRS-equivalent."""
+def harmonize_regional(modis_cellday_frp, lat, lon, satellite="MODIS", out_dir=H.OUT):
+    """MODIS cell-day FRP (MW) at cell-centre lat/lon -> VIIRS-equivalent.
+    satellite="MODIS": Terra+Aqua summed per cell-day (default); "Aqua"/"Terra": one satellite."""
     model = load_model(Path(out_dir) / f"regional_maps_{satellite}.npz")
     return apply_regional(modis_cellday_frp, region_of(lat, lon), *model)
 

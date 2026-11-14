@@ -94,12 +94,18 @@ def load_both(args) -> tuple[pd.DataFrame, pd.DataFrame]:
     return load("VIIRS", files["VIIRS"]), load("MODIS", files["MODIS"])
 
 
-MODIS_SATS = ("Aqua", "Terra")
+MODIS_SATS = ("MODIS", "Aqua", "Terra")
 
 
 def add_sat_arg(ap: argparse.ArgumentParser) -> None:
-    ap.add_argument("--modis-sats", nargs="+", choices=MODIS_SATS, default=list(MODIS_SATS),
-                    help="MODIS satellites to harmonize, each with its own curve (default: both)")
+    ap.add_argument("--modis-sats", nargs="+", choices=MODIS_SATS, default=["MODIS"],
+                    help="MODIS = Terra and Aqua together as one sensor (default; all of a day's "
+                         "MODIS detections summed per cell). Aqua / Terra = one satellite only, "
+                         "with its own curve.")
+
+
+def modis_subset(M: pd.DataFrame, sat: str) -> pd.DataFrame:
+    return M if sat == "MODIS" else (M[M.aqua] if sat == "Aqua" else M[~M.aqua])
 
 
 def add_out_arg(ap: argparse.ArgumentParser) -> None:
@@ -224,7 +230,7 @@ def plot(paired_test, qm, res, path, sat="Aqua"):
     ax.plot(xs, apply_qm(xs, qm), "-", lw=2, color=INK, label="transfer (quantile map)")
     style(ax, "MODIS FRP (MW)", "VIIRS FRP (MW)", "Same cell, same day")
 
-    fig.suptitle(f"MODIS {sat} → VIIRS (NOAA-20)", x=0.01, ha="left", color=INK, fontsize=12)
+    fig.suptitle(f"{'MODIS (Terra + Aqua)' if sat == 'MODIS' else 'MODIS ' + sat} → VIIRS (NOAA-20)", x=0.01, ha="left", color=INK, fontsize=12)
     fig.tight_layout()
     fig.savefig(path, dpi=140, facecolor=fig.get_facecolor())
     plt.close(fig)
@@ -247,11 +253,11 @@ def main():
     V = V[V.day == want_day]
     M = M[M.day == want_day]
     print(f"loaded {time.time() - t0:.0f}s")
-    # Each MODIS satellite gets its own conversion: Aqua passes at ~13:30 like NOAA-20,
-    # Terra at ~10:30, when fires are usually weaker, so they relate differently to VIIRS.
+    # Default: MODIS as one sensor (Terra ~10:30 + Aqua ~13:30 detections summed per cell-day).
+    # A single curve for that pooled value works as well as separate per-satellite curves.
     for sat in a_.modis_sats:
-        Ms = M[M.aqua] if sat == "Aqua" else M[~M.aqua]
-        print(f"\n######## MODIS {sat} vs VIIRS: {len(V):,} VIIRS, {len(Ms):,} MODIS {sat} detections")
+        Ms = modis_subset(M, sat)
+        print(f"\n######## {sat} vs VIIRS: {len(V):,} VIIRS, {len(Ms):,} {sat} detections")
         analyse(V, Ms, sat, a_, OUT)
     print(f"\nwrote {OUT}  ({time.time() - t0:.0f}s)")
 
@@ -336,8 +342,9 @@ def analyse(V, M, sat, a_, OUT):
     plot(te, qm, a_.res, OUT / f"harmonization_{sat}_{a_.res}deg.png", sat)
 
 
-def harmonize(modis_cellday_frp, satellite="Aqua", out_dir=OUT):
-    """Convert MODIS (Aqua or Terra) cell-day FRP (MW) to VIIRS-equivalent, worldwide map."""
+def harmonize(modis_cellday_frp, satellite="MODIS", out_dir=OUT):
+    """Convert MODIS cell-day FRP (MW) to VIIRS-equivalent, worldwide map.
+    satellite="MODIS": Terra+Aqua summed per cell-day (default); "Aqua"/"Terra": one satellite."""
     z = np.load(Path(out_dir) / f"quantile_map_{satellite}.npz")
     return apply_qm(modis_cellday_frp, (z["log_modis"], z["log_viirs"]))
 
