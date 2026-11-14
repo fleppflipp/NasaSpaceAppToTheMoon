@@ -35,15 +35,9 @@ export default {
   },
   timeline: {
     label: 'Perioadă',
-    startMonth: 'Luna de început',
-    endMonth: 'Luna de sfârșit',
+    year: 'An',
+    week: 'Săptămâna',
     range: '{{start}} – {{end}}',
-    exactDates: 'Date exacte',
-    from: 'De la',
-    to: 'Până la',
-    clearDates: 'Înapoi la luni',
-    invalidRange: 'Prima dată nu poate fi după ultima.',
-    outOfRange: 'Alege date între {{min}} și {{max}}.',
   },
   calendar: { label: 'Vizualizare calendar' },
   notFound: {

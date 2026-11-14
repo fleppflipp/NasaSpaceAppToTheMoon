@@ -112,6 +112,7 @@ Desktop.ini
 
 # Fire tiles and the big files that build them (made locally by tiles/build_fire_tiles.py)
 /space-app/public/tiles/
+/tile-server/data/
 *.pmtiles
 *.mbtiles
 *.ndjson

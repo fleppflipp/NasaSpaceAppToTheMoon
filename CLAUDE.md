@@ -43,17 +43,15 @@ Work proceeds feature by feature, one feature at a time. Done so far:
    languages of the countries in the data folders), flags from `flag-icons`,
    lazy-loaded dictionaries, right-to-left support; the choice is stored in
    `localStorage`.
-7. Time period bar under the header (`TimelineBar`): two-handle month slider
-   (Nov 2000 to Dec 2025) plus an exact date range; `period` state lives in
-   `layouts/AppLayout.tsx`.
-8. Fire layer: fires of the selected period as circles from per-year PMTiles
-   files (`public/tiles/fires_<year>.pmtiles`, git-ignored, built by
+7. Time period bar under the header (`TimelineBar`): a year list and one slider
+   over the 53 weeks of the year; the map always shows one week. `period`
+   (`{ year, week }`) lives in `layouts/AppLayout.tsx`.
+8. Fire layer: the fires of the selected week from per-week PMTiles files
+   (`tile-server/data/fires_<year>_w<NN>.pmtiles`, git-ignored, served by the nginx container in `tile-server/` at `VITE_TILE_BASE_URL`, built by
    `tiles/build_fire_tiles.py`; `FIRE_TILE_YEARS` lists the years that exist).
-   Only 2012 so far; more years are added as the data team delivers
+   Dots when zoomed out, overlapping fires merged into polygons from zoom 10.
+   Years 2012 to 2015 so far; more are added as the data team delivers
    `fire_pixels_<year>.csv`.
-6. Data pipeline scripts from the data team (repo root, see "Data pipeline"):
-   FIRMS MODIS + VIIRS pixels are joined into daily fires. The harmonized,
-   map-ready format (PMTiles etc.) is still being defined by the data team.
 
 Planned next: selecting an area by latitude/longitude, FIRMS data
 harmonization, hotspot layers, the calendar and charts, CSV export.
@@ -149,11 +147,13 @@ into data for the app. Outputs are local and ignored by git too.
 - `src/`: earlier FRP harmonization research (`harmonize_frp.py`,
   `harmonize_regional.py`, `fit_frp_distributions.py`, `cluster_viirs.py`,
   `firms_data.py`) and the HTML overview/daily viewers (`src/viz/`).
-- `tiles/build_fire_tiles.py`: `fire_pixels_<year>.csv` (all countries) to
-  `space-app/public/tiles/fires_<year>.pmtiles`: DuckDB builds one row per daily
-  fire (centre, radius, FRP, which sensors saw it), tippecanoe (in WSL on
-  Windows) writes the tiles. Needs `duckdb`; the venv at
-  `DATAirelock_workenv` has it.
+- `tiles/build_fire_tiles.py`: `fire_pixels_<year>.csv` (all countries) to 53
+  weekly files `tile-server/data/fires_<year>_w<NN>.pmtiles`: DuckDB builds
+  one row per daily fire (centre, radius, FRP, which sensors saw it), shapely
+  merges overlapping fire circles per week, tippecanoe (in WSL on Windows) writes
+  the tiles. Needs `duckdb`, `shapely`, `pyarrow`; the venv at
+  `DATAirelock_workenv` has them. See the "Fire layer" section of
+  `space-app/README.md` for how the PMTiles are served and used.
 - Principle agreed in the planning chat: harmonize toward the coarser common
   denominator (MODIS-equivalent counts for the calendar); the map shows only real
   detections, never invented locations.

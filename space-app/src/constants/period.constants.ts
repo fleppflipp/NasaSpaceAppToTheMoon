@@ -1,17 +1,10 @@
-// Months are counted from January 2000 (index 0): 2000-11 is 10, 2025-12 is 311.
+/**
+ * The app shows one week of one year at a time. Week k of a year covers days
+ * 7k+1 to 7k+7 (counted from January 1st), so there are 52 full weeks and a
+ * last week (52) with the one or two days that are left.
+ */
+export const WEEKS_PER_YEAR = 53
+export const LAST_WEEK = WEEKS_PER_YEAR - 1
 
-/** First month with fire data: Terra/MODIS started in November 2000. */
-export const FIRST_MONTH_INDEX = 10
-/** Last month in the data folders: December 2025. */
-export const LAST_MONTH_INDEX = 311
-
-/** First and last day with data (UTC), as ISO dates. */
-export const DATA_START_DATE = '2000-11-01'
-export const DATA_END_DATE = '2025-12-31'
-
-/** The period shown when the app starts: the last year of data. */
-export const DEFAULT_START_MONTH_INDEX = 300 // 2025-01
-export const DEFAULT_END_MONTH_INDEX = LAST_MONTH_INDEX
-
-/** A year mark on the slider track is drawn every this many years. */
-export const TICK_EVERY_YEARS = 1
+/** The week shown at start: late July, peak of the fire season in many regions. */
+export const DEFAULT_WEEK = 30

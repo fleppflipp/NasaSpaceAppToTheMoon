@@ -61,51 +61,76 @@ deployment instructions.
 
 ## Fire layer
 
-Fires are drawn on the map as circles (`src/hooks/useFireLayers.ts`): the circle
-has the fire's real radius at every zoom (never smaller than a few pixels) and its
-color shows the fire radiative power (yellow to dark red, tokens `fire-*` in the
-palette). Only fires whose day is inside the selected period are drawn, and the
-layer sits under the map labels. If the period has no fire data yet the map says
-so.
+The map shows the fires of **one week** at a time. Zoomed out, every fire is a
+dot; from zoom 10 on, fires that overlap are merged into one **common polygon**
+(`src/hooks/useFireLayers.ts`). Polygons are flat, see-through fills with a faint
+outline, like the forest patches of a topographic map, colored by the strongest
+fire radiative power (FRP) inside: yellow to dark red (tokens `fire-*` in the
+palette). The layers sit under the map labels. Years or weeks without data show
+no fires, and the map says so.
 
-The data comes from static PMTiles files, one per year, read directly in the
-browser with HTTP range requests (the `pmtiles` package registers a
-`pmtiles://` protocol in MapLibre; no tile server, no backend):
-`public/tiles/fires_<year>.pmtiles`, listed in `FIRE_TILE_YEARS`
-(`src/constants/fires.constants.ts`). Layer `fires`, one point per daily fire
-with the properties `day` (days since 2000-01-01, used by the time filter), `s`
-(0 = seen by MODIS only, 1 = both, 2 = VIIRS only), `f` (FRP in MW) and `r`
-(radius in km). The files are big and local: they are git-ignored. Build one from
-a `fire_pixels_<year>.csv` (see `tiles/build_fire_tiles.py`, which needs `duckdb`
-and `tippecanoe`; on Windows tippecanoe runs inside WSL):
+### How the PMTiles work, where they run and how others connect
+
+The data is static files, one PMTiles file per week:
+`tile-server/data/fires_<year>_w<NN>.pmtiles` (`NN` = 00 to 52), plus
+`fires_<year>.json` with the counts per week. They are big, local and git-ignored.
+A small **nginx tile server** (Docker, folder `tile-server/`, see its README)
+serves that folder on port 8080 with HTTP range requests and CORS for any origin,
+so the browser reads only the pieces it needs: the `pmtiles` package registers a
+`pmtiles://` protocol in MapLibre, the source URL is
+`pmtiles://http://localhost:8080/tiles/fires_2012_w30.pmtiles`, and changing the
+week just points the source at another file. Start it with
+`cd tile-server && docker compose up -d`. The app finds the server through
+`VITE_TILE_BASE_URL` (default `http://localhost:8080/tiles`, see `.env.example`;
+set it in `.env.local` to use a teammate's server). The tiles are not part of
+`dist/`.
+
+Inside a file there are two layers: `fires` (points, zoom 0-9; props `day` = days
+since 2000-01-01, `s` = 0 MODIS only / 1 both / 2 VIIRS only, `f` = FRP in MW, `r`
+= radius in km) and `areas` (polygons, zoom 10-12; props `f` = largest FRP, `n` =
+fires merged, `s`, `d0`/`d1` = first and last day). The overview dots are thinned
+where they are dense; polygons are not.
+
+Other people can connect to them in these ways:
+
+- On the same network, they set `VITE_TILE_BASE_URL=http://<your-ip>:8080/tiles`
+  (allow port 8080 in the Windows firewall for private networks) and run their own
+  `npm run dev`, or they run the same compose with a copy of `tile-server/data`.
+- Another web app needs the `pmtiles` protocol, a vector source
+  `pmtiles://http://<your-ip>:8080/tiles/fires_2012_w30.pmtiles` and the layers
+  above; CORS is already open.
+- QGIS (3.32 or newer, untested here) or the `pmtiles` command line tool
+  (`pmtiles show`) can open a file by its URL.
+- From the internet only through a tunnel or by copying the files to a static host
+  with range requests (not set up).
+
+### Building the files
+
+`tiles/build_fire_tiles.py` makes the 53 weekly files of one year from its
+`fire_pixels_<year>.csv` (needs the Python packages `duckdb`, `numpy`, `pyarrow`,
+`shapely`, and `tippecanoe`; on Windows tippecanoe runs inside WSL):
 
 ```sh
-python tiles/build_fire_tiles.py --pixels <fire_pixels_2012.csv> --year 2012   --work-dir <big temp folder> --out space-app/public/tiles
+python tiles/build_fire_tiles.py --pixels <fire_pixels_2012.csv> --year 2012   --work-dir <big temp folder> --out tile-server/data
 ```
 
-then add the year to `FIRE_TILE_YEARS`. 2012 (7.9 million fires) builds a 217 MB
-file in about three minutes. Low zooms thin out the densest areas
-(`--drop-densest-as-needed`), so the globe shows a sample; zoomed in, every fire
-is there.
+DuckDB builds one row per daily fire, shapely turns every fire into a circle and
+merges the overlapping ones per week, tippecanoe writes the tiles. One year
+(about 8 million fires) takes about ten minutes and about 2 GB. When all weeks of a
+year exist, add the year to `FIRE_TILE_YEARS` (`src/constants/fires.constants.ts`).
+Rows whose local date falls outside the year (an edge effect of the yearly files)
+are put into the first or last day of the year.
 
 ## Time period
 
-A bar under the header (`src/components/TimelineBar.tsx`) picks the period to
-show. A two-handle slider covers every month of the data (November 2000 to
-December 2025, set in `src/constants/period.constants.ts`): the left handle is
-the first month, the right handle the last, and every month between is
-included. It starts on the last year of data. The **Exact dates** button opens a
-panel with two native date fields for a range of days; while exact days are in
-use the button is filled and the slider handles show their months. Moving a
-handle clears the days and goes back to whole months.
-
-The period is held in `AppLayout.tsx` as a `Period` (`src/services/period.ts`):
-either `{ kind: 'months', startMonth, endMonth }` (month index = months since
-January 2000) or `{ kind: 'days', startDate, endDate }` (ISO dates, UTC, both
-included). `periodDateRange()` turns either into first and last day. Nothing
-reads the period yet: the map layers and the calendar will use it once the fire
-data exists. All dates are UTC regardless of the display language; labels use
-`Intl` in the active language. No external service or dependency.
+A bar under the header (`src/components/TimelineBar.tsx`) picks the week: a
+**year** list (the years in `FIRE_TILE_YEARS`) and **one slider** over the weeks of
+that year, with a mark at each month start. Week k covers days 7k+1 to 7k+7 of the
+year; the last week (52) is the one or two days that are left. The summary shows
+the dates of the week in the active language. The period is held in
+`AppLayout.tsx` as `{ year, week }` (`src/services/period.ts`), starts on the
+latest year, week 30, and `periodDateRange()` turns it into first and last day.
+All dates are UTC regardless of the display language. No external service.
 
 ## Language
 

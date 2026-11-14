@@ -33,15 +33,9 @@ export default {
   fires: { noData: 'Erre az időszakra még nincs tűzadat.' },
   timeline: {
     label: 'Időszak',
-    startMonth: 'Kezdő hónap',
-    endMonth: 'Záró hónap',
+    year: 'Év',
+    week: 'Hét',
     range: '{{start}} – {{end}}',
-    exactDates: 'Pontos dátumok',
-    from: 'Ettől',
-    to: 'Eddig',
-    clearDates: 'Vissza a hónapokhoz',
-    invalidRange: 'Az első dátum nem lehet későbbi, mint az utolsó.',
-    outOfRange: 'Válassz dátumot {{min}} és {{max}} között.',
   },
   calendar: { label: 'Naptár nézet' },
   notFound: {

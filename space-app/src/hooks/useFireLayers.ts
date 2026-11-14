@@ -1,36 +1,39 @@
 import { useEffect, useRef } from 'react'
 import type { RefObject } from 'react'
-import type {
-  ExpressionSpecification,
-  FilterSpecification,
-  Map as MapLibreMap,
-} from 'maplibre-gl'
+import { VectorTileSource } from 'maplibre-gl'
+import type { ExpressionSpecification, Map as MapLibreMap } from 'maplibre-gl'
 import { COLOR_PALETTE } from '../constants/colorpallette.constatns'
 import {
+  FIRE_AREAS_LAYER,
+  FIRE_AREAS_MIN_ZOOM,
+  FIRE_FILL_OPACITY,
   FIRE_FRP_STOPS,
   FIRE_MIN_RADIUS_PX,
-  FIRE_SOURCE_LAYER,
-  FIRE_TILE_YEARS,
+  FIRE_OUTLINE_OPACITY,
+  FIRE_OUTLINE_WIDTH_PX,
+  FIRE_POINTS_LAYER,
   METRES_PER_PIXEL_AT_ZOOM_0,
 } from '../constants/fires.constants'
 import {
   fireTileUrl,
-  fireYearsInPeriod,
+  hasFireData,
   registerPmtilesProtocol,
 } from '../services/fireTiles'
-import { periodDayRange } from '../services/period'
 import type { Period } from '../services/period'
 
 registerPmtilesProtocol()
 
-const sourceId = (year: number) => `fires-${String(year)}`
-const layerId = (year: number) => `fires-${String(year)}-circles`
+const SOURCE = 'fires'
+const POINTS = 'fires-points'
+const AREAS = 'fires-areas'
+const OUTLINE = 'fires-areas-outline'
+const LAYERS = [POINTS, AREAS, OUTLINE]
 
 /** Pixels per kilometre at zoom 0; it doubles with every zoom level. */
 const PX_PER_KM_AT_ZOOM_0 = 1000 / METRES_PER_PIXEL_AT_ZOOM_0
 const MAX_ZOOM = 24
 
-/** Circle radius: the fire's real radius (`r`, km) at this zoom, but never tiny. */
+/** Dot radius: the fire's real radius (`r`, km) at this zoom, but never tiny. */
 const RADIUS: ExpressionSpecification = [
   'interpolate',
   ['exponential', 2],
@@ -45,7 +48,7 @@ const RADIUS: ExpressionSpecification = [
   ],
 ]
 
-/** Color by the fire's radiative power `f` (MW). */
+/** Color by the fire radiative power `f` (MW; for a polygon the largest of its fires). */
 const COLOR: ExpressionSpecification = [
   'interpolate',
   ['linear'],
@@ -60,78 +63,95 @@ const COLOR: ExpressionSpecification = [
   COLOR_PALETTE['fire-extreme'],
 ]
 
-/** Keeps the fires whose `day` (days since 2000-01-01) is inside the period. */
-function periodFilter(period: Period): FilterSpecification {
-  const { startDay, endDay } = periodDayRange(period)
-  return [
-    'all',
-    ['>=', ['get', 'day'], startDay],
-    ['<=', ['get', 'day'], endDay],
-  ]
-}
-
 /** Fires are drawn under the map labels, so place names stay readable. */
 function firstSymbolLayerId(map: MapLibreMap): string | undefined {
   return map.getStyle().layers.find((layer) => layer.type === 'symbol')?.id
 }
 
-function ensureLayers(map: MapLibreMap, period: Period): void {
-  const filter = periodFilter(period)
-  const visible = new Set(fireYearsInPeriod(period))
-  for (const year of FIRE_TILE_YEARS) {
-    if (!map.getSource(sourceId(year))) {
-      map.addSource(sourceId(year), {
-        type: 'vector',
-        url: fireTileUrl(year),
-      })
-    }
-    if (!map.getLayer(layerId(year))) {
-      map.addLayer(
-        {
-          id: layerId(year),
-          type: 'circle',
-          source: sourceId(year),
-          'source-layer': FIRE_SOURCE_LAYER,
-          filter,
-          layout: { visibility: visible.has(year) ? 'visible' : 'none' },
-          paint: {
-            'circle-radius': RADIUS,
-            'circle-color': COLOR,
-            'circle-opacity': 0.75,
-            'circle-stroke-width': 0.5,
-            'circle-stroke-color': COLOR_PALETTE['fire-outline'],
-          },
-        },
-        firstSymbolLayerId(map),
-      )
-    }
-  }
-}
-
-function applyPeriod(map: MapLibreMap, period: Period): void {
-  const filter = periodFilter(period)
-  const visible = new Set(fireYearsInPeriod(period))
-  for (const year of FIRE_TILE_YEARS) {
-    if (map.getLayer(layerId(year))) {
-      map.setFilter(layerId(year), filter)
-      map.setLayoutProperty(
-        layerId(year),
-        'visibility',
-        visible.has(year) ? 'visible' : 'none',
-      )
+function setVisibility(map: MapLibreMap, visible: boolean): void {
+  for (const id of LAYERS) {
+    if (map.getLayer(id)) {
+      map.setLayoutProperty(id, 'visibility', visible ? 'visible' : 'none')
     }
   }
 }
 
 /**
- * Draws the fires of the years that have tile files and keeps only the ones
- * inside the period. Returns whether the period has any fire data at all.
+ * Shows the fires of the period: one weekly tile file is the source; changing
+ * the week points the source at another file. Below the area zoom the fires
+ * are dots, from it on they are the merged polygons.
+ */
+function showPeriod(map: MapLibreMap, period: Period): void {
+  if (!hasFireData(period)) {
+    setVisibility(map, false)
+    return
+  }
+  const url = fireTileUrl(period)
+  const source = map.getSource(SOURCE)
+  if (source === undefined) {
+    map.addSource(SOURCE, { type: 'vector', url })
+  } else if (source instanceof VectorTileSource && source.url !== url) {
+    source.setUrl(url)
+  }
+
+  if (!map.getLayer(POINTS)) {
+    const before = firstSymbolLayerId(map)
+    map.addLayer(
+      {
+        id: POINTS,
+        type: 'circle',
+        source: SOURCE,
+        'source-layer': FIRE_POINTS_LAYER,
+        maxzoom: FIRE_AREAS_MIN_ZOOM,
+        paint: {
+          'circle-radius': RADIUS,
+          'circle-color': COLOR,
+          'circle-opacity': FIRE_FILL_OPACITY + 0.1,
+        },
+      },
+      before,
+    )
+    map.addLayer(
+      {
+        id: AREAS,
+        type: 'fill',
+        source: SOURCE,
+        'source-layer': FIRE_AREAS_LAYER,
+        minzoom: FIRE_AREAS_MIN_ZOOM,
+        paint: { 'fill-color': COLOR, 'fill-opacity': FIRE_FILL_OPACITY },
+      },
+      before,
+    )
+    map.addLayer(
+      {
+        id: OUTLINE,
+        type: 'line',
+        source: SOURCE,
+        'source-layer': FIRE_AREAS_LAYER,
+        minzoom: FIRE_AREAS_MIN_ZOOM,
+        paint: {
+          'line-color': COLOR_PALETTE['fire-outline'],
+          'line-opacity': FIRE_OUTLINE_OPACITY,
+          'line-width': FIRE_OUTLINE_WIDTH_PX,
+        },
+      },
+      before,
+    )
+  }
+  setVisibility(map, true)
+}
+
+/**
+ * Draws the fires of the week in the period. Returns whether the period has
+ * any fire data at all.
  */
 export function useFireLayers(
   mapRef: RefObject<MapLibreMap | null>,
   period: Period,
 ): { hasData: boolean } {
   const periodRef = useRef(period)
+  // Layers can only be changed once the style has loaded.
+  const styleReadyRef = useRef(false)
 
   // Layers (re)appear after every style load.
   useEffect(() => {
@@ -140,7 +160,8 @@ export function useFireLayers(
       return
     }
     const handleStyleLoad = () => {
-      ensureLayers(map, periodRef.current)
+      styleReadyRef.current = true
+      showPeriod(map, periodRef.current)
     }
     map.on('style.load', handleStyleLoad)
     if (map.isStyleLoaded()) {
@@ -148,18 +169,18 @@ export function useFireLayers(
     }
     return () => {
       map.off('style.load', handleStyleLoad)
+      styleReadyRef.current = false
     }
   }, [mapRef])
 
-  // The period changed: filter the layers and hide years outside of it.
+  // The period changed: point the source at the new week.
   useEffect(() => {
     periodRef.current = period
     const map = mapRef.current
-    if (map !== null) {
-      // Layers that are not there yet get the period when they are added.
-      applyPeriod(map, period)
+    if (map !== null && styleReadyRef.current) {
+      showPeriod(map, period)
     }
   }, [mapRef, period])
 
-  return { hasData: fireYearsInPeriod(period).length > 0 }
+  return { hasData: hasFireData(period) }
 }

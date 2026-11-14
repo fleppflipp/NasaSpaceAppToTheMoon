@@ -1,4 +1,4 @@
-/* Fixed bar right under the header: a summary line and the two-handle slider. */
+/* Fixed bar right under the header: a summary line with the year, and the week slider. */
 .timeline {
   position: fixed;
   inset-block-start: var(--layout-header-height);
@@ -32,91 +32,20 @@
   white-space: nowrap;
 }
 
-/* Exact days: outlined when off, filled when the days are in use. */
-.timeline__dates {
-  position: relative;
+.form-control.timeline__year {
   flex: none;
-}
-
-.timeline__dates-button {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
+  inline-size: auto;
   min-block-size: auto;
   padding: var(--space-1) var(--space-3);
   font-size: var(--font-size-sm);
-}
-
-.timeline__dates-button[data-active='false'] {
-  color: var(--color-primary);
-  background-color: transparent;
-}
-
-.timeline__dates-button[data-active='false']:hover:not(:disabled) {
-  color: var(--color-text);
-  background-color: var(--color-highlight);
-}
-
-.timeline__icon {
-  inline-size: var(--space-4);
-  block-size: var(--space-4);
-}
-
-.timeline__panel {
-  position: absolute;
-  inset-block-start: 100%;
-  inset-inline-end: var(--space-0);
-  z-index: var(--z-index-dropdown);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  inline-size: var(--layout-grid-min);
-  margin-block-start: var(--space-2);
-  padding: var(--space-4);
-  border: var(--border-width-thin) solid var(--color-primary);
-  border-radius: var(--radius-md);
-  background-color: var(--color-background);
-  box-shadow: var(--shadow-md);
-}
-
-.timeline__panel[hidden] {
-  display: none;
-}
-
-.timeline__field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  font-size: var(--font-size-sm);
-}
-
-.timeline__problem {
-  margin-block: var(--space-0);
-  font-size: var(--font-size-sm);
-}
-
-.timeline__problem:empty {
-  display: none;
-}
-
-.timeline__clear {
-  align-self: flex-start;
-  min-block-size: auto;
-  padding: var(--space-1) var(--space-3);
-  font-size: var(--font-size-sm);
-  color: var(--color-primary);
-  background-color: transparent;
-}
-
-.timeline__clear:hover:not(:disabled) {
-  color: var(--color-text);
-  background-color: var(--color-highlight);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
 }
 
 /*
- * Two range inputs share one track. Only their handles take pointer events, so
- * both can be dragged. The visible track sits half a handle in from each edge,
- * where the centre of the handles travels.
+ * One range input over the weeks. The visible track (with a mark at each month
+ * start) sits half a handle in from each edge, where the centre of the handle
+ * travels.
  */
 .timeline__slider {
   --timeline-thumb: var(--space-5);
@@ -135,29 +64,12 @@
   background-color: var(--color-highlight);
 }
 
-.timeline__fill {
-  position: absolute;
-  inset-block: var(--space-0);
-  inset-inline-start: var(--timeline-start);
-  inline-size: calc(var(--timeline-end) - var(--timeline-start));
-  border-radius: var(--radius-full);
-  background-color: var(--color-primary);
-}
-
-.timeline[data-mode='days'] .timeline__fill {
-  opacity: var(--opacity-disabled);
-}
-
 .timeline__tick {
   position: absolute;
   inset-block-start: 100%;
   inline-size: var(--border-width-thin);
   block-size: var(--space-1);
   background-color: var(--color-primary);
-}
-
-.timeline__tick[data-major='true'] {
-  block-size: var(--space-2);
 }
 
 .timeline__range {
@@ -169,7 +81,7 @@
   padding: var(--space-0);
   appearance: none;
   background: transparent;
-  pointer-events: none;
+  cursor: pointer;
 }
 
 .timeline__range::-webkit-slider-runnable-track {
@@ -189,8 +101,7 @@
   block-size: var(--timeline-thumb);
   border: var(--border-width-strong) solid var(--color-primary);
   border-radius: var(--radius-full);
-  background-color: var(--color-background);
-  pointer-events: auto;
+  background-color: var(--color-primary);
   cursor: grab;
 }
 
@@ -200,8 +111,7 @@
   block-size: var(--timeline-thumb);
   border: var(--border-width-strong) solid var(--color-primary);
   border-radius: var(--radius-full);
-  background-color: var(--color-background);
-  pointer-events: auto;
+  background-color: var(--color-primary);
   cursor: grab;
 }
 

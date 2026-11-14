@@ -1,0 +1,12 @@
+# Tile server for the fire PMTiles. Start:  docker compose up -d
+# Files live in ./data (or the folder in TILE_DATA_DIR).
+services:
+  tiles:
+    image: nginx:1.27-alpine
+    container_name: firelock-tiles
+    ports:
+      - "${TILE_PORT:-8080}:80" # all interfaces, so teammates on the same network can connect
+    volumes:
+      - ${TILE_DATA_DIR:-./data}:/usr/share/nginx/html/tiles:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    restart: unless-stopped
