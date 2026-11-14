@@ -29,13 +29,17 @@ FILE 1: fire_clusters_2025_<Country>.csv  - one row per fire
   radius_km          radius of a circle around (lat, lon) that contains EVERY pixel of the fire completely
                      (distance to the farthest pixel centre + half that pixel's diagonal). A 1-pixel fire has
                      radius = half its pixel diagonal (VIIRS ~0.27-0.6 km, MODIS ~0.7-2.6 km).
-  frp_mw             FRP of the WHOLE fire in megawatts:
+  passes_avg_frp_mw  FRP of the WHOLE fire in megawatts (use this one):
                        1) for each pass, add up the FRP of all the fire's pixels in that pass
-                          (the pixels are different parts of the fire at the same moment)
+                          = the "pass total" (the pixels are different parts of the fire at the same moment)
                        2) take the AVERAGE of these pass totals
                      FRP is never added across passes: a fire seen by 3 passes is not 3x bigger.
-  frp_min_mw         smallest pass total
-  frp_max_mw         largest pass total
+  passes_min_frp_mw  the SMALLEST pass total of the fire
+  passes_max_frp_mw  the LARGEST pass total of the fire
+                     These are over PASSES, not over pixels: a fire seen by only 1 pass has
+                     passes_avg = passes_min = passes_max = that pass's total, even if it has many pixels.
+                     Example: 2 pixels of 3.53 + 3.45 MW in one pass -> all three = 6.98 MW.
+                     Pixel-by-pixel FRP values are in the fire_pixels file (column frp).
   modis_frp_mw       average of the MODIS pass totals (empty if MODIS did not see the fire)
   viirs_frp_mw       average of the VIIRS pass totals (empty if VIIRS did not see the fire)
   n_passes           how many passes saw the fire that day
@@ -75,7 +79,7 @@ FILE 2: fire_pixels_2025_<Country>.csv  - one row per pixel (= one row of the or
 -----------------------------------------------------------------------------------------------------
 DIFFERENCE BETWEEN THE TWO FILES / HOW TO USE THEM
 -----------------------------------------------------------------------------------------------------
-  fire_clusters = the summary: 1 row = 1 fire. Count rows to count fires; sum frp_mw to get total FRP.
+  fire_clusters = the summary: 1 row = 1 fire. Count rows to count fires; sum passes_avg_frp_mw to get total FRP.
                   A circle (lat, lon, radius_km) shows where the fire is.
   fire_pixels   = the detail: 1 row = 1 detection. Use it for the exact shape of a fire (draw each pixel as a
                   scan_km x track_km rectangle around lat, lon), or for individual pixel FRP values.

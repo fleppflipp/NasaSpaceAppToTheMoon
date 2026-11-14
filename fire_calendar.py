@@ -192,8 +192,8 @@ PIXEL_COLS = ["country", "fire_id", "pass_id", "pass_fire_id", "sensor", "satell
               "local_date", "daynight", "lat", "lon", "scan_km", "track_km", "frp", "bt_mir", "bt_tir",
               "confidence"]
 
-CLUSTER_COLS = ["country", "fire_id", "local_date", "lat", "lon", "radius_km", "frp_mw", "frp_min_mw",
-                "frp_max_mw", "modis_frp_mw", "viirs_frp_mw", "n_passes", "n_day_passes", "n_night_passes",
+CLUSTER_COLS = ["country", "fire_id", "local_date", "lat", "lon", "radius_km", "passes_avg_frp_mw",
+                "passes_min_frp_mw", "passes_max_frp_mw", "modis_frp_mw", "viirs_frp_mw", "n_passes", "n_day_passes", "n_night_passes",
                 "n_modis_passes", "n_viirs_passes", "satellites", "seen_by_modis", "seen_by_viirs",
                 "n_pixels", "n_pixels_max_pass", "first_seen_utc", "last_seen_utc"]
 
@@ -225,11 +225,12 @@ def centre_and_radius(px):
 
 
 def cluster_table(px, passes, country):
-    """One row per daily fire. frp_mw = for each pass the SUM of the fire's pixels, then the AVERAGE of
+    """One row per daily fire. passes_avg_frp_mw = for each pass the SUM of the fire's pixels, then the AVERAGE of
     those pass sums (FRP is never added across passes, so a fire seen 3 times is not counted 3 times)."""
     g = passes.groupby("fire_id")
     f = g.agg(n_passes=("pass_id", "size"),
-              frp_mw=("frp", "mean"), frp_min_mw=("frp", "min"), frp_max_mw=("frp", "max"),
+              passes_avg_frp_mw=("frp", "mean"), passes_min_frp_mw=("frp", "min"),
+              passes_max_frp_mw=("frp", "max"),
               n_pixels_max_pass=("n_pix", "max"),
               first_seen_utc=("time_utc", "min"), last_seen_utc=("time_utc", "max"))
     f["n_day_passes"] = (passes["daynight"] == "D").groupby(passes["fire_id"]).sum()
@@ -276,7 +277,7 @@ def check(pixels, clusters, n_rows_in, frp_in):
     assert pixels.groupby("fire_id")["local_date"].nunique().max() == 1, "a fire spans two days"
     assert len(clusters) == pixels["fire_id"].nunique() and clusters["n_pixels"].sum() == len(pixels)
     again = pixels.groupby(["fire_id", "pass_id"])["frp"].sum().groupby(level="fire_id").mean()
-    assert np.allclose(again.sort_index().to_numpy(), clusters.sort_values("fire_id")["frp_mw"].to_numpy())
+    assert np.allclose(again.sort_index().to_numpy(), clusters.sort_values("fire_id")["passes_avg_frp_mw"].to_numpy())
     # every pixel centre must lie inside its fire's circle
     c = clusters.set_index("fire_id").reindex(pixels["fire_id"])
     d = great_circle_km(to_xyz_km(pixels["lat"].to_numpy(), pixels["lon"].to_numpy()),
@@ -317,13 +318,17 @@ FILE 1: fire_clusters_{year}_<Country>.csv  - one row per fire
   radius_km          radius of a circle around (lat, lon) that contains EVERY pixel of the fire completely
                      (distance to the farthest pixel centre + half that pixel's diagonal). A 1-pixel fire has
                      radius = half its pixel diagonal (VIIRS ~0.27-0.6 km, MODIS ~0.7-2.6 km).
-  frp_mw             FRP of the WHOLE fire in megawatts:
+  passes_avg_frp_mw  FRP of the WHOLE fire in megawatts (use this one):
                        1) for each pass, add up the FRP of all the fire's pixels in that pass
-                          (the pixels are different parts of the fire at the same moment)
+                          = the "pass total" (the pixels are different parts of the fire at the same moment)
                        2) take the AVERAGE of these pass totals
                      FRP is never added across passes: a fire seen by 3 passes is not 3x bigger.
-  frp_min_mw         smallest pass total
-  frp_max_mw         largest pass total
+  passes_min_frp_mw  the SMALLEST pass total of the fire
+  passes_max_frp_mw  the LARGEST pass total of the fire
+                     These are over PASSES, not over pixels: a fire seen by only 1 pass has
+                     passes_avg = passes_min = passes_max = that pass's total, even if it has many pixels.
+                     Example: 2 pixels of 3.53 + 3.45 MW in one pass -> all three = 6.98 MW.
+                     Pixel-by-pixel FRP values are in the fire_pixels file (column frp).
   modis_frp_mw       average of the MODIS pass totals (empty if MODIS did not see the fire)
   viirs_frp_mw       average of the VIIRS pass totals (empty if VIIRS did not see the fire)
   n_passes           how many passes saw the fire that day
@@ -363,7 +368,7 @@ FILE 2: fire_pixels_{year}_<Country>.csv  - one row per pixel (= one row of the 
 -----------------------------------------------------------------------------------------------------
 DIFFERENCE BETWEEN THE TWO FILES / HOW TO USE THEM
 -----------------------------------------------------------------------------------------------------
-  fire_clusters = the summary: 1 row = 1 fire. Count rows to count fires; sum frp_mw to get total FRP.
+  fire_clusters = the summary: 1 row = 1 fire. Count rows to count fires; sum passes_avg_frp_mw to get total FRP.
                   A circle (lat, lon, radius_km) shows where the fire is.
   fire_pixels   = the detail: 1 row = 1 detection. Use it for the exact shape of a fire (draw each pixel as a
                   scan_km x track_km rectangle around lat, lon), or for individual pixel FRP values.
@@ -387,11 +392,12 @@ def selftest():
     pixels, clusters = build(px, "toy")
     check(pixels, clusters, len(px), px["frp"].sum())
     print(pixels[["fire_id", "pass_id", "pass_fire_id", "satellite", "lon", "frp"]].to_string(index=False), "\n")
-    print(clusters[["fire_id", "lat", "lon", "radius_km", "frp_mw", "n_passes", "satellites"]].to_string(index=False))
-    assert len(clusters) == 2 and sorted(clusters["frp_mw"]) == [7.0, 14.5]
+    print(clusters[["fire_id", "lat", "lon", "radius_km", "passes_avg_frp_mw", "n_passes", "satellites"]]
+          .to_string(index=False))
+    assert len(clusters) == 2 and sorted(clusters["passes_avg_frp_mw"]) == [7.0, 14.5]
     # fire 1: centre = average of 4 centres (0, 0.375, 0.75, 0.375 km) = 0.375 km; farthest pixel = Aqua's
     # 1 km pixel at the centre (half diagonal 0.707) -> radius 0.707
-    assert np.isclose(clusters.loc[clusters.frp_mw == 14.5, "radius_km"].iloc[0], 0.5 * np.hypot(1, 1), atol=1e-3)
+    assert np.isclose(clusters.loc[clusters.passes_avg_frp_mw == 14.5, "radius_km"].iloc[0], 0.5 * np.hypot(1, 1), atol=1e-3)
     print("\nselftest OK")
 
 
@@ -431,8 +437,8 @@ def run(countries, year, sensors, out_dir):
         for col in offset:
             offset[col] = int(pixels[col].max()) + 1
 
-        clusters.round({"lat": 5, "lon": 5, "radius_km": 3, "frp_mw": 3, "frp_min_mw": 3, "frp_max_mw": 3,
-                        "modis_frp_mw": 3, "viirs_frp_mw": 3}).to_csv(
+        clusters.round({"lat": 5, "lon": 5, "radius_km": 3, "passes_avg_frp_mw": 3, "passes_min_frp_mw": 3,
+                        "passes_max_frp_mw": 3, "modis_frp_mw": 3, "viirs_frp_mw": 3}).to_csv(
             out_dir / "fire_clusters" / f"fire_clusters_{year}_{country}.csv", index=False)
         pixels.to_csv(out_dir / "fire_pixels" / f"fire_pixels_{year}_{country}.csv", index=False)
 
@@ -441,19 +447,25 @@ def run(countries, year, sensors, out_dir):
                         "fires": len(clusters), "fires_seen_by_both": int(both.sum()),
                         "fires_modis_only": int((clusters.seen_by_modis & ~clusters.seen_by_viirs).sum()),
                         "fires_viirs_only": int((clusters.seen_by_viirs & ~clusters.seen_by_modis).sum()),
-                        "total_frp_mw": round(clusters.frp_mw.sum(), 1),
-                        "median_fire_frp_mw": round(clusters.frp_mw.median(), 2),
+                        "total_frp_mw": round(clusters.passes_avg_frp_mw.sum(), 1),
+                        "median_fire_frp_mw": round(clusters.passes_avg_frp_mw.median(), 2),
                         "median_radius_km": round(clusters.radius_km.median(), 3),
                         "max_radius_km": round(clusters.radius_km.max(), 3),
                         "seconds": round(time.time() - t0, 1)})
         print(f"[{k}/{len(countries)}] {country}: {n_in:,} pixels -> {len(clusters):,} fires, "
-              f"FRP {clusters.frp_mw.sum():,.0f} MW, {time.time() - t0:.1f}s", flush=True)
+              f"FRP {clusters.passes_avg_frp_mw.sum():,.0f} MW, {time.time() - t0:.1f}s", flush=True)
         del pixels, clusters
 
     s = pd.DataFrame(summary)
-    s.to_csv(out_dir / f"run_summary_{year}.csv", index=False)
-    print(f"\nDONE {len(s)} countries in {time.time() - t_start:.0f}s: {s.modis_pixels.sum() + s.viirs_pixels.sum():,} "
-          f"pixels -> {s.fires.sum():,} fires, total FRP {s.total_frp_mw.sum():,.0f} MW -> {out_dir}", flush=True)
+    summary_file = out_dir / f"run_summary_{year}.csv"
+    if summary_file.exists():          # re-running some countries: keep the other countries' lines
+        old = pd.read_csv(summary_file)
+        s = pd.concat([old[~old.country.isin(s.country)], s]).sort_values("country").reset_index(drop=True)
+    s.to_csv(summary_file, index=False)
+    new = pd.DataFrame(summary)
+    print(f"\nDONE {len(new)} countries in {time.time() - t_start:.0f}s: "
+          f"{new.modis_pixels.sum() + new.viirs_pixels.sum():,} pixels -> {new.fires.sum():,} fires, "
+          f"total FRP {new.total_frp_mw.sum():,.0f} MW -> {out_dir}", flush=True)
 
 
 if __name__ == "__main__":

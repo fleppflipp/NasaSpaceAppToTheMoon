@@ -1,4 +1,4 @@
-country,fire_id,local_date,lat,lon,radius_km,frp_mw,frp_min_mw,frp_max_mw,modis_frp_mw,viirs_frp_mw,n_passes,n_day_passes,n_night_passes,n_modis_passes,n_viirs_passes,satellites,seen_by_modis,seen_by_viirs,n_pixels,n_pixels_max_pass,first_seen_utc,last_seen_utc
+country,fire_id,local_date,lat,lon,radius_km,passes_avg_frp_mw,passes_min_frp_mw,passes_max_frp_mw,modis_frp_mw,viirs_frp_mw,n_passes,n_day_passes,n_night_passes,n_modis_passes,n_viirs_passes,satellites,seen_by_modis,seen_by_viirs,n_pixels,n_pixels_max_pass,first_seen_utc,last_seen_utc
 Afghanistan,0,2025-01-04,34.2019,62.21778,0.451,6.98,6.98,6.98,,6.98,1,1,0,0,1,N20,False,True,2,2,2025-01-04 08:52:00,2025-01-04 08:52:00
 Afghanistan,1,2025-01-07,31.4567,65.87415,1.398,14.4,14.4,14.4,14.4,,1,1,0,1,0,Aqua,True,False,2,2,2025-01-07 09:31:00,2025-01-07 09:31:00
 Afghanistan,2,2025-01-08,34.50773,70.14864,0.328,2.0,2.0,2.0,,2.0,1,1,0,0,1,N20,False,True,1,1,2025-01-08 07:37:00,2025-01-08 07:37:00
