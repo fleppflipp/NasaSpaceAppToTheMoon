@@ -32,7 +32,18 @@ Work proceeds feature by feature, one feature at a time. Done so far:
    only) and a Map / Calendar view switch. The calendar view is an empty
    placeholder for now; the map stays mounted (hidden) while it is shown.
 
-Planned next: area-of-interest selection (draw or lat/lon), FIRMS data
+4. Freehand area selection: a pencil button on the map draws a closed
+   shape that becomes the selected area (`selection` state in
+   `layouts/AppLayout.tsx`, GeoJSON polygon). Drawing needs zoom >=
+   `DRAW_MIN_ZOOM`.
+5. URL routing (`/map`, `/calendar`, 404) and English UI strings through
+   i18next (`src/locales/eng.ts`); see `space-app/docs/routing-i18n.md`. All
+   user-visible text must go through `t()`.
+6. Data pipeline scripts from the data team (repo root, see "Data pipeline"):
+   FIRMS MODIS + VIIRS pixels are joined into daily fires. The harmonized,
+   map-ready format (PMTiles etc.) is still being defined by the data team.
+
+Planned next: selecting an area by latitude/longitude, FIRMS data
 harmonization, hotspot layers, the calendar and charts, CSV export.
 
 ## Workflow: planning chat and implementing agent
@@ -93,13 +104,42 @@ Rules for the implementing agent:
 
 - The app lives in `space-app/` (React 19, TypeScript, Vite). Run all npm
   commands from that folder.
-- `space-app/src/App.tsx`: holds the current view (map or calendar) and the
-  searched place, and renders `Header`, `BaseMap` and `CalendarView`.
+- `space-app/src/App.tsx` only mounts the router. `router/AppRouter.tsx` defines
+  the routes (paths in `constants/routes.constants.ts`); `layouts/AppLayout.tsx`
+  holds the searched place and the selected area and renders `Header`,
+  `BaseMap` and the routed page (`CalendarView`, `pages/NotFound.tsx`).
+- `space-app/src/i18n/`, `space-app/src/locales/`: i18next setup and the English
+  dictionary (`eng.ts`).
+- Data pipeline (Python, repo root, not part of the web app): see below.
 - `space-app/src/components/`: React components, each with its own `.css` file.
-- `space-app/src/services/`: calls to external APIs and data parsing.
-- `space-app/src/constants/`: design tokens and the color palette.
+- `space-app/src/services/`: calls to external APIs, data parsing and pure
+  geometry helpers (`lasso.ts`, `geo.ts`).
+- `space-app/src/hooks/`: React hooks that wrap imperative libraries (the area
+  selection on the map).
+- `space-app/src/constants/`: design tokens, the color palette and map
+  constants (`map.constants.ts`: initial zoom, `DRAW_MIN_ZOOM`, lasso limits).
 - `space-app/docs/design-system.md`: the design system guide. Read it before
   writing any UI.
+
+## Data pipeline
+
+Python scripts that turn the raw NASA FIRMS CSVs (local only, ignored by git)
+into data for the app. Outputs are local and ignored by git too.
+
+- `fire_calendar.py`: joins MODIS (Terra/Aqua) and VIIRS (N20) pixels into one
+  row per fire per local solar day (same-pass pixels that touch, and different
+  passes/satellites that overlap, form one fire). Writes
+  `new_outputs/fire_clusters/*.csv` (one row per fire) and
+  `new_outputs/fire_pixels/*.csv` (one row per pixel) per country.
+  **`new_outputs/README_fire_files_2025.txt` is the format specification**: read
+  it before touching any fire data code (columns, FRP rules: never sum FRP
+  across passes).
+- `src/`: earlier FRP harmonization research (`harmonize_frp.py`,
+  `harmonize_regional.py`, `fit_frp_distributions.py`, `cluster_viirs.py`,
+  `firms_data.py`) and the HTML overview/daily viewers (`src/viz/`).
+- Principle agreed in the planning chat: harmonize toward the coarser common
+  denominator (MODIS-equivalent counts for the calendar); the map shows only real
+  detections, never invented locations.
 
 ## Design system rules
 

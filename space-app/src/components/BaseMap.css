@@ -1,11 +1,50 @@
 /* Fills the viewport below the fixed header, regardless of the #root width. */
-.base-map {
+.map-view {
   position: fixed;
   inset-block: var(--layout-header-height) var(--space-0);
   inset-inline: var(--space-0);
+}
+
+.map-view[hidden] {
+  display: none;
+}
+
+.base-map {
+  position: absolute;
+  inset: var(--space-0);
   background-color: var(--color-forest); /* space around the globe */
 }
 
-.base-map[hidden] {
+/* Small non-blocking messages, centered above the bottom edge of the map. */
+.map-status {
+  position: absolute;
+  inset-block-end: var(--space-6);
+  inset-inline-start: 50%;
+  translate: -50% 0;
+  z-index: var(--z-index-overlay);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  max-inline-size: calc(100% - var(--space-8));
+  pointer-events: none;
+}
+
+.map-status__message,
+.map-status__readout {
+  margin-block: var(--space-0);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--color-background);
+  box-shadow: var(--shadow-sm);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+.map-status__message:empty {
   display: none;
+}
+
+.map-status__readout {
+  border: var(--border-width-strong) solid var(--color-selection-outline);
 }

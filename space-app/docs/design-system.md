@@ -68,7 +68,7 @@ defaults, not a claim of complete accessibility conformance.
 | `CONTROL_SIZE`    | `--control-size-*`    | Touch targets, controls, icons, textarea minimum height   |
 | `FOCUS`           | `--focus-*`           | Focus ring width and offset                               |
 | `SHADOW`          | `--shadow-*`          | Small, medium, and large elevation using the palette      |
-| `OPACITY`         | `--opacity-*`         | Disabled state                                            |
+| `OPACITY`         | `--opacity-*`         | Disabled state, area selection fill                       |
 | `DURATION`        | `--duration-*`        | Fast, normal, and slow transitions                        |
 | `EASING`          | `--easing-*`          | Standard, enter, and exit motion curves                   |
 | `Z_INDEX`         | `--z-index-*`         | Dropdown, sticky, overlay, modal, toast, tooltip          |

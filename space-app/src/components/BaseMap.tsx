@@ -1,9 +1,15 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
+import type { Polygon } from 'geojson'
 import * as maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
+import { INITIAL_ZOOM } from '../constants/map.constants'
+import { useAreaSelection } from '../hooks/useAreaSelection'
+import { formatAreaKm2, selectionInfo } from '../services/geo'
 import type { Place } from '../services/places'
+import DrawControl from './DrawControl'
 import './BaseMap.css'
 
 // Required with Vite so MapLibre can find its web worker.
@@ -20,12 +26,26 @@ interface BaseMapProps {
   active: boolean
   /** When this changes to a new place, the map flies there. */
   target: Place | null
+  /** The selected area (a freehand-drawn polygon), or null. */
+  selection: Polygon | null
+  onSelectionChange: (selection: Polygon | null) => void
 }
 
-export default function BaseMap({ active, target }: BaseMapProps) {
+export default function BaseMap({
+  active,
+  target,
+  selection,
+  onSelectionChange,
+}: BaseMapProps) {
   const { t } = useTranslation()
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
+  // Host element of the draw buttons inside MapLibre's top-right control stack.
+  const [controlHost] = useState(() => {
+    const element = document.createElement('div')
+    element.className = 'maplibregl-ctrl'
+    return element
+  })
 
   useEffect(() => {
     const container = containerRef.current
@@ -44,7 +64,7 @@ export default function BaseMap({ active, target }: BaseMapProps) {
       },
       style: MAP_STYLE_URL,
       center: [19.04, 47.5],
-      zoom: 12,
+      zoom: INITIAL_ZOOM,
       minZoom: 0,
       dragRotate: false,
       pitchWithRotate: false,
@@ -63,17 +83,34 @@ export default function BaseMap({ active, target }: BaseMapProps) {
       }),
       'top-right',
     )
+    map.addControl(
+      {
+        onAdd: () => controlHost,
+        onRemove: () => {
+          controlHost.remove()
+        },
+      },
+      'top-right',
+    )
     map.addControl(new maplibregl.ScaleControl(), 'bottom-left')
 
     return () => {
       mapRef.current = null
       map.remove()
     }
-  }, [t])
+  }, [t, controlHost])
 
   useEffect(() => {
     if (active) mapRef.current?.resize()
   }, [active])
+
+  const { canDraw, drawing, message, toggleDrawing, clearSelection } =
+    useAreaSelection(mapRef, active, selection, onSelectionChange)
+
+  const info = useMemo(
+    () => (selection === null ? null : selectionInfo(selection)),
+    [selection],
+  )
 
   useEffect(() => {
     const map = mapRef.current
@@ -99,7 +136,29 @@ export default function BaseMap({ active, target }: BaseMapProps) {
   }, [target])
 
   return (
-    // MapLibre adds its own accessible "Map" region inside this container.
-    <div ref={containerRef} className="base-map" hidden={!active} />
+    <div className="map-view" hidden={!active}>
+      {/* MapLibre adds its own accessible "Map" region inside this container. */}
+      <div ref={containerRef} className="base-map" />
+      {createPortal(
+        <DrawControl
+          canDraw={canDraw}
+          drawing={drawing}
+          hasSelection={selection !== null}
+          onToggle={toggleDrawing}
+          onClear={clearSelection}
+        />,
+        controlHost,
+      )}
+      <div className="map-status">
+        <p className="map-status__message" role="status">
+          {message === null ? '' : t(`draw.${message}`)}
+        </p>
+        {info === null ? null : (
+          <p className="map-status__readout">
+            {t('draw.selectedArea', { area: formatAreaKm2(info.areaKm2) })}
+          </p>
+        )}
+      </div>
+    </div>
   )
 }

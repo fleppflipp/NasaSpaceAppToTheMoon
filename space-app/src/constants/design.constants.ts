@@ -120,6 +120,7 @@ export const SHADOW = {
 
 export const OPACITY = {
   disabled: '0.6',
+  'selection-fill': '0.3',
 } as const
 
 export const DURATION = {

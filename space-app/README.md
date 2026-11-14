@@ -79,6 +79,48 @@ are debounced and go through `src/services/places.ts`, which queries the free
 [Photon](https://photon.komoot.io/) geocoder (OpenStreetMap data, no API key).
 The public Photon instance is meant for light use; self-host it for heavy traffic.
 
+## Area selection
+
+The pencil button (top-right, below the zoom buttons) lets the user draw any
+freehand shape on the map to select an area of interest. It is a MapLibre
+control hosting `src/components/DrawControl.tsx`; the logic lives in
+`src/hooks/useAreaSelection.ts`, the geometry in `src/services/lasso.ts`
+(stroke to closed ring, no dependencies) and `src/services/geo.ts` (bounding
+box, spherical area, formatting).
+
+- **Zoom limit**: drawing is only allowed at or above `DRAW_MIN_ZOOM` (currently
+  8, in `src/constants/map.constants.ts`), so a whole continent cannot be
+  circled. Below it the button is disabled and shows "Zoom in to select an
+  area"; it re-enables live while zooming, and zooming out below the limit
+  leaves draw mode.
+- **Drawing**: in draw mode the cursor is a crosshair, drag-pan and double-click
+  zoom are off (restored afterwards), and mouse, pen and touch work through
+  pointer events. Points closer than 3 px are skipped; the live stroke is a
+  dashed line. Escape, the button, or switching to the calendar view cancels.
+  Moving or zooming the map during a stroke drops the stroke.
+- **Closing rules** (all in screen pixels, then converted with
+  `map.unproject`, so the globe projection is handled by MapLibre): a stroke
+  counts as closed when it crosses itself (the enclosed loop is kept and the
+  tail is cut off) or when its end is within 24 px of its start (end is joined
+  to start). Of all candidate loops only simple rings (no remaining crossings)
+  of at least 400 px² qualify, and the largest wins. Otherwise the stroke is
+  discarded with the message "Close the shape to select an area". The result
+  is a valid closed GeoJSON `Polygon` (counter-clockwise, first position equals
+  last, at least 4 positions). The limits are in `LASSO` in the same constants
+  file.
+- **Selection**: only one at a time; drawing a new one replaces it, the X button
+  removes it. It is drawn as a translucent red fill with a solid darker red
+  2 px outline (tokens `--color-selection`, `--color-selection-outline`,
+  `--opacity-selection-fill`; the layers are re-added after a style reload) and
+  a small "Selected area: N km²" readout shows the approximate spherical area.
+- **State for later features**: `src/layouts/AppLayout.tsx` owns `selection: Polygon | null` and
+  passes `selection` / `onSelectionChange` to `BaseMap`. `selectionInfo()` in
+  `src/services/geo.ts` returns its bounding box and area. The selection
+  survives switching to the calendar view and back.
+
+Everything runs in the browser; no external service is involved and nothing
+about the drawn area leaves the browser.
+
 ## External services
 
 The app calls these third-party services directly from the browser. None of
