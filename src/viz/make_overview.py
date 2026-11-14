@@ -21,28 +21,21 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+import sys
+
 HERE = Path(__file__).resolve().parent
-PROJECT = HERE.parent
-CACHE = HERE / "cache" / "aggregates.npz"
-OUT_HTML = HERE / "overview.html"
+sys.path.insert(0, str(HERE.parent))          # src/, for firms_data
+import firms_data  # noqa: E402
+
+YEAR = 2025                                    # this page shows one year
+OUT_HTML = firms_data.OUTPUT_DIR / "pages" / "overview.html"
 TEMPLATE = HERE / "overview_template.html"
 
 NCELL = 180 * 360  # 1-degree grid
 
-
-def _find_dir(rel: str) -> Path:
-    """Data folders live inside the project folder."""
-    p = PROJECT / rel
-    if p.is_dir():
-        return p
-    raise FileNotFoundError(f"Could not find {rel} under {PROJECT}")
-
-
 SENSORS = {
-    "viirs": dict(rel="viirs/viirs-jpss1/2025",
-                  prefix="viirs-jpss1_2025_"),
-    "modis": dict(rel="modis",
-                  prefix="modis_2025_"),
+    "viirs": dict(sensor="VIIRS", prefix=f"viirs-jpss1_{YEAR}_"),
+    "modis": dict(sensor="MODIS", prefix=f"modis_{YEAR}_"),
 }
 
 
@@ -75,13 +68,17 @@ def _process(args):
     return sensor, country, raw, grid_n, grid_f, mon_n, mon_f
 
 
-def build_aggregates() -> dict:
+def find_jobs(args) -> list:
     jobs = []
     for s, cfg in SENSORS.items():
-        d = _find_dir(cfg["rel"])
-        files = sorted(d.glob(cfg["prefix"] + "*.csv"))
-        print(f"{s}: {len(files)} files in {d}")
+        files = firms_data.find_files(cfg["sensor"], args, years=[YEAR])
+        print(f"{s}: {len(files)} files in {firms_data.data_dir(cfg['sensor'], args)}")
         jobs += [(s, str(f), cfg["prefix"]) for f in files]
+    return jobs
+
+
+def build_aggregates(jobs: list, cache: Path) -> dict:
+    jobs = list(jobs)
     # biggest files first for better load balancing
     jobs.sort(key=lambda j: -Path(j[1]).stat().st_size)
 
@@ -104,17 +101,18 @@ def build_aggregates() -> dict:
                 print(f"  {i + 1}/{len(jobs)} files")
     flat = {f"{s}_{k}": v for s, a in agg.items() for k, v in a.items()}
     flat["countries"] = np.array(json.dumps(countries))
-    CACHE.parent.mkdir(parents=True, exist_ok=True)
-    np.savez_compressed(CACHE, **flat)
+    np.savez_compressed(cache, **flat)
     return flat
 
 
-def load_aggregates(rebuild: bool) -> dict:
-    if CACHE.exists() and not rebuild:
-        print(f"Using cache {CACHE}")
-        z = np.load(CACHE)
+def load_aggregates(args) -> dict:
+    jobs = find_jobs(args)
+    cache = firms_data.cache_file(f"overview_{YEAR}", [Path(j[1]) for j in jobs])
+    if cache.exists() and not args.rebuild:
+        print(f"Using cache {cache}")
+        z = np.load(cache)
         return {k: z[k] for k in z.files}
-    return build_aggregates()
+    return build_aggregates(jobs, cache)
 
 
 def to_payload(a: dict) -> dict:
@@ -142,9 +140,11 @@ def to_payload(a: dict) -> dict:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--rebuild", action="store_true")
+    firms_data.add_data_args(ap)
     args = ap.parse_args()
     t0 = time.perf_counter()
-    payload = to_payload(load_aggregates(args.rebuild))
+    payload = to_payload(load_aggregates(args))
+    OUT_HTML.parent.mkdir(parents=True, exist_ok=True)
     t = payload["totals"]
     html = TEMPLATE.read_text(encoding="utf-8").replace(
         "/*__DATA__*/null", json.dumps(payload, separators=(",", ":")))

@@ -30,23 +30,9 @@ import numpy as np
 import pandas as pd
 from scipy import optimize, stats
 
-HERE = Path(__file__).resolve().parent
-_SUBDIRS = {
-    "VIIRS": "viirs/viirs-jpss1/2025",
-    "MODIS": "modis",
-}
+import firms_data
 
-
-def _find(sub: str) -> Path:
-    """Data folders live inside the project folder."""
-    if (HERE / sub).is_dir():
-        return HERE / sub
-    raise FileNotFoundError(f"{sub} not found in {HERE}")
-
-
-SOURCES = {s: _find(p) for s, p in _SUBDIRS.items()}
-OUT = Path(__file__).parent / "fits"
-CACHE = OUT / "cache"
+OUT = firms_data.OUTPUT_DIR / "fits"
 COLORS = {"VIIRS": "#2a78d6", "MODIS": "#eb6834"}  # categorical slots 1 and 2
 INK, INK2, GRID = "#0b0b0b", "#52514e", "#e4e3df"
 
@@ -58,17 +44,16 @@ FAMILIES = {  # one shape parameter + scale, loc fixed at 0
 
 
 # ---------------------------------------------------------------- loading
-def load_sensor(sensor: str) -> pd.DataFrame:
-    """All countries, minimal columns, cached as parquet-free .npz for speed."""
-    CACHE.mkdir(parents=True, exist_ok=True)
-    cache = CACHE / f"{sensor}.npz"
+def load_sensor(sensor: str, files: list[Path]) -> pd.DataFrame:
+    """Given CSVs, minimal columns, cached as .npz in data/cache for speed."""
+    cache = firms_data.cache_file(f"pixels_{sensor}", files)
     if cache.exists():
         z = np.load(cache, allow_pickle=True)
         return pd.DataFrame({k: z[k] for k in z.files})
 
     cols = ["scan", "track", "satellite", "confidence", "frp", "daynight", "type"]
     parts = []
-    for f in sorted(glob.glob(str(SOURCES[sensor] / "*.csv"))):
+    for f in files:
         df = pd.read_csv(f, usecols=cols, dtype={"confidence": str, "satellite": str})
         df = df[df["type"] == 0]
         if sensor == "MODIS":
@@ -260,10 +245,12 @@ def main():
                     default="lognormal",
                     help="family used for mapping (auto = lowest AIC; can be degenerate)")
     ap.add_argument("--max-fit", type=int, default=300_000, help="subsample size for fitting")
+    firms_data.add_data_args(ap)
     a = ap.parse_args()
 
     t0 = time.time()
-    raw = {s: load_sensor(s) for s in SOURCES}
+    files = firms_data.find_all(a)
+    raw = {s: load_sensor(s, files[s]) for s in firms_data.SENSORS}
     print(f"loaded in {time.time() - t0:.0f}s: "
           + ", ".join(f"{s} {len(d):,} rows" for s, d in raw.items()))
 
@@ -317,7 +304,7 @@ def main():
           + ("-> shapes differ, one factor is not enough" if aic_s - aic_f > 10
              else "-> one scale factor explains the difference"))
 
-    OUT.mkdir(exist_ok=True)
+    OUT.mkdir(parents=True, exist_ok=True)
     tag = f"{a.var}_{a.daynight}_{a.modis_sats.replace(',', '+')}_ref{ref}_{best['family']}"
     png = OUT / f"frp_fit_{tag}.png"
     plot(data, {ref: m_ref, oth: m_free}, ref, oth, k_scale, xmin, unit, png)

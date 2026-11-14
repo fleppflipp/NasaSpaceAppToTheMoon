@@ -1,12 +1,14 @@
 """
-Harmonize MODIS (Aqua) and VIIRS (NOAA-20) fire radiative power with a
-lognormal quantile-matching transfer function.
+Harmonize MODIS (Aqua and Terra) and VIIRS (NOAA-20) fire radiative power with a
+quantile-matching transfer function, one per MODIS satellite.
 
 Idea
   Per-pixel FRP is not comparable: a 1 km MODIS pixel and a 375 m VIIRS pixel
   see different pieces of the same fire. So we first move both sensors onto a
-  common representation: total FRP per grid cell per day (one overpass each,
-  Aqua and NOAA-20 both cross ~13:30 local time).
+  common representation: total FRP per grid cell per day (one daytime overpass
+  per satellite: NOAA-20 and Aqua cross ~13:30 local time, Terra ~10:30).
+  Terra sees fires earlier in the day, when they are usually weaker, so it gets
+  its own transfer function rather than sharing Aqua's.
 
   If both sensors' cell totals are lognormal,
         ln V ~ N(mu_V, s_V)   and   ln M ~ N(mu_M, s_M),
@@ -17,11 +19,13 @@ Idea
   so differences are due to the sensor only), and validate on held-out cell-days.
 
 Usage
-  python harmonize_frp.py [--res 0.25] [--daynight D]
-Outputs in harmonized/: transfer.json, comparison table, plot, harmonized CSV.
+  python src/harmonize_frp.py [--res 0.25] [--daynight D] [--years 2024 2025]
+                              [--data-dir DIR | --viirs-dir DIR --modis-dir DIR]
+                              [--out-dir DIR]
+  Data location: see firms_data.py (flags > FIRMS_* env vars > data/raw).
+Outputs (default outputs/harmonized/): transfer.json, comparison table, plot, lookup.
 """
 import argparse
-import glob
 import json
 import time
 from pathlib import Path
@@ -30,28 +34,24 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-HERE = Path(__file__).resolve().parent
-SOURCES = {
-    "VIIRS": HERE / "viirs/viirs-jpss1/2025",   # holds every year's VIIRS files
-    "MODIS": HERE / "modis",
-}
-OUT = HERE / "harmonized"
-CACHE = OUT / "cache"
+import firms_data
+
+OUT = firms_data.OUTPUT_DIR / "harmonized"   # default output folder
 COLORS = {"VIIRS": "#2a78d6", "MODIS": "#eb6834", "MODIS harmonized": "#1baf7a"}
 INK, INK2, GRID = "#0b0b0b", "#52514e", "#e4e3df"
 
 
 # ------------------------------------------------------------------ loading
-def load(sensor: str) -> pd.DataFrame:
-    CACHE.mkdir(parents=True, exist_ok=True)
-    cache = CACHE / f"{sensor}.npz"
+def load(sensor: str, files: list[Path]) -> pd.DataFrame:
+    """Filtered per-detection table for the given CSV files (cached in data/cache)."""
+    cache = firms_data.cache_file(f"detections_{sensor}", files)
     if cache.exists():
         z = np.load(cache)
         return pd.DataFrame({k: z[k] for k in z.files})
     cols = ["latitude", "longitude", "acq_date", "satellite", "confidence",
             "frp", "daynight", "type", "scan", "track"]
     parts = []
-    for f in sorted(glob.glob(str(SOURCES[sensor] / "*.csv"))):
+    for f in files:
         df = pd.read_csv(f, usecols=cols, dtype={"confidence": str, "satellite": str})
         df = df[(df["type"] == 0) & (df.frp > 0)]
         if sensor == "MODIS":
@@ -74,7 +74,7 @@ def load(sensor: str) -> pd.DataFrame:
     return out
 
 
-BASE_YEAR = 2024
+BASE_YEAR = 2000   # first MODIS year; any later year gets a positive day index
 
 
 def day_index(year, doy):
@@ -88,8 +88,23 @@ def index_to_date(dindex):
     return pd.to_datetime(year.astype(str), format="%Y") + pd.to_timedelta(doy - 1, "D")
 
 
-def select_years(df: pd.DataFrame, years) -> pd.DataFrame:
-    return df if not years else df[df.year.isin(years)]
+def load_both(args) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Find the CSVs for both sensors (location from args / env / default) and load them."""
+    files = firms_data.find_all(args)
+    return load("VIIRS", files["VIIRS"]), load("MODIS", files["MODIS"])
+
+
+MODIS_SATS = ("Aqua", "Terra")
+
+
+def add_sat_arg(ap: argparse.ArgumentParser) -> None:
+    ap.add_argument("--modis-sats", nargs="+", choices=MODIS_SATS, default=list(MODIS_SATS),
+                    help="MODIS satellites to harmonize, each with its own curve (default: both)")
+
+
+def add_out_arg(ap: argparse.ArgumentParser) -> None:
+    ap.add_argument("--out-dir", type=Path, default=OUT,
+                    help=f"where results are written (default {OUT})")
 
 
 def cell_day(df: pd.DataFrame, res: float) -> pd.Series:
@@ -154,7 +169,7 @@ def evaluate(v_test, h_test, m_test):
 
 
 # ------------------------------------------------------------------ plot
-def plot(paired_test, qm, res, path):
+def plot(paired_test, qm, res, path, sat="Aqua"):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -209,6 +224,7 @@ def plot(paired_test, qm, res, path):
     ax.plot(xs, apply_qm(xs, qm), "-", lw=2, color=INK, label="transfer (quantile map)")
     style(ax, "MODIS FRP (MW)", "VIIRS FRP (MW)", "Same cell, same day")
 
+    fig.suptitle(f"MODIS {sat} → VIIRS (NOAA-20)", x=0.01, ha="left", color=INK, fontsize=12)
     fig.tight_layout()
     fig.savefig(path, dpi=140, facecolor=fig.get_facecolor())
     plt.close(fig)
@@ -219,16 +235,29 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--res", type=float, default=0.25, help="grid cell size, degrees")
     ap.add_argument("--daynight", choices=["D", "N"], default="D")
-    ap.add_argument("--years", type=int, nargs="*", default=None, help="e.g. 2024 2025 (default: all)")
+    add_sat_arg(ap)
+    firms_data.add_data_args(ap)
+    add_out_arg(ap)
     a_ = ap.parse_args()
     t0 = time.time()
+    OUT = a_.out_dir
 
-    V, M = select_years(load("VIIRS"), a_.years), select_years(load("MODIS"), a_.years)
+    V, M = load_both(a_)
     want_day = a_.daynight == "D"
     V = V[V.day == want_day]
-    M = M[(M.day == want_day) & M.aqua]      # Aqua ~ same overpass time as NOAA-20
-    print(f"loaded {time.time() - t0:.0f}s: VIIRS {len(V):,}, MODIS (Aqua) {len(M):,} detections")
+    M = M[M.day == want_day]
+    print(f"loaded {time.time() - t0:.0f}s")
+    # Each MODIS satellite gets its own conversion: Aqua passes at ~13:30 like NOAA-20,
+    # Terra at ~10:30, when fires are usually weaker, so they relate differently to VIIRS.
+    for sat in a_.modis_sats:
+        Ms = M[M.aqua] if sat == "Aqua" else M[~M.aqua]
+        print(f"\n######## MODIS {sat} vs VIIRS: {len(V):,} VIIRS, {len(Ms):,} MODIS {sat} detections")
+        analyse(V, Ms, sat, a_, OUT)
+    print(f"\nwrote {OUT}  ({time.time() - t0:.0f}s)")
 
+
+def analyse(V, M, sat, a_, OUT):
+    """Full comparison + transfer function for one MODIS satellite."""
     # ---- 1. which representation makes the two sensors most alike?
     rows = [compare(V.frp.to_numpy(), M.frp.to_numpy(), "per pixel FRP"),
             compare((V.frp / V.area).to_numpy(), (M.frp / M.area).to_numpy(), "per pixel FRP / km²")]
@@ -240,8 +269,8 @@ def main():
         rows.append(compare(cv.to_numpy(), cm.to_numpy(), f"cell-day sum {res}° (all)"))
         rows.append(compare(cv[both].to_numpy(), cm[both].to_numpy(), f"cell-day sum {res}° (both saw)"))
     table = pd.DataFrame(rows)
-    OUT.mkdir(exist_ok=True)
-    table.to_csv(OUT / "representation_comparison.csv", index=False)
+    OUT.mkdir(parents=True, exist_ok=True)
+    table.to_csv(OUT / f"representation_comparison_{sat}.csv", index=False)
     print("\n== how alike are the two sensors? (smaller KS D = more alike; sigma_ratio 1 = same shape)")
     print(table.to_string(index=False))
 
@@ -292,25 +321,24 @@ def main():
         "VIIRS_equiv_lognormal_MW": a * lut_x ** b,
         "VIIRS_equiv_quantile_map_MW": apply_qm(lut_x, qm),
     })
-    np.savez(OUT / "quantile_map.npz", log_modis=qm[0], log_viirs=qm[1])
-    lut.to_csv(OUT / f"lookup_{a_.res}deg.csv", index=False)
+    np.savez(OUT / f"quantile_map_{sat}.npz", log_modis=qm[0], log_viirs=qm[1])
+    lut.to_csv(OUT / f"lookup_{sat}_{a_.res}deg.csv", index=False)
     print("\n" + lut.round(1).to_string(index=False))
 
-    json.dump(dict(res_deg=a_.res, daynight=a_.daynight,
+    json.dump(dict(res_deg=a_.res, daynight=a_.daynight, modis_satellite=sat,
                    cellday_lognormal=dict(a=a, b=b, formula="V = a * M**b", **e_ln),
-                   cellday_quantile_map=dict(file="quantile_map.npz", **e_qm),
+                   cellday_quantile_map=dict(file=f"quantile_map_{sat}.npz", **e_qm),
                    pixel_density_factor=dict(k=k, formula="V_MW_per_km2 = k * M_MW_per_km2",
                                              ks_before=float(ks_px_before),
                                              ks_after=float(ks_px_after)),
                    log_corr=r, n_train=int(train.sum()), n_test=int((~train).sum())),
-              open(OUT / "transfer.json", "w"), indent=2)
-    plot(te, qm, a_.res, OUT / f"harmonization_{a_.res}deg.png")
-    print(f"\nwrote harmonized/  ({time.time() - t0:.0f}s)")
+              open(OUT / f"transfer_{sat}.json", "w"), indent=2)
+    plot(te, qm, a_.res, OUT / f"harmonization_{sat}_{a_.res}deg.png", sat)
 
 
-def harmonize(modis_cellday_frp, qm_path=OUT / "quantile_map.npz"):
-    """Convert MODIS cell-day FRP (MW) to VIIRS-equivalent using the saved quantile map."""
-    z = np.load(qm_path)
+def harmonize(modis_cellday_frp, satellite="Aqua", out_dir=OUT):
+    """Convert MODIS (Aqua or Terra) cell-day FRP (MW) to VIIRS-equivalent, worldwide map."""
+    z = np.load(Path(out_dir) / f"quantile_map_{satellite}.npz")
     return apply_qm(modis_cellday_frp, (z["log_modis"], z["log_viirs"]))
 
 

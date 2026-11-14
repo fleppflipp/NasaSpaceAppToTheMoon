@@ -26,48 +26,28 @@ import pandas as pd
 from scipy import optimize, stats
 from scipy.special import gammaln
 
+import argparse
+import sys
+
 T0 = time.time()
-ROOT = Path(__file__).resolve().parents[2]
-OUT = Path(__file__).resolve().parent
-CACHE = ROOT / "harmonized" / "cache"
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent))          # src/, for firms_data and harmonize_frp
+import firms_data  # noqa: E402
+import harmonize_frp  # noqa: E402
+
+YEAR = 2025                                    # this page shows one year
+OUT = firms_data.OUTPUT_DIR / "pages"
 YEAR_DAYS = 365
-DATES = pd.date_range("2025-01-01", periods=YEAR_DAYS, freq="D")
+DATES = pd.date_range(f"{YEAR}-01-01", periods=YEAR_DAYS, freq="D")
 
 
 # ---------------------------------------------------------------- loading
-def load_cache(name):
-    d = np.load(CACHE / f"{name}.npz")
-    keep = d["year"] == 2025 if "year" in d.files else slice(None)   # this page shows 2025 only
-    return {"doy": d["doy"][keep].astype(np.int32), "aqua": d["aqua"][keep], "day": d["day"][keep]}
-
-
-def load_csv(kind):
-    if kind == "VIIRS":
-        files = glob.glob(str(ROOT / "viirs" / "viirs-jpss1" / "2025" / "viirs-jpss1_2025_*.csv"))
-    else:
-        files = glob.glob(str(ROOT / "modis" / "modis_2025_*.csv"))
-    cols = ["acq_date", "satellite", "confidence", "frp", "daynight", "type"]
-    parts = []
-    for f in files:
-        df = pd.read_csv(f, usecols=lambda c: c in cols)
-        df = df[(df["type"] == 0) & (df["frp"] > 0)]
-        if kind == "VIIRS":
-            df = df[df["confidence"].astype(str).str.lower().str[0] != "l"]
-        else:
-            df = df[pd.to_numeric(df["confidence"], errors="coerce") >= 30]
-        parts.append(df)
-    df = pd.concat(parts, ignore_index=True)
-    doy = pd.to_datetime(df["acq_date"]).dt.dayofyear.to_numpy(np.int32)
-    aqua = df["satellite"].astype(str).str.upper().str.startswith("A").to_numpy() if kind == "MODIS" \
-        else np.zeros(len(df), bool)
-    day = (df["daynight"].astype(str).str.upper() == "D").to_numpy()
-    return {"doy": doy, "aqua": aqua, "day": day}
-
-
-def load(kind):
-    if (CACHE / f"{kind}.npz").exists():
-        return load_cache(kind), "cache"
-    return load_csv(kind), "csv"
+def load(kind, args):
+    """Same filtered detections as the harmonization (shared cache in data/cache)."""
+    files = firms_data.find_files(kind, args, years=[YEAR])
+    d = harmonize_frp.load(kind, files)
+    return ({"doy": d["doy"].to_numpy(np.int32), "aqua": d["aqua"].to_numpy(),
+             "day": d["day"].to_numpy()}, str(firms_data.data_dir(kind, args)))
 
 
 def daily(doy, mask):
@@ -156,8 +136,12 @@ def analyse(v, m):
 
 # ---------------------------------------------------------------- main
 def main():
-    V, src_v = load("VIIRS")
-    M, src_m = load("MODIS")
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    firms_data.add_data_args(ap)
+    args = ap.parse_args()
+    OUT.mkdir(parents=True, exist_ok=True)
+    V, src_v = load("VIIRS", args)
+    M, src_m = load("MODIS", args)
     t_load = time.time() - T0
 
     counts = {}
@@ -189,7 +173,7 @@ def main():
         "stats": results,
         "source": {"viirs": src_v, "modis": src_m},
     }
-    tpl = (OUT / "daily_template.html").read_text(encoding="utf-8")
+    tpl = (HERE / "daily_template.html").read_text(encoding="utf-8")
     html = tpl.replace("/*__DATA__*/null", json.dumps(data, separators=(",", ":")))
     (OUT / "daily.html").write_text(html, encoding="utf-8")
 
