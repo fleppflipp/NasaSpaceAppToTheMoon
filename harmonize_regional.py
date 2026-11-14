@@ -63,8 +63,8 @@ def decode(keys, res):
     ilon = k % 8000 - 4000
     rest = k // 8000
     ilat = rest % 4000 - 2000
-    doy = rest // 4000
-    return (ilat + 0.5) * res, (ilon + 0.5) * res, doy
+    dindex = rest // 4000          # day index, see harmonize_frp.day_index()
+    return (ilat + 0.5) * res, (ilon + 0.5) * res, dindex
 
 
 def percentile_in(x, qm):
@@ -120,9 +120,11 @@ def total_err_ci(g_v, g_h, n_boot=300, seed=0):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--res", type=float, default=0.25)
+    ap.add_argument("--years", type=int, nargs="*", default=None, help="e.g. 2024 2025 (default: all)")
     a = ap.parse_args()
 
-    V, M = H.load("VIIRS"), H.load("MODIS")
+    V, M = H.select_years(H.load("VIIRS"), a.years), H.select_years(H.load("MODIS"), a.years)
+    print("years:", sorted(set(V.year.unique()) | set(M.year.unique())))
     V, M = V[V.day], M[M.day & M.aqua]
     cv, cm = H.cell_day(V, a.res), H.cell_day(M, a.res)
     both = cv.index.intersection(cm.index)
@@ -187,7 +189,7 @@ def main():
         print(f"  worldwide with {name:<8}: KS {ks:.4f}, total {te_:+.2%}")
 
     # by month
-    mon = (pd.to_datetime("2025-01-01") + pd.to_timedelta(te.doy - 1, "D")).dt.month.to_numpy()
+    mon = H.index_to_date(te.doy.to_numpy()).month.to_numpy()
     mt = pd.DataFrame({"m": mon, "V": te.V, "G": h_glob, "R": h_reg}).groupby("m").sum()
     print("\n== total FRP error by month (test)")
     print(pd.DataFrame({"global": mt.G / mt.V - 1, "regional": mt.R / mt.V - 1})
@@ -211,7 +213,7 @@ def main():
     ok = ~np.isnan(m)
     mh[ok] = apply_regional(m[ok], reg[ok], gqm, rmaps, n0)
     out = pd.DataFrame({
-        "date": (pd.Timestamp("2025-01-01") + pd.to_timedelta(doy - 1, "D")).strftime("%Y-%m-%d"),
+        "date": H.index_to_date(doy).strftime("%Y-%m-%d"),
         "lat_center": lat.round(3), "lon_center": lon.round(3), "region": reg,
         "viirs_frp_mw": v.round(2),
         "modis_aqua_frp_mw": m.round(2),
@@ -220,9 +222,10 @@ def main():
         "merged_frp_mw": np.where(np.isnan(v), mh, v).round(2),
         "source": np.select([~np.isnan(v) & ok, ~np.isnan(v)], ["both", "viirs_only"], "modis_only"),
     })
-    out.to_csv(H.OUT / f"harmonized_cellday_{a.res}deg.csv.gz", index=False)
+    fname = f"harmonized_cellday_{a.res}deg.csv.gz"
+    out.to_csv(H.OUT / fname, index=False)
     print(f"\nwrote harmonized/regional_maps.npz, regional_report.csv and "
-          f"harmonized_cellday_{a.res}deg.csv.gz ({len(out):,} cell-days; "
+          f"{fname} ({len(out):,} cell-days; "
           + ", ".join(f"{k} {v:,}" for k, v in out.source.value_counts().items()) + ")")
 
 

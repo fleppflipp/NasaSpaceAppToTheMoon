@@ -39,7 +39,7 @@ def _find_dir(rel: str) -> Path:
 
 
 SENSORS = {
-    "viirs": dict(rel="viirs-jpss1_2025_all_countries/viirs-jpss1/2025",
+    "viirs": dict(rel="viirs/viirs-jpss1/2025",
                   prefix="viirs-jpss1_2025_"),
     "modis": dict(rel="modis",
                   prefix="modis_2025_"),

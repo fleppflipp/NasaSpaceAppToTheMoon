@@ -32,7 +32,7 @@ from scipy import optimize, stats
 
 HERE = Path(__file__).resolve().parent
 _SUBDIRS = {
-    "VIIRS": "viirs-jpss1_2025_all_countries/viirs-jpss1/2025",
+    "VIIRS": "viirs/viirs-jpss1/2025",
     "MODIS": "modis",
 }
 

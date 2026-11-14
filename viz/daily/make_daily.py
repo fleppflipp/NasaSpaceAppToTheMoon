@@ -37,14 +37,15 @@ DATES = pd.date_range("2025-01-01", periods=YEAR_DAYS, freq="D")
 # ---------------------------------------------------------------- loading
 def load_cache(name):
     d = np.load(CACHE / f"{name}.npz")
-    return {"doy": d["doy"].astype(np.int32), "aqua": d["aqua"], "day": d["day"]}
+    keep = d["year"] == 2025 if "year" in d.files else slice(None)   # this page shows 2025 only
+    return {"doy": d["doy"][keep].astype(np.int32), "aqua": d["aqua"][keep], "day": d["day"][keep]}
 
 
 def load_csv(kind):
     if kind == "VIIRS":
-        files = glob.glob(str(ROOT / "viirs-jpss1_2025_all_countries" / "viirs-jpss1" / "2025" / "*.csv"))
+        files = glob.glob(str(ROOT / "viirs" / "viirs-jpss1" / "2025" / "viirs-jpss1_2025_*.csv"))
     else:
-        files = glob.glob(str(ROOT / "modis" / "*.csv"))
+        files = glob.glob(str(ROOT / "modis" / "modis_2025_*.csv"))
     cols = ["acq_date", "satellite", "confidence", "frp", "daynight", "type"]
     parts = []
     for f in files:

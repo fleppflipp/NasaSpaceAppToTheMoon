@@ -32,7 +32,7 @@ from scipy import stats
 
 HERE = Path(__file__).resolve().parent
 SOURCES = {
-    "VIIRS": HERE / "viirs-jpss1_2025_all_countries/viirs-jpss1/2025",
+    "VIIRS": HERE / "viirs/viirs-jpss1/2025",   # holds every year's VIIRS files
     "MODIS": HERE / "modis",
 }
 OUT = HERE / "harmonized"
@@ -58,10 +58,12 @@ def load(sensor: str) -> pd.DataFrame:
             df = df[pd.to_numeric(df.confidence, errors="coerce") >= 30]
         else:
             df = df[df.confidence != "l"]
+        dates = pd.to_datetime(df.acq_date)
         parts.append(pd.DataFrame({
             "lat": df.latitude.to_numpy(np.float32),
             "lon": df.longitude.to_numpy(np.float32),
-            "doy": pd.to_datetime(df.acq_date).dt.day_of_year.to_numpy(np.int16),
+            "year": dates.dt.year.to_numpy(np.int16),
+            "doy": dates.dt.day_of_year.to_numpy(np.int16),
             "frp": df.frp.to_numpy(np.float32),
             "area": (df.scan * df.track).to_numpy(np.float32),
             "aqua": (df.satellite == "Aqua").to_numpy(),
@@ -72,11 +74,29 @@ def load(sensor: str) -> pd.DataFrame:
     return out
 
 
+BASE_YEAR = 2024
+
+
+def day_index(year, doy):
+    """Days counted from 1 Jan BASE_YEAR, with a fixed 366-day slot per year."""
+    return (np.asarray(year, dtype=np.int64) - BASE_YEAR) * 366 + np.asarray(doy, dtype=np.int64)
+
+
+def index_to_date(dindex):
+    dindex = np.asarray(dindex, dtype=np.int64)
+    year, doy = BASE_YEAR + dindex // 366, dindex % 366
+    return pd.to_datetime(year.astype(str), format="%Y") + pd.to_timedelta(doy - 1, "D")
+
+
+def select_years(df: pd.DataFrame, years) -> pd.DataFrame:
+    return df if not years else df[df.year.isin(years)]
+
+
 def cell_day(df: pd.DataFrame, res: float) -> pd.Series:
     """Total FRP per (grid cell, day). Index = int64 key."""
     ilat = np.floor(df.lat.to_numpy() / res).astype(np.int64) + 2000
     ilon = np.floor(df.lon.to_numpy() / res).astype(np.int64) + 4000
-    key = (df.doy.to_numpy().astype(np.int64) * 4000 + ilat) * 8000 + ilon
+    key = (day_index(df.year.to_numpy(), df.doy.to_numpy()) * 4000 + ilat) * 8000 + ilon
     return pd.Series(df.frp.to_numpy(np.float64)).groupby(key).sum()
 
 
@@ -199,10 +219,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--res", type=float, default=0.25, help="grid cell size, degrees")
     ap.add_argument("--daynight", choices=["D", "N"], default="D")
+    ap.add_argument("--years", type=int, nargs="*", default=None, help="e.g. 2024 2025 (default: all)")
     a_ = ap.parse_args()
     t0 = time.time()
 
-    V, M = load("VIIRS"), load("MODIS")
+    V, M = select_years(load("VIIRS"), a_.years), select_years(load("MODIS"), a_.years)
     want_day = a_.daynight == "D"
     V = V[V.day == want_day]
     M = M[(M.day == want_day) & M.aqua]      # Aqua ~ same overpass time as NOAA-20

@@ -3,6 +3,7 @@
 
 # Raw FIRMS data folders (large; skip them entirely)
 /viirs-jpss1_2025_all_countries/
+/viirs/
 /modis/
 
 # Ignore all files...
