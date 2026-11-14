@@ -67,6 +67,10 @@ export const LAYOUT = {
   'grid-min': '16rem',
   'search-width': '26rem',
   'header-height': '4rem',
+  'timeline-height': '3.5rem',
+  // Space taken by the fixed bars at the top of every page.
+  'top-offset':
+    'calc(var(--layout-header-height) + var(--layout-timeline-height))',
   'page-gutter': 'clamp(var(--space-4), 4vw, var(--space-16))',
   'section-gap': 'clamp(var(--space-8), 6vw, var(--space-24))',
   'content-gap': 'var(--space-4)',

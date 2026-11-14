@@ -1,7 +1,7 @@
-/* Fills the viewport below the fixed header, regardless of the #root width. */
+/* Fills the viewport below the fixed header and time bar, regardless of the #root width. */
 .map-view {
   position: fixed;
-  inset-block: var(--layout-header-height) var(--space-0);
+  inset-block: var(--layout-top-offset) var(--space-0);
   inset-inline: var(--space-0);
 }
 

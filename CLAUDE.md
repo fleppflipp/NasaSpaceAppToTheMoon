@@ -43,6 +43,14 @@ Work proceeds feature by feature, one feature at a time. Done so far:
    languages of the countries in the data folders), flags from `flag-icons`,
    lazy-loaded dictionaries, right-to-left support; the choice is stored in
    `localStorage`.
+7. Time period bar under the header (`TimelineBar`): two-handle month slider
+   (Nov 2000 to Dec 2025) plus an exact date range; `period` state lives in
+   `layouts/AppLayout.tsx`.
+8. Fire layer: fires of the selected period as circles from per-year PMTiles
+   files (`public/tiles/fires_<year>.pmtiles`, git-ignored, built by
+   `tiles/build_fire_tiles.py`; `FIRE_TILE_YEARS` lists the years that exist).
+   Only 2012 so far; more years are added as the data team delivers
+   `fire_pixels_<year>.csv`.
 6. Data pipeline scripts from the data team (repo root, see "Data pipeline"):
    FIRMS MODIS + VIIRS pixels are joined into daily fires. The harmonized,
    map-ready format (PMTiles etc.) is still being defined by the data team.
@@ -110,8 +118,8 @@ Rules for the implementing agent:
   commands from that folder.
 - `space-app/src/App.tsx` only mounts the router. `router/AppRouter.tsx` defines
   the routes (paths in `constants/routes.constants.ts`); `layouts/AppLayout.tsx`
-  holds the searched place and the selected area and renders `Header`,
-  `BaseMap` and the routed page (`CalendarView`, `pages/NotFound.tsx`).
+  holds the searched place, the selected area and the time period and renders
+  `Header`, `TimelineBar`, `BaseMap` and the routed page (`CalendarView`, `pages/NotFound.tsx`).
 - `space-app/src/i18n/`, `space-app/src/locales/`: i18next setup and the English
   dictionary (`eng.ts`).
 - Data pipeline (Python, repo root, not part of the web app): see below.
@@ -141,6 +149,11 @@ into data for the app. Outputs are local and ignored by git too.
 - `src/`: earlier FRP harmonization research (`harmonize_frp.py`,
   `harmonize_regional.py`, `fit_frp_distributions.py`, `cluster_viirs.py`,
   `firms_data.py`) and the HTML overview/daily viewers (`src/viz/`).
+- `tiles/build_fire_tiles.py`: `fire_pixels_<year>.csv` (all countries) to
+  `space-app/public/tiles/fires_<year>.pmtiles`: DuckDB builds one row per daily
+  fire (centre, radius, FRP, which sensors saw it), tippecanoe (in WSL on
+  Windows) writes the tiles. Needs `duckdb`; the venv at
+  `DATAirelock_workenv` has it.
 - Principle agreed in the planning chat: harmonize toward the coarser common
   denominator (MODIS-equivalent counts for the calendar); the map shows only real
   detections, never invented locations.

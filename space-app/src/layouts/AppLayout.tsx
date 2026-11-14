@@ -3,14 +3,19 @@ import type { Polygon } from 'geojson'
 import { Outlet, useLocation } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import Header from '../components/Header'
+import TimelineBar from '../components/TimelineBar'
 import BaseMap from '../components/BaseMap'
 import { APP_NAME } from '../constants/app.constants'
 import { ROUTES } from '../constants/routes.constants'
 import type { Place } from '../services/places'
+import { DEFAULT_PERIOD } from '../services/period'
+import type { Period } from '../services/period'
 export default function AppLayout() {
   const [target, setTarget] = useState<Place | null>(null)
   // The area of interest drawn on the map; future features read it from here.
   const [selection, setSelection] = useState<Polygon | null>(null)
+  // The time period to show; future features (map layers, calendar) read it.
+  const [period, setPeriod] = useState<Period>(DEFAULT_PERIOD)
   const { pathname } = useLocation()
   const { t, i18n } = useTranslation()
   const isMap = pathname === ROUTES.map
@@ -26,11 +31,13 @@ export default function AppLayout() {
   return (
     <>
       <Header isMap={isMap} onPlaceSelect={setTarget} />
+      <TimelineBar period={period} onChange={setPeriod} />
       <BaseMap
         active={isMap}
         target={target}
         selection={selection}
         onSelectionChange={setSelection}
+        period={period}
       />
       <Outlet />
     </>

@@ -7,7 +7,9 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 import { INITIAL_ZOOM } from '../constants/map.constants'
 import { useAreaSelection } from '../hooks/useAreaSelection'
+import { useFireLayers } from '../hooks/useFireLayers'
 import { formatAreaKm2, selectionInfo } from '../services/geo'
+import type { Period } from '../services/period'
 import type { Place } from '../services/places'
 import DrawControl from './DrawControl'
 import './BaseMap.css'
@@ -29,6 +31,8 @@ interface BaseMapProps {
   /** The selected area (a freehand-drawn polygon), or null. */
   selection: Polygon | null
   onSelectionChange: (selection: Polygon | null) => void
+  /** Only fires inside this period are drawn. */
+  period: Period
 }
 
 export default function BaseMap({
@@ -36,6 +40,7 @@ export default function BaseMap({
   target,
   selection,
   onSelectionChange,
+  period,
 }: BaseMapProps) {
   const { t } = useTranslation()
   // The map is created once; later language changes only relabel its controls.
@@ -134,6 +139,8 @@ export default function BaseMap({
   const { canDraw, drawing, message, toggleDrawing, clearSelection } =
     useAreaSelection(mapRef, active, selection, onSelectionChange)
 
+  const { hasData } = useFireLayers(mapRef, period)
+
   const info = useMemo(
     () => (selection === null ? null : selectionInfo(selection)),
     [selection],
@@ -180,6 +187,9 @@ export default function BaseMap({
         <p className="map-status__message" role="status">
           {message === null ? '' : t(`draw.${message}`)}
         </p>
+        {hasData ? null : (
+          <p className="map-status__message">{t('fires.noData')}</p>
+        )}
         {info === null ? null : (
           <p className="map-status__readout">
             {t('draw.selectedArea', { area: formatAreaKm2(info.areaKm2) })}

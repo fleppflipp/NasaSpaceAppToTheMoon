@@ -109,3 +109,16 @@ logs/
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# Fire tiles and the big files that build them (made locally by tiles/build_fire_tiles.py)
+/space-app/public/tiles/
+*.pmtiles
+*.mbtiles
+*.ndjson
+*.geojsonl
+*.parquet
+*.duckdb
+*.duckdb.wal
+duckdb_tmp/
+fire_pixels_*.csv
+fire_clusters_*.csv

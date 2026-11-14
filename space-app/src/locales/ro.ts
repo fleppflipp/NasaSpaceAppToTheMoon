@@ -30,6 +30,21 @@ export default {
     placeholder: 'Limbă sau cod',
     noResults: 'Nicio limbă găsită.',
   },
+  fires: {
+    noData: 'Nu există încă date despre incendii pentru această perioadă.',
+  },
+  timeline: {
+    label: 'Perioadă',
+    startMonth: 'Luna de început',
+    endMonth: 'Luna de sfârșit',
+    range: '{{start}} – {{end}}',
+    exactDates: 'Date exacte',
+    from: 'De la',
+    to: 'Până la',
+    clearDates: 'Înapoi la luni',
+    invalidRange: 'Prima dată nu poate fi după ultima.',
+    outOfRange: 'Alege date între {{min}} și {{max}}.',
+  },
   calendar: { label: 'Vizualizare calendar' },
   notFound: {
     heading: 'Pagina nu a fost găsită',

@@ -59,6 +59,54 @@ is `public/favicon.svg`.
 See [routing and localization](docs/routing-i18n.md) for extension and
 deployment instructions.
 
+## Fire layer
+
+Fires are drawn on the map as circles (`src/hooks/useFireLayers.ts`): the circle
+has the fire's real radius at every zoom (never smaller than a few pixels) and its
+color shows the fire radiative power (yellow to dark red, tokens `fire-*` in the
+palette). Only fires whose day is inside the selected period are drawn, and the
+layer sits under the map labels. If the period has no fire data yet the map says
+so.
+
+The data comes from static PMTiles files, one per year, read directly in the
+browser with HTTP range requests (the `pmtiles` package registers a
+`pmtiles://` protocol in MapLibre; no tile server, no backend):
+`public/tiles/fires_<year>.pmtiles`, listed in `FIRE_TILE_YEARS`
+(`src/constants/fires.constants.ts`). Layer `fires`, one point per daily fire
+with the properties `day` (days since 2000-01-01, used by the time filter), `s`
+(0 = seen by MODIS only, 1 = both, 2 = VIIRS only), `f` (FRP in MW) and `r`
+(radius in km). The files are big and local: they are git-ignored. Build one from
+a `fire_pixels_<year>.csv` (see `tiles/build_fire_tiles.py`, which needs `duckdb`
+and `tippecanoe`; on Windows tippecanoe runs inside WSL):
+
+```sh
+python tiles/build_fire_tiles.py --pixels <fire_pixels_2012.csv> --year 2012   --work-dir <big temp folder> --out space-app/public/tiles
+```
+
+then add the year to `FIRE_TILE_YEARS`. 2012 (7.9 million fires) builds a 217 MB
+file in about three minutes. Low zooms thin out the densest areas
+(`--drop-densest-as-needed`), so the globe shows a sample; zoomed in, every fire
+is there.
+
+## Time period
+
+A bar under the header (`src/components/TimelineBar.tsx`) picks the period to
+show. A two-handle slider covers every month of the data (November 2000 to
+December 2025, set in `src/constants/period.constants.ts`): the left handle is
+the first month, the right handle the last, and every month between is
+included. It starts on the last year of data. The **Exact dates** button opens a
+panel with two native date fields for a range of days; while exact days are in
+use the button is filled and the slider handles show their months. Moving a
+handle clears the days and goes back to whole months.
+
+The period is held in `AppLayout.tsx` as a `Period` (`src/services/period.ts`):
+either `{ kind: 'months', startMonth, endMonth }` (month index = months since
+January 2000) or `{ kind: 'days', startDate, endDate }` (ISO dates, UTC, both
+included). `periodDateRange()` turns either into first and last day. Nothing
+reads the period yet: the map layers and the calendar will use it once the fire
+data exists. All dates are UTC regardless of the display language; labels use
+`Intl` in the active language. No external service or dependency.
+
 ## Language
 
 A language picker sits at the right end of the header, next to the Map and

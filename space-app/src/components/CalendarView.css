@@ -1,4 +1,4 @@
-/* Leaves room for the fixed header. */
+/* Leaves room for the fixed header and time bar. */
 .calendar-view {
-  padding-block-start: var(--layout-header-height);
+  padding-block-start: var(--layout-top-offset);
 }
