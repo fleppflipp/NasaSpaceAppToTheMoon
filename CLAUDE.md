@@ -38,10 +38,10 @@ Work proceeds feature by feature, one feature at a time. Done so far:
 5. URL routing (`/map`, 404) and English UI strings through
    i18next (`src/locales/eng.ts`); see `space-app/docs/routing-i18n.md`. All
    user-visible text must go through `t()`.
-   Header language picker (`LanguageSelect`) with 108 languages (the main
-   languages of the countries in the data folders), flags from `flag-icons`,
-   lazy-loaded dictionaries, right-to-left support; the choice is stored in
-   `localStorage`.
+   Header language picker (`LanguageSelect`) with eight languages (English,
+   Romanian, Hungarian, German, French, Spanish, Chinese, Hindi), each fully
+   translated (UI, statistics, country names via `Intl.DisplayNames`), flags from
+   `flag-icons`, lazy-loaded dictionaries; the choice is stored in `localStorage`.
 7. Time period strip at the bottom of the screen (`TimelineBar`): ONE slider over every
    month that has fire tiles (no year picker; year marks under the track); the
    map always shows one month. The months come from the tile server's folder
@@ -204,9 +204,9 @@ into data for the app. Outputs are local and ignored by git too.
   out of the code. Format numbers and dates with `Intl` using the active
   language (`i18n.language`), not a hardcoded locale such as `'en'`. Dates
   follow the project's UTC rules regardless of language. A new UI string must be
-  added to `eng.ts` (the source of truth, typed); other dictionaries in
-  `src/locales/` may lag behind and fall back to English, so add the string at
-  least to the languages you can translate; see `space-app/docs/routing-i18n.md`.
+  added to `eng.ts` (the source of truth, typed) **and to all seven other
+  dictionaries** in `src/locales/` (they are typed `satisfies Translation`, so a
+  missing key fails the typecheck); see `space-app/docs/routing-i18n.md`.
 
 ## Checks
 

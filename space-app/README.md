@@ -180,7 +180,8 @@ reads those files (`src/services/stats.ts`, `useYearStats`; validated, a missing
 year is skipped). `python tiles/build_fire_tiles.py ... --stats-only` rewrites just
 these files in seconds from the fire parquet, without tiles. The place of the
 biggest fire comes from the Photon geocoder's reverse lookup (nearest named place
-within 100 km, English names) once at build time; `--no-places` skips it. No new
+within 100 km; name and region in English, the country as an ISO code) once at
+build time; `--no-places` skips it. No new
 library.
 
 ## Language
@@ -193,16 +194,17 @@ and the language's own name, and the field can also be typed into: a code
 and Enter select, Escape closes. Flags are SVGs from the `flag-icons` package
 (MIT), loaded lazily; emoji flags do not render on Windows.
 
-`src/constants/languages.constants.ts` lists 108 languages: the main languages of
-every country in the FIRMS data folders. Each has a dictionary in
-`src/locales/<code>.ts` that is loaded only when the language is chosen (English
-is bundled as the fallback). Nine languages have no translation yet (empty
-dictionary, they show English): Sango, Swazi, Northern Ndebele, Hiri Motu,
-Chamorro, Tetum, Tongan, Fijian and Greenlandic. Most translations were written
-by an AI assistant and have not been reviewed by native speakers; fix wording by
-editing the locale file. Right-to-left languages (Arabic, Hebrew, Persian,
-Pashto, Sorani Kurdish, Urdu, Dhivehi) set `dir="rtl"` on the document and the
-layout mirrors, because the CSS uses logical properties.
+`src/constants/languages.constants.ts` lists the **eight languages** of the app:
+English, Romanian, Hungarian, German, French, Spanish, Chinese (simplified) and
+Hindi. Every one is translated completely: the interface, the statistics panel and
+the country of the biggest fire (written from its ISO code with
+`Intl.DisplayNames`; the place name and region next to it stay as the geocoder
+knows them, in English). Each has a dictionary in `src/locales/<code>.ts`, declared
+with `satisfies Translation`, so a missing key is a type error. English is bundled;
+the others load when chosen. The translations were written by an AI assistant and
+have not been reviewed by native speakers; fix wording by editing the locale file.
+The document `dir` follows the language entry (`ltr` for all eight; the CSS uses
+logical properties, so a right-to-left language can be added again).
 
 The choice is saved in `localStorage` and restored on the next visit; on the first
 visit the browser language is used when supported, otherwise English. Switching
@@ -291,4 +293,6 @@ The text typed in the search bar is sent to Photon. The tile build script also
 asks Photon, once per month at build time, for the place name of the biggest fire
 (only its coordinates are sent).
 OpenStreetMap data is used
-by both services and requires the attribution already shown on the map.
+by both services and requires a credit on the map. It stays (the licences of
+OpenStreetMap and OpenMapTiles need it), but collapsed: only the (i) button in the
+bottom-right corner is shown, and pressing it opens the text.

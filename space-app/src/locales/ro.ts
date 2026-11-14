@@ -1,4 +1,4 @@
-import type { PartialTranslation } from './eng'
+import type { Translation } from './eng'
 
 export default {
   search: {
@@ -89,4 +89,4 @@ export default {
     heading: 'Pagina nu a fost găsită',
     backToMap: 'Înapoi la hartă',
   },
-} satisfies PartialTranslation
+} satisfies Translation

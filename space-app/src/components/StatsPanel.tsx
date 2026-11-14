@@ -5,7 +5,11 @@ import { useYearStats } from '../hooks/useYearStats'
 import type { Period } from '../services/period'
 import { relativeChange } from '../services/stats'
 import type { BiggestFire } from '../services/stats'
-import { createStatsFormats, utcDate } from '../services/statsFormat'
+import {
+  createStatsFormats,
+  placeLabel,
+  utcDate,
+} from '../services/statsFormat'
 import type { StatsFormats } from '../services/statsFormat'
 import { buildStatsView } from '../services/statsView'
 import StatsDays from './StatsDays'
@@ -266,7 +270,7 @@ export default function StatsPanel({
         {biggest === null ? null : (
           <Section title={t('stats.biggestTitle')}>
             <Row label={t('stats.where')}>
-              {biggest.place ??
+              {placeLabel(biggest.place, i18n.language) ??
                 t('stats.coordinates', {
                   lat: formats.degrees.format(biggest.lat),
                   lng: formats.degrees.format(biggest.lng),

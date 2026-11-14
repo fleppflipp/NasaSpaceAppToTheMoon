@@ -1,4 +1,4 @@
-import type { PartialTranslation } from './eng'
+import type { Translation } from './eng'
 
 export default {
   search: {
@@ -11,6 +11,7 @@ export default {
     title: '地图',
     zoomIn: '放大',
     zoomOut: '缩小',
+    home: '返回初始视图',
     attribution: '显示或隐藏来源',
     feedback: '地图反馈',
   },
@@ -28,5 +29,59 @@ export default {
     placeholder: '语言或代码',
     noResults: '未找到语言。',
   },
+  fires: {
+    noData: '暂无火点数据。',
+    unavailable: '无法加载火点数据。瓦片服务器是否在运行？',
+  },
+  timeline: {
+    label: '时间段',
+    month: '月份',
+    loading: '正在加载月份…',
+    empty: '没有包含火点数据的月份',
+  },
+  stats: {
+    open: '显示统计',
+    close: '隐藏统计',
+    title: '统计',
+    loading: '正在加载统计数据…',
+    unavailable: '统计数据不可用。',
+    firesDetected: '检测到的火点',
+    totalPower: '总功率（FRP）',
+    megawatts: '{{value}} MW',
+    vsMonth: '较{{month}}',
+    vsLastYear: '较{{period}}（{{fires}}）',
+    vsAverage: '较历年{{month}}平均（{{years}}）',
+    seasonTitle: '每月火点数',
+    seasonAverage: '所有年份的平均值',
+    seasonDescription:
+      '每月火点数折线图：所有年份的平均值与 {{year}} 年，已标出{{month}}。',
+    daysTitle: '每日火点数',
+    peakDay: '高峰日',
+    quietestDay: '最平静的一天',
+    dayValue: '{{date}} · {{fires}}',
+    dayBar: '{{date}}：{{fires}} 个火点',
+    dayHint: '选择一根柱子，即可在地图上仅显示当天。',
+    showMonth: '显示整月',
+    biggestTitle: '本月最大火点',
+    where: '位置',
+    when: '日期',
+    power: '功率',
+    radius: '半径',
+    coordinates: '{{lat}}, {{lng}}',
+    showOnMap: '在地图上显示',
+    markerText: '{{power}} · {{date}}',
+    markerHide: '{{label}}。按下即可隐藏标记。',
+    strengthTitle: '火点强度',
+    strengthLow: '低于 20 MW',
+    strengthMid: '20–100 MW',
+    strengthHigh: '100–500 MW',
+    strengthExtreme: '500+ MW',
+    sensorsTitle: '哪些卫星探测到',
+    sensorModis: '仅 MODIS',
+    sensorBoth: '两者',
+    sensorViirs: '仅 VIIRS',
+    sensorsNote:
+      'VIIRS 能探测到更小的火点，因此在卫星组合相同的月份之间比较数量最为可靠。',
+  },
   notFound: { heading: '未找到页面', backToMap: '返回地图' },
-} satisfies PartialTranslation
+} satisfies Translation

@@ -9,8 +9,18 @@ export interface BiggestFire {
   lng: number
   /** Day of the month, 1 to 31. */
   day: number
-  /** Nearest named place (English, from the geocoder) or null when unknown. */
-  place: string | null
+  /** Nearest named place, or null when unknown. */
+  place: FirePlace | null
+}
+
+/** A place from the geocoder: the name and region are as the geocoder knows them (English). */
+export interface FirePlace {
+  name: string | null
+  region: string | null
+  /** ISO 3166 country code, so the country can be written in the language of the UI. */
+  countryCode: string | null
+  /** The country as the geocoder wrote it, for when the code is missing. */
+  countryName: string | null
 }
 
 /** A biggest fire to point out on the map, with the month it belongs to. */
@@ -69,6 +79,22 @@ function finite(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null
 }
 
+function text(value: unknown): string | null {
+  return typeof value === 'string' && value !== '' ? value : null
+}
+
+function parsePlace(value: unknown): FirePlace | null {
+  if (!isRecord(value)) {
+    return null
+  }
+  return {
+    name: text(value['name']),
+    region: text(value['region']),
+    countryCode: text(value['country']),
+    countryName: text(value['countryName']),
+  }
+}
+
 function parseBiggest(value: unknown): BiggestFire | null {
   if (!isRecord(value)) {
     return null
@@ -78,7 +104,6 @@ function parseBiggest(value: unknown): BiggestFire | null {
   const lat = finite(value['lat'])
   const lng = finite(value['lon'])
   const day = finite(value['day'])
-  const place = value['place']
   if (
     frp === null ||
     radiusKm === null ||
@@ -94,7 +119,7 @@ function parseBiggest(value: unknown): BiggestFire | null {
     lat,
     lng,
     day,
-    place: typeof place === 'string' && place !== '' ? place : null,
+    place: parsePlace(value['place']),
   }
 }
 
@@ -133,7 +158,8 @@ export async function fetchYearStats(
 ): Promise<Map<number, MonthStats>> {
   const response = await fetch(
     `${FIRE_TILE_BASE_URL}/fires_${String(year)}.json`,
-    { signal },
+    // Ask the server whether the file changed (it is rewritten when the data is rebuilt).
+    { signal, cache: 'no-cache' },
   )
   if (!response.ok) {
     throw new Error(`Tile server answered ${String(response.status)}`)

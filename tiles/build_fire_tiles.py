@@ -22,7 +22,8 @@ loads one at a time (the app shows one month of one year).
           with the numbers of the statistics panel, per month: fires, frp (sum, MW), days (fires
           per day of the month), strength (fires under 20 / 20-100 / 100-500 / over 500 MW),
           sensors (MODIS only / both / VIIRS only), biggest (the strongest fire: frp, r, lat, lon,
-          day and its place name from the Photon geocoder, null when it cannot be looked up).
+          day and its place from the Photon geocoder: {name, region, country (ISO code), countryName}, so the
+          app can write the country in the language of the UI; null when it cannot be looked up).
 
 Run:  python tiles/build_fire_tiles.py --pixels <fire_pixels_2012.csv> --year 2012 \
           --work-dir <folder for the big temporary files> --out tile-server/data
@@ -144,8 +145,8 @@ def month_stats(t, year: int, month: int) -> dict:
     }
 
 
-def lookup_place(lat: float, lon: float) -> str | None:
-    """Name of the nearest named place (within 100 km) from the Photon geocoder, or None."""
+def lookup_place(lat: float, lon: float) -> dict | None:
+    """The nearest named place (within 100 km) from the Photon geocoder, or None."""
     query = urllib.parse.urlencode({"lat": lat, "lon": lon, "lang": "en", "radius": 100,
                                     "limit": 1, "distance_sort": "true"})
     request = urllib.request.Request(f"{PHOTON_REVERSE_URL}?{query}",
@@ -155,8 +156,9 @@ def lookup_place(lat: float, lon: float) -> str | None:
             props = json.load(response)["features"][0]["properties"]
     except Exception:  # offline, rate limited, or nothing found: the app shows the coordinates
         return None
-    parts = [props.get("name"), props.get("state") or props.get("county"), props.get("country")]
-    return ", ".join(dict.fromkeys(p for p in parts if p)) or None
+    place = {"name": props.get("name"), "region": props.get("state") or props.get("county"),
+             "country": (props.get("countrycode") or "").upper() or None, "countryName": props.get("country")}
+    return place if any(place.values()) else None
 
 
 def make_month(parquet: str, month: int, ndjson: str, year: int) -> tuple[int, dict | None]:

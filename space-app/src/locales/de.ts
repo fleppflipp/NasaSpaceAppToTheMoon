@@ -1,4 +1,4 @@
-import type { PartialTranslation } from './eng'
+import type { Translation } from './eng'
 
 export default {
   search: {
@@ -11,6 +11,7 @@ export default {
     title: 'Karte',
     zoomIn: 'Vergrößern',
     zoomOut: 'Verkleinern',
+    home: 'Zurück zur Startansicht',
     attribution: 'Quellenangabe ein-/ausblenden',
     feedback: 'Feedback zur Karte',
   },
@@ -28,5 +29,61 @@ export default {
     placeholder: 'Sprache oder Code',
     noResults: 'Keine Sprache gefunden.',
   },
+  fires: {
+    noData: 'Noch keine Branddaten.',
+    unavailable:
+      'Die Branddaten können nicht geladen werden. Läuft der Tile-Server?',
+  },
+  timeline: {
+    label: 'Zeitraum',
+    month: 'Monat',
+    loading: 'Monate werden geladen…',
+    empty: 'Keine Monate mit Branddaten',
+  },
+  stats: {
+    open: 'Statistik anzeigen',
+    close: 'Statistik ausblenden',
+    title: 'Statistik',
+    loading: 'Statistik wird geladen…',
+    unavailable: 'Die Statistik ist nicht verfügbar.',
+    firesDetected: 'Erkannte Brände',
+    totalPower: 'Gesamtleistung (FRP)',
+    megawatts: '{{value}} MW',
+    vsMonth: 'ggü. {{month}}',
+    vsLastYear: 'ggü. {{period}} ({{fires}})',
+    vsAverage: 'ggü. Durchschnitt {{month}} {{years}}',
+    seasonTitle: 'Brände pro Monat',
+    seasonAverage: 'Durchschnitt aller Jahre',
+    seasonDescription:
+      'Liniendiagramm der Brände pro Monat: Durchschnitt aller Jahre und {{year}}, {{month}} markiert.',
+    daysTitle: 'Brände pro Tag',
+    peakDay: 'Spitzentag',
+    quietestDay: 'Ruhigster Tag',
+    dayValue: '{{date}} · {{fires}}',
+    dayBar: '{{date}}: {{fires}} Brände',
+    dayHint:
+      'Wählen Sie einen Balken, um nur diesen Tag auf der Karte zu zeigen.',
+    showMonth: 'Ganzen Monat zeigen',
+    biggestTitle: 'Größter Brand des Monats',
+    where: 'Wo',
+    when: 'Wann',
+    power: 'Leistung',
+    radius: 'Radius',
+    coordinates: '{{lat}}, {{lng}}',
+    showOnMap: 'Auf der Karte zeigen',
+    markerText: '{{power}} · {{date}}',
+    markerHide: '{{label}}. Drücken, um die Markierung auszublenden.',
+    strengthTitle: 'Wie stark die Brände waren',
+    strengthLow: 'unter 20 MW',
+    strengthMid: '20–100 MW',
+    strengthHigh: '100–500 MW',
+    strengthExtreme: '500+ MW',
+    sensorsTitle: 'Welche Satelliten sie sahen',
+    sensorModis: 'nur MODIS',
+    sensorBoth: 'beide',
+    sensorViirs: 'nur VIIRS',
+    sensorsNote:
+      'VIIRS erkennt kleinere Brände; Zahlen lassen sich daher am besten zwischen Monaten mit gleicher Satellitenmischung vergleichen.',
+  },
   notFound: { heading: 'Seite nicht gefunden', backToMap: 'Zurück zur Karte' },
-} satisfies PartialTranslation
+} satisfies Translation

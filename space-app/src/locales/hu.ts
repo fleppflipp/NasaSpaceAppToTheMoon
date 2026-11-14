@@ -1,4 +1,4 @@
-import type { PartialTranslation } from './eng'
+import type { Translation } from './eng'
 
 export default {
   search: {
@@ -88,4 +88,4 @@ export default {
     heading: 'Az oldal nem található',
     backToMap: 'Vissza a térképre',
   },
-} satisfies PartialTranslation
+} satisfies Translation

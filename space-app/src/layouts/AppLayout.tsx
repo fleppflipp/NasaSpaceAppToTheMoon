@@ -30,7 +30,7 @@ function fireView(fire: BiggestFire): Place {
   const halfWidth =
     halfHeight / Math.max(Math.cos((fire.lat * Math.PI) / 180), 0.1)
   return {
-    label: fire.place ?? '',
+    label: fire.place?.name ?? '',
     lng: fire.lng,
     lat: fire.lat,
     bounds: [

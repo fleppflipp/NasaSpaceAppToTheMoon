@@ -108,6 +108,9 @@ export default function BaseMap({
         'AttributionControl.MapFeedback': translate('map.feedback'),
       },
       style: MAP_STYLE_URL,
+      // Added below, collapsed: the map data licences need the credit, but it
+      // only has to be one press away, not on screen all the time.
+      attributionControl: false,
       center: INITIAL_CENTER,
       zoom: INITIAL_ZOOM,
       minZoom: 0,
@@ -146,6 +149,25 @@ export default function BaseMap({
       },
       'top-left',
     )
+    map.addControl(
+      new maplibregl.AttributionControl({ compact: true }),
+      'bottom-right',
+    )
+    // MapLibre opens the credit text as soon as the style's sources are known;
+    // close it again at once, so only the (i) button is ever shown on load.
+    let creditCollapsed = false
+    const collapseCredit = () => {
+      const credit = map.getContainer().querySelector('.maplibregl-ctrl-attrib')
+      if (
+        !creditCollapsed &&
+        credit?.classList.contains('maplibregl-compact-show') === true
+      ) {
+        credit.classList.remove('maplibregl-compact-show')
+        creditCollapsed = true
+      }
+    }
+    map.on('styledata', collapseCredit)
+    map.on('sourcedata', collapseCredit)
     map.addControl(new maplibregl.ScaleControl(), 'bottom-left')
 
     return () => {

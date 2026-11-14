@@ -86,7 +86,3 @@ export const eng = {
 export type Translation = {
   [K in keyof typeof eng]: { [P in keyof (typeof eng)[K]]: string }
 }
-/** A dictionary that may leave keys out: they fall back to English. */
-export type PartialTranslation = {
-  [K in keyof Translation]?: Partial<Translation[K]>
-}

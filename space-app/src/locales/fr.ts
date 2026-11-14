@@ -1,4 +1,4 @@
-import type { PartialTranslation } from './eng'
+import type { Translation } from './eng'
 
 export default {
   search: {
@@ -11,6 +11,7 @@ export default {
     title: 'Carte',
     zoomIn: 'Zoom avant',
     zoomOut: 'Zoom arrière',
+    home: 'Retour à la vue de départ',
     attribution: "Afficher ou masquer l'attribution",
     feedback: 'Commentaires sur la carte',
   },
@@ -28,5 +29,60 @@ export default {
     placeholder: 'Langue ou code',
     noResults: 'Aucune langue trouvée.',
   },
+  fires: {
+    noData: 'Pas encore de données d’incendie.',
+    unavailable:
+      'Impossible de charger les données d’incendie. Le serveur de tuiles est-il lancé ?',
+  },
+  timeline: {
+    label: 'Période',
+    month: 'Mois',
+    loading: 'Chargement des mois…',
+    empty: 'Aucun mois avec des données d’incendie',
+  },
+  stats: {
+    open: 'Afficher les statistiques',
+    close: 'Masquer les statistiques',
+    title: 'Statistiques',
+    loading: 'Chargement des statistiques…',
+    unavailable: 'Les statistiques ne sont pas disponibles.',
+    firesDetected: 'Incendies détectés',
+    totalPower: 'Puissance totale (FRP)',
+    megawatts: '{{value}} MW',
+    vsMonth: 'par rapport à {{month}}',
+    vsLastYear: 'par rapport à {{period}} ({{fires}})',
+    vsAverage: 'par rapport à la moyenne de {{month}} {{years}}',
+    seasonTitle: 'Incendies par mois',
+    seasonAverage: 'Moyenne de toutes les années',
+    seasonDescription:
+      'Courbe des incendies par mois : moyenne de toutes les années et {{year}}, avec {{month}} repéré.',
+    daysTitle: 'Incendies par jour',
+    peakDay: 'Jour de pointe',
+    quietestDay: 'Jour le plus calme',
+    dayValue: '{{date}} · {{fires}}',
+    dayBar: '{{date}} : {{fires}} incendies',
+    dayHint: 'Sélectionnez une barre pour n’afficher que ce jour sur la carte.',
+    showMonth: 'Afficher tout le mois',
+    biggestTitle: 'Plus grand incendie du mois',
+    where: 'Où',
+    when: 'Quand',
+    power: 'Puissance',
+    radius: 'Rayon',
+    coordinates: '{{lat}}, {{lng}}',
+    showOnMap: 'Voir sur la carte',
+    markerText: '{{power}} · {{date}}',
+    markerHide: '{{label}}. Appuyez pour masquer le repère.',
+    strengthTitle: 'Intensité des incendies',
+    strengthLow: 'moins de 20 MW',
+    strengthMid: '20–100 MW',
+    strengthHigh: '100–500 MW',
+    strengthExtreme: '500+ MW',
+    sensorsTitle: 'Quels satellites les ont vus',
+    sensorModis: 'MODIS seul',
+    sensorBoth: 'les deux',
+    sensorViirs: 'VIIRS seul',
+    sensorsNote:
+      'VIIRS détecte de plus petits incendies ; les nombres se comparent donc mieux entre des mois ayant le même mélange de satellites.',
+  },
   notFound: { heading: 'Page introuvable', backToMap: 'Retour à la carte' },
-} satisfies PartialTranslation
+} satisfies Translation

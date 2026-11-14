@@ -8,20 +8,13 @@ import {
 } from '../constants/languages.constants'
 import type { LanguageCode } from '../constants/languages.constants'
 import { eng } from '../locales/eng'
-import type { PartialTranslation } from '../locales/eng'
+import type { Translation } from '../locales/eng'
 
 // English is bundled (it is the fallback); every other dictionary is loaded
 // the first time its language is chosen.
-const dictionaryLoaders = import.meta.glob<{ default: PartialTranslation }>(
+const dictionaryLoaders = import.meta.glob<{ default: Translation }>(
   '../locales/*.ts',
 )
-
-/** Browser language tags that map to a differently named language here. */
-const LANGUAGE_ALIASES: Record<string, LanguageCode> = {
-  nb: 'no',
-  nn: 'no',
-  fil: 'tl',
-}
 
 /** The language chosen earlier, if storage is available and holds a valid one. */
 function readStoredLanguage(): LanguageCode | null {
@@ -44,11 +37,9 @@ function readBrowserLanguage(): LanguageCode | null {
       return exact.code
     }
     const base = lower.split('-')[0] ?? lower
-    const matched =
-      LANGUAGES.find((language) => language.code === base)?.code ??
-      LANGUAGE_ALIASES[base]
+    const matched = LANGUAGES.find((language) => language.code === base)
     if (matched) {
-      return matched
+      return matched.code
     }
   }
   return null
