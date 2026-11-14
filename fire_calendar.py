@@ -12,12 +12,15 @@ fire_calendar.py - join MODIS + VIIRS hotspot pixels into daily FIRES (clusters)
   STEP 5  two output files per country (see FILE_GUIDE below, also written as a .txt)
             fire_clusters_<year>_<country>.csv : one row per fire  (centre, radius, FRP, who saw it)
             fire_pixels_<year>_<country>.csv   : one row per pixel (fire_id, pass_id, scan, track, FRP ...)
+          --layout annual-pixels writes one combined pixel CSV per year instead.
 
-Run:  python fire_calendar.py --all                      (every country, MODIS + VIIRS, into new_outputs/)
+Run:  python fire_calendar.py --all --all-years --layout annual-pixels --out harmonized
+      python fire_calendar.py --all                      (one year, both tables, into new_outputs/)
       python fire_calendar.py Zambia Angola             (only these countries)
       python fire_calendar.py --selftest
 """
 import argparse
+import tempfile
 import time
 from pathlib import Path
 
@@ -41,8 +44,8 @@ EARTH_R_KM = 6371.0
 # so every later step works the same way for both sensors.
 
 FILE_PATTERN = {
-    "MODIS": "modis_{year}_all_countries/modis/{year}/modis_{year}_{country}.csv",
-    "VIIRS": "viirs-jpss1_{year}_all_countries/viirs-jpss1/{year}/viirs-jpss1_{year}_{country}.csv",
+    "MODIS": "modis/{year}/modis_{year}_{country}.csv",
+    "VIIRS": "viirs/{year}/viirs-snpp_{year}_{country}.csv",
 }
 
 RENAME = {
@@ -63,15 +66,39 @@ def list_countries(year, sensors):
     return sorted(names)
 
 
+def list_years(sensors):
+    """Sorted union of years with matching country CSVs in either sensor folder."""
+    years = set()
+    for sensor in sensors:
+        folder = ROOT / sensor.lower()
+        if not folder.is_dir():
+            continue
+        for directory in folder.iterdir():
+            if directory.is_dir() and directory.name.isdigit() and len(directory.name) == 4:
+                year = int(directory.name)
+                if list_countries(year, [sensor]):
+                    years.add(year)
+    return sorted(years)
+
+
 def load_country(sensor, country, year=2025, vegetation_only=True):
+    path = ROOT / FILE_PATTERN[sensor].format(year=year, country=country)
+    try:
+        return _load_country(sensor, path, vegetation_only)
+    except FileNotFoundError:
+        raise
+    except Exception as exc:
+        raise ValueError(f"Invalid input {path}: {exc}") from exc
+
+
+def _load_country(sensor, path, vegetation_only):
     """Read one FIRMS country file and return a clean table with standard column names.
 
     Output columns:
       sensor, satellite, lat, lon, scan_km, track_km, frp, bt_mir, bt_tir, confidence,
       daynight, type, time_utc, local_date
     """
-    path = ROOT / FILE_PATTERN[sensor].format(year=year, country=country)
-    df = pd.read_csv(path, dtype={"acq_time": str, "confidence": str})
+    df = pd.read_csv(path, dtype={"acq_time": str, "acq_date": str, "confidence": str})
     df = df.rename(columns=RENAME)
 
     if vegetation_only:                      # type 0 = vegetation fire (1 volcano, 2 static source, 3 offshore)
@@ -80,6 +107,8 @@ def load_country(sensor, country, year=2025, vegetation_only=True):
     # acq_time is HHMM in UTC; "23" means 00:23 -> pad to 4 digits
     hhmm = df["acq_time"].str.zfill(4)
     df["time_utc"] = pd.to_datetime(df["acq_date"] + " " + hhmm, format="%Y-%m-%d %H%M")
+    if df["time_utc"].isna().any():
+        raise ValueError("missing acquisition date or time")
 
     # Local SOLAR date: the sun moves 15 deg of longitude per hour, so local time = UTC + lon/15 h.
     # A night pass at 01:10 local and a day pass at 13:35 local then fall on the same calendar day,
@@ -88,6 +117,15 @@ def load_country(sensor, country, year=2025, vegetation_only=True):
     df["local_date"] = local_time.dt.floor("D")
 
     df["sensor"] = sensor
+    numeric = ["lat", "lon", "scan_km", "track_km", "frp", "bt_mir", "bt_tir"]
+    if not np.isfinite(df[numeric].to_numpy(dtype=float)).all():
+        raise ValueError("non-finite coordinates, pixel dimensions, FRP or temperatures")
+    if not (df["scan_km"].gt(0) & df["track_km"].gt(0)).all():
+        raise ValueError("pixel dimensions must be positive")
+    if not (df["lat"].between(-90, 90) & df["lon"].between(-180, 180)).all():
+        raise ValueError("coordinates outside geographic bounds")
+    if df["satellite"].isna().any() or not df["daynight"].isin(["D", "N"]).all():
+        raise ValueError("missing satellite or invalid daynight")
     cols = ["sensor", "satellite", "lat", "lon", "scan_km", "track_km", "frp", "bt_mir", "bt_tir",
             "confidence", "daynight", "type", "time_utc", "local_date"]
     return df[cols].sort_values("time_utc").reset_index(drop=True)
@@ -300,7 +338,7 @@ with fire_id = 123 in fire_clusters. Ids are unique across ALL countries of this
 run_summary_{year}.csv has one line per country (pixels in, fires out, total FRP).
 
 What is a "fire" here?
-  All MODIS (Terra, Aqua) and VIIRS (NOAA-20 = "N20") pixels of one LOCAL SOLAR DAY
+  All MODIS (Terra, Aqua) and VIIRS (SNPP = "N", or the original satellite label) pixels of one LOCAL SOLAR DAY
   (local time = UTC + longitude/15 hours) that are joined by these two rules:
     - same pass (same satellite, same fly-over):   pixels TOUCH   if distance <= {touch} x (size_a + size_b)
       -> one big fire spread over several neighbouring pixels becomes one fire
@@ -335,7 +373,7 @@ FILE 1: fire_clusters_{year}_<Country>.csv  - one row per fire
   n_day_passes       ... of which in daytime
   n_night_passes     ... of which at night
   n_modis_passes     ... of which MODIS (Terra or Aqua)
-  n_viirs_passes     ... of which VIIRS (NOAA-20)
+  n_viirs_passes     ... of which VIIRS
   satellites         which satellites saw it, e.g. "Aqua+N20"
   seen_by_modis      True / False
   seen_by_viirs      True / False   (seen_by_viirs True and seen_by_modis False = a fire only VIIRS caught)
@@ -353,7 +391,7 @@ FILE 2: fire_pixels_{year}_<Country>.csv  - one row per pixel (= one row of the 
   pass_fire_id       the fire as seen in this ONE pass (the touching pixels of one picture). One fire_id can
                      have several pass_fire_ids (one per pass, sometimes more if a picture shows the fire in pieces)
   sensor             MODIS or VIIRS
-  satellite          Terra, Aqua (MODIS) or N20 (VIIRS on NOAA-20)
+  satellite          original label: Terra, Aqua (MODIS), N (VIIRS SNPP), N20 (VIIRS NOAA-20)
   time_utc           time of the observation (UTC)
   local_date         local solar date (same for all pixels of a fire)
   daynight           D = day, N = night
@@ -402,6 +440,150 @@ def selftest():
 
 
 # ============================================================================ run
+ANNUAL_GUIDE = """ANNUAL FIRE PIXELS (fire_calendar.py)
+
+fire_pixels_<year>.csv contains one row per original vegetation detection (type 0).
+MODIS Terra/Aqua and VIIRS SNPP (satellite N) use the same columns; original
+satellite labels, confidence and pixel FRP in MW are preserved. This is spatial
+and temporal grouping, not statistical FRP calibration.
+
+Columns, in order:
+{columns}
+
+country: source country; sensor: MODIS or VIIRS; satellite: original satellite.
+time_utc: observation timestamp; local_date: UTC + longitude/15 hours, date only.
+daynight: D or N; lat/lon: original pixel centre in degrees.
+scan_km/track_km: original pixel dimensions; frp: original pixel FRP in MW.
+bt_mir/bt_tir: brightness temperatures in kelvin; confidence: original value
+(MODIS 0-100, VIIRS l/n/h).
+
+fire_id identifies one connected fire on one local solar day within a country.
+pass_id identifies one satellite fly-over (a gap >10 minutes starts a new pass).
+pass_fire_id identifies connected pixels within that pass and local day.
+Same-pass distance limit: 0.75 * (size_a + size_b).
+Different-pass distance limit: size_a/2 + size_b/2 + 0.5 km.
+size = max(scan_km, track_km). Locations and FRP are never invented or calibrated.
+Do not count pixel rows as fires or sum a fire's FRP across different passes.
+
+All three integer IDs are unique across countries within an annual export.
+Across years use (source year, ID). IDs restart on each annual run; rebuilding a
+different country selection can change IDs. Countries and years are independent:
+no merging across borders or source-year boundaries. The file year is the input
+year; local_date may fall in an adjacent year. Rows are ordered by country,
+fire_id and time_utc. Missing sensors are allowed; empty years have headers only.
+
+run_summary_<year>.csv records each country's available sensors, retained pixel
+counts, original per-sensor FRP sums, fire counts and processing seconds.
+Pixel FRP sums are conservation checks, not multi-pass fire-energy estimates.
+Annual CSVs are staged, read back in chunks and checked before replacement.
+Rerunning rebuilds the selected year's file, including only selected countries.
+No cluster CSV is written in annual-pixels mode.
+
+Run all available years:
+  python fire_calendar.py --all --all-years --layout annual-pixels --out harmonized
+Run one year:
+  python fire_calendar.py --all --year 2025 --layout annual-pixels --out harmonized
+"""
+
+ANNUAL_SUMMARY_COLS = ["country", "sensors", "modis_pixels", "viirs_pixels",
+                       "modis_pixel_frp_mw", "viirs_pixel_frp_mw", "fires", "seconds"]
+
+
+def verify_annual(path, summary):
+    """Check the serialized file against retained source counts and FRP sums."""
+    if list(pd.read_csv(path, nrows=0).columns) != PIXEL_COLS:
+        raise ValueError(f"Invalid pixel columns: {path}")
+    counts, totals = {}, {}
+    for chunk in pd.read_csv(path, usecols=["country", "sensor", "frp"], chunksize=250_000,
+                             keep_default_na=False):
+        for key, group in chunk.groupby(["country", "sensor"]):
+            counts[key] = counts.get(key, 0) + len(group)
+            totals[key] = totals.get(key, 0.0) + group.frp.sum()
+    expected = set()
+    for row in summary.to_dict("records"):
+        for sensor in ["MODIS", "VIIRS"]:
+            key = (row["country"], sensor)
+            expected.add(key)
+            if counts.get(key, 0) != row[f"{sensor.lower()}_pixels"]:
+                raise ValueError(f"Pixel count mismatch for {key}: {path}")
+            if not np.isclose(totals.get(key, 0.0), row[f"{sensor.lower()}_pixel_frp_mw"],
+                              rtol=1e-10, atol=1e-6):
+                raise ValueError(f"Pixel FRP mismatch for {key}: {path}")
+    if set(counts) - expected:
+        raise ValueError(f"Unexpected country/sensor in {path}")
+
+
+def run_annual(countries, year, sensors, out_dir):
+    """Stream one country at a time into a checked annual pixel export."""
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    countries = sorted(set(countries))
+    offsets = dict.fromkeys(["fire_id", "pass_id", "pass_fire_id"], 0)
+    rows = []
+    start = time.time()
+    # Temporary files live on the destination filesystem so replace is atomic.
+    with tempfile.NamedTemporaryFile(dir=out_dir, prefix=f"fire_pixels_{year}_",
+                                     suffix=".tmp", delete=False) as handle:
+        staged = Path(handle.name)
+    staged_summary = None
+    try:
+        with staged.open("w", encoding="utf-8", newline="") as output:
+            pd.DataFrame(columns=PIXEL_COLS).to_csv(output, index=False)
+            for k, country in enumerate(countries, 1):
+                t0 = time.time()
+                row = dict.fromkeys(ANNUAL_SUMMARY_COLS, 0)
+                row["country"] = country
+                available, parts = [], []
+                for sensor in sensors:
+                    path = ROOT / FILE_PATTERN[sensor].format(year=year, country=country)
+                    if not path.is_file():
+                        continue
+                    part = load_country(sensor, country, year)
+                    available.append(sensor)
+                    row[f"{sensor.lower()}_pixels"] = len(part)
+                    row[f"{sensor.lower()}_pixel_frp_mw"] = float(part.frp.sum())
+                    if len(part):
+                        parts.append(part)
+                    del part
+                if not available:
+                    raise FileNotFoundError(f"No input for {year}/{country} under {ROOT}")
+                row["sensors"] = "+".join(available)
+                if parts:
+                    px = pd.concat(parts, ignore_index=True)
+                    parts.clear()
+                    pixels, clusters = build(px, country)
+                    check(pixels, clusters, len(px), px.frp.sum())
+                    del px
+                    for col in offsets:
+                        pixels[col] += offsets[col]
+                        offsets[col] = int(pixels[col].max()) + 1
+                    pixels.to_csv(output, index=False, header=False)
+                    row["fires"] = len(clusters)
+                    del pixels, clusters
+                row["seconds"] = round(time.time() - t0, 2)
+                rows.append(row)
+                print(f"[{year} {k}/{len(countries)}] {country}: "
+                      f"{row['modis_pixels'] + row['viirs_pixels']:,} pixels -> "
+                      f"{row['fires']:,} fires ({row['seconds']}s)", flush=True)
+        summary = pd.DataFrame(rows, columns=ANNUAL_SUMMARY_COLS)
+        print(f"[{year}] Verifying serialized annual pixels...", flush=True)
+        verify_annual(staged, summary)
+        with tempfile.NamedTemporaryFile(dir=out_dir, prefix=f"run_summary_{year}_",
+                                         suffix=".tmp", delete=False) as handle:
+            staged_summary = Path(handle.name)
+        summary.to_csv(staged_summary, index=False)
+        staged.replace(out_dir / f"fire_pixels_{year}.csv")
+        staged_summary.replace(out_dir / f"run_summary_{year}.csv")
+        (out_dir / "README_fire_pixels.txt").write_text(
+            ANNUAL_GUIDE.format(columns=", ".join(PIXEL_COLS)), encoding="utf-8")
+        print(f"DONE {year}: {len(summary)} countries, {time.time() - start:.1f}s", flush=True)
+        return summary
+    finally:
+        staged.unlink(missing_ok=True)
+        if staged_summary is not None:
+            staged_summary.unlink(missing_ok=True)
+
+
 def run(countries, year, sensors, out_dir):
     out_dir = Path(out_dir)
     (out_dir / "fire_clusters").mkdir(parents=True, exist_ok=True)
@@ -468,17 +650,32 @@ def run(countries, year, sensors, out_dir):
           f"total FRP {new.total_frp_mw.sum():,.0f} MW -> {out_dir}", flush=True)
 
 
-if __name__ == "__main__":
+def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("countries", nargs="*", help="country names as in the file names (default: --all)")
     ap.add_argument("--all", action="store_true", help="every country that has a MODIS or VIIRS file")
-    ap.add_argument("--year", type=int, default=2025)
-    ap.add_argument("--sensors", nargs="+", default=["MODIS", "VIIRS"])
+    years = ap.add_mutually_exclusive_group()
+    years.add_argument("--year", type=int, default=2025)
+    years.add_argument("--all-years", action="store_true", help="process all discovered input years")
+    ap.add_argument("--sensors", nargs="+", choices=list(FILE_PATTERN), default=["MODIS", "VIIRS"])
+    ap.add_argument("--layout", choices=["country", "annual-pixels"], default="country")
     ap.add_argument("--out", default=str(ROOT / "new_outputs"))
     ap.add_argument("--selftest", action="store_true")
-    a = ap.parse_args()
+    a = ap.parse_args(argv)
     if a.selftest:
         selftest()
     else:
-        todo = list_countries(a.year, a.sensors) if (a.all or not a.countries) else a.countries
-        run(todo, a.year, a.sensors, a.out)
+        sensors = list(dict.fromkeys(a.sensors))
+        selected_years = list_years(sensors) if a.all_years else [a.year]
+        if not selected_years:
+            ap.error(f"no input years found under {ROOT / 'modis'} or {ROOT / 'viirs'}")
+        for year in selected_years:
+            todo = list_countries(year, sensors) if (a.all or not a.countries) else a.countries
+            if not todo:
+                ap.error(f"no input country CSVs found for {year}")
+            runner = run_annual if a.layout == "annual-pixels" else run
+            runner(todo, year, sensors, a.out)
+
+
+if __name__ == "__main__":
+    main()

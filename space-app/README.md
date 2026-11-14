@@ -2,6 +2,43 @@
 
 React, TypeScript, and Vite.
 
+## Annual fire pixel data
+
+From the repository root, `fire_calendar.py` reads local FIRMS CSVs from
+`modis/<year>/modis_<year>_<country>.csv` and
+`viirs/<year>/viirs-snpp_<year>_<country>.csv`. The Python pipeline uses NumPy,
+pandas and SciPy; it does not call an external service.
+
+```powershell
+conda activate base
+python fire_calendar.py --all --all-years --layout annual-pixels --out harmonized
+```
+
+Each `harmonized/fire_pixels_<year>.csv` contains all countries and both sensors,
+one row per vegetation detection (`type == 0`), using the existing fire_pixels
+columns. Original FRP and satellite labels are preserved. Daily fire groups use
+local solar dates and the existing touch/overlap rules; this does not statistically
+calibrate the sensors. Data is processed one country at a time. Each annual file
+is written to a temporary file and read back to check per-country, per-sensor
+pixel counts and FRP totals before replacing the published file. Annual summaries
+include empty countries. `README_fire_pixels.txt` in the output explains the schema.
+
+Use `(source year, fire_id)` (and likewise for pass IDs) when combining years.
+IDs are unique across countries within an annual file, but restart each year.
+Years follow source files; local dates may cross the year boundary. Countries and
+source years are clustered independently. Use `--year 2025` instead of
+`--all-years` to rebuild one year. Positional country names restrict the export;
+rerunning replaces that year's file with only the selected countries, without
+appending duplicates. The default `--layout country` still writes both per-country
+pixel and cluster tables. Generated data remains local and git-ignored.
+
+Pipeline checks (run from the repository root with the same Anaconda Python):
+
+```powershell
+python fire_calendar.py --selftest
+python -m unittest discover -s tests -v
+```
+
 Shared colors, spacing, typography, and component sizing are documented in
 [the design system guide](docs/design-system.md).
 
