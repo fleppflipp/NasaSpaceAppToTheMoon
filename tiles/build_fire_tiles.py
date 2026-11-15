@@ -78,11 +78,19 @@ def build_fires(pixels: Path, year: int, parquet: Path, tmp: Path) -> int:
     con.execute("PRAGMA threads=12")
     con.execute("PRAGMA temp_directory='" + str(tmp).replace("\\", "/") + "'")
     csv = str(pixels).replace("\\", "/")
-    con.execute(f"""
-        CREATE TEMP TABLE px AS
-        SELECT fire_id, pass_id, sensor, local_date, lat, lon, scan_km, track_km, frp
-        FROM read_csv('{csv}', header=true, sample_size=200000)
-    """)
+    # Some yearly files have rows the parallel reader rejects: fall back to one thread for those.
+    for parallel in ("true", "false"):
+        try:
+            con.execute(f"""
+                CREATE TEMP TABLE px AS
+                SELECT fire_id, pass_id, sensor, local_date, lat, lon, scan_km, track_km, frp
+                FROM read_csv('{csv}', header=true, delim=',', strict_mode=false,
+                              parallel={parallel}, sample_size=200000)
+            """)
+            break
+        except duckdb.NotImplementedException:
+            if parallel == "false":
+                raise
     con.execute(f"""
         CREATE TEMP TABLE fires AS
         WITH pass_total AS (

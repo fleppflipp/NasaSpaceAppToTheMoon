@@ -53,7 +53,7 @@ Work proceeds feature by feature, one feature at a time. Done so far:
    `tiles/build_fire_tiles.py`; a new file shows up in the slider by itself).
    One circle per fire (real size, overlaps left as they are); zoomed out only
    the strong fires (FRP) show, weaker ones grow in while zooming closer.
-   Years 2012 to 2025 so far (about 5 GB in `tile-server/data`); more are added as the data team delivers
+   Years 2002 to 2025 so far (about 7 GB in `tile-server/data`; 2002-2011 are MODIS only); more are added as the data team delivers
    `fire_pixels_<year>.csv`.
 9. Statistics panel (`StatsPanel`): a tab on the right edge, halfway down,
    slides out a panel over the map (the map does not move; the zoom and pencil
