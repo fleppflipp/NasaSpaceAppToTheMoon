@@ -247,6 +247,9 @@ years), scales their FRP to the forecast, and writes the files with
 python tiles/build_forecast_tiles.py   # predictions/ -> tile-server/data/forecast_*.pmtiles
 ```
 
+The whole chain from the observed tiles to these files (four commands) is in
+"Getting started", step 4, of the [root README](../README.md).
+
 ## Statistics
 
 A tab on the right edge of the screen, halfway down (below the zoom and pencil

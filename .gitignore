@@ -70,6 +70,23 @@ viirs
 *.npz
 *.npy
 
+# Data never goes into git, only the code that makes or reads it: tables, forecasts,
+# tile statistics and local screenshots stay on each machine.
+*.csv
+*.csv.gz
+*.tsv
+*.xlsx
+*.zip
+*.gz
+*.h5
+*.hdf
+*.nc
+/predictions/
+/data/
+fires_*.json
+/*.png
+/*.jpg
+
 # Local secrets (sanitized environment templates may be committed)
 .env
 .env.*

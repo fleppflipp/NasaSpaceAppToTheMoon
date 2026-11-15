@@ -28,9 +28,9 @@ in the same folder: the fire cause service (`cause-service/`, setting
 The app reads `VITE_TILE_BASE_URL` (default `http://localhost:8080/tiles`; see
 `space-app/.env.example`). A teammate on the same network:
 
-1. You find your address with `ipconfig` (for example `172.20.10.6`) and allow
+1. You find your address with `ipconfig` (for example `192.168.1.20`) and allow
    TCP port 8080 for private networks in the Windows firewall.
-2. They write `VITE_TILE_BASE_URL=http://172.20.10.6:8080/tiles` into
+2. They write `VITE_TILE_BASE_URL=http://192.168.1.20:8080/tiles` into
    `space-app/.env.local` and start `npm run dev` as usual.
 
 ## Check it

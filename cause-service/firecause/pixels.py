@@ -1,6 +1,6 @@
 """Fires from the tile server: fire_pixels_<year>.csv (all countries, one row per pixel, written
 by fire_calendar.py) downloaded from FIRE_DATA_URL, the same server and folder the map tiles come
-from (for example http://10.62.232.178:8080/tiles).
+from (for example http://<server-ip>:8080/tiles).
 
 Each year is downloaded once and turned into one row per fire exactly like
 tiles/build_fire_tiles.py does it, so the fires in the cause panel are the dots on the map:

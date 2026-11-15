@@ -21,7 +21,7 @@ class Settings:
     # One row per fire, written by fire_calendar.py: fire_clusters_<year>_<Country>.csv
     fire_clusters_dir: Path = field(default_factory=lambda: Path(
         _env("FIRE_CLUSTERS_DIR", str(REPO_ROOT / "new_outputs" / "fire_clusters"))))
-    # Tile server folder with fire_pixels_<year>.csv (e.g. http://10.62.232.178:8080/tiles).
+    # Tile server folder with fire_pixels_<year>.csv (e.g. http://<server-ip>:8080/tiles).
     # Empty: read the local fire_clusters files above instead.
     fire_data_url: str = field(default_factory=lambda: _env("FIRE_DATA_URL", ""))
     fire_pixels_dir: Path = field(default_factory=lambda: Path(

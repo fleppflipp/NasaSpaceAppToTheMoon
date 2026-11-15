@@ -101,7 +101,7 @@ degoog and LibreTranslate are then expected at `DEGOOG_URL` and `LIBRETRANSLATE_
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
-| `FIRE_DATA_URL` | empty | Tile server folder with `fire_pixels_<year>.csv`, e.g. `http://10.62.232.178:8080/tiles` |
+| `FIRE_DATA_URL` | empty | Tile server folder with `fire_pixels_<year>.csv`, e.g. `http://<server-ip>:8080/tiles` |
 | `FIRE_PIXELS_DIR` | `../harmonized` | Local pixel CSVs used when `FIRE_DATA_URL` is empty |
 | `FIRE_CLUSTERS_DIR` | `../new_outputs/fire_clusters` | Input fires when no pixel source is configured or available |
 | `DEGOOG_URL`, `DEGOOG_API_KEY`, `DEGOOG_ENGINES` | `http://localhost:4444`, empty, empty | degoog instance, its API key, engine ids to ask (empty = all enabled) |
