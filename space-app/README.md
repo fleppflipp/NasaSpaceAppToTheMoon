@@ -39,6 +39,19 @@ python fire_calendar.py --selftest
 python -m unittest discover -s tests -v
 ```
 
+## Local CSV server
+
+The optional local CSV server serves the annual `harmonized/fire_pixels_<year>.csv`
+files without loading them into memory. From the repository root, run
+`node csv-server/server.cjs` and browse `http://127.0.0.1:8081/tiles` for a JSON
+listing of CSV files in `harmonized/` and fire PMTiles and statistics JSON files
+in `data/`; append a filename to download it. PMTiles support HTTP byte ranges.
+The root URL also supports the listing and downloads. Set `CSV_PORT` to change the
+port. It listens only on this machine, requires no key or external service, and
+uses Node.js built-in modules. The cause service can use it with
+`FIRE_DATA_URL=http://127.0.0.1:8081/tiles` when running on the same host; a service
+inside Docker needs a host-accessible address instead.
+
 Shared colors, spacing, typography, and component sizing are documented in
 [the design system guide](docs/design-system.md).
 
@@ -87,35 +100,217 @@ instead of `npm`, for example `npm.cmd run check`.
 
 The app is called **FireLock**. The shared layout renders a fixed header
 (`src/components/Header.tsx`) with the logo and name, the place search bar in
-the middle, and a **Map / Calendar** switch on the right. The switch toggles
-between the map view and the calendar view (`CalendarView.tsx`, currently an
-empty placeholder). Navigation uses URL routes. The map stays mounted while the calendar is shown, so its
-position is kept, and the search bar is only shown in the map view. The favicon
-is `public/favicon.svg`.
+the middle and the language picker on the right. There is one view, the map
+(`/map`; `/` redirects there, unknown paths show a 404). The favicon is
+`public/favicon.svg`.
 
 See [routing and localization](docs/routing-i18n.md) for extension and
 deployment instructions.
 
+## Fire layer
+
+The map shows the fires of **one month** at a time, every fire as a see-through
+circle (`src/hooks/useFireLayers.ts`); overlapping circles are left as they are.
+The circle is the fire's real size in kilometres (a small pixel floor only while
+zoomed far out, fading away by zoom 12), so it grows smoothly with the zoom and
+never jumps. The color follows the fire radiative power (FRP): yellow to dark red
+(tokens `fire-*` in the palette). **Zoomed out only the strong fires are drawn**;
+the weaker ones grow in from radius 0 while zooming closer (limits in
+`FIRE_MIN_FRP_BY_ZOOM` in `fires.constants.ts`: 100 MW at zoom 0-3, down to every
+fire from zoom 9). It is done in the style only, so the tiles hold every fire.
+The layer sits under the map labels. The map loads a month only after the slider
+has rested on it for 200 ms (`FIRE_PERIOD_DEBOUNCE_MS`), so dragging fast does not
+start a tile file per step. Months without data are not on the slider;
+if there is none at all, the map says so.
+
+### How the PMTiles work, where they run and how others connect
+
+The data is static files, one PMTiles file per month:
+`tile-server/data/fires_<year>_<MM>.pmtiles` (`MM` = 01 to 12), plus
+`fires_<year>.json` with the numbers of the statistics panel per month (see
+"Statistics"). They are big, local and git-ignored.
+A small **nginx tile server** (Docker, folder `tile-server/`, see its README)
+serves that folder on port 8080 with HTTP range requests and CORS for any origin,
+so the browser reads only the pieces it needs: the `pmtiles` package registers a
+`pmtiles://` protocol in MapLibre, the source URL is
+`pmtiles://http://localhost:8080/tiles/fires_2012_07.pmtiles`, and changing the
+month just points the source at another file. Start it with
+`cd tile-server && docker compose up -d`. The app finds the server through
+`VITE_TILE_BASE_URL` (default `http://localhost:8080/tiles`, see `.env.example`;
+set it in `.env.local` to use a teammate's server). The tiles are not part of
+`dist/`.
+
+If the server's folder listing cannot be loaded at startup, the app uses the
+repository's `data/` folder instead. During `npm run dev` and `npm run preview`,
+the Vite server exposes its `fires_<year>_<MM>.pmtiles` and `fires_<year>.json`
+files at `/local-fire-data/`, with byte-range support. The map and statistics
+use the same source for the session; reload to retry the tile server. The local
+folder is not copied into the build. For another production host, configure an
+equivalent `/local-fire-data/` endpoint with a JSON directory listing and HTTP
+byte ranges, or keep the tile server available. This fallback covers map and
+statistics data; the fire cause service uses its own data configuration.
+
+Inside a file the layer `fires` holds the points (zoom 0-9; props `day` = days
+since 2000-01-01, `s` = 0 MODIS only / 1 both / 2 VIIRS only, `f` = FRP in MW, `r`
+= radius in km). The app overscales them above zoom 9. Every fire has a tippecanoe
+`minzoom` from its FRP (100 MW and up from zoom 0, down to the weakest from zoom
+8), matching `FIRE_MIN_FRP_BY_ZOOM` in the app, so the sparse low-zoom tiles hold
+the strong fires and none of them is thinned away.
+
+Other people can connect to them in these ways:
+
+- On the same network, they set `VITE_TILE_BASE_URL=http://<your-ip>:8080/tiles`
+  (allow port 8080 in the Windows firewall for private networks) and run their own
+  `npm run dev`, or they run the same compose with a copy of `tile-server/data`.
+- Another web app needs the `pmtiles` protocol, a vector source
+  `pmtiles://http://<your-ip>:8080/tiles/fires_2012_07.pmtiles` and the layers
+  above; CORS is already open.
+- QGIS (3.32 or newer, untested here) or the `pmtiles` command line tool
+  (`pmtiles show`) can open a file by its URL.
+- From the internet only through a tunnel or by copying the files to a static host
+  with range requests (not set up).
+
+### Hotspot details
+
+Click a fire point to open its details. The panel reads only the rendered tile
+properties: event FRP, sensor group, event day and bounding radius.
+Dates retain the tiles' local solar day grouping. Coordinates
+are the point's event centre, not the cursor position. Missing values are shown
+as unavailable; zero FRP is valid.
+
+The `s` property identifies MODIS, VIIRS, or both, not a specific satellite.
+Bundled NASA/NOAA instrument photos and credit links accompany each sensor.
+No confidence values, detail API, CSV/JSON downloads, new dependencies, or tile
+rebuilds are needed. Photos ship with the frontend, so details require no new
+external service. See `src/assets/sensors/README.md` for image sources.
+
+The token-styled card sits inside the map on desktop and becomes a scrollable
+bottom panel on mobile. A ring marks the selected location.
+Escape, the close button, or clicking empty map space dismisses details. Changing
+the selected year/month/day, leaving the map, or entering draw mode clears them.
+Keyboard users can pan the focused map with arrow keys and press Enter to inspect
+a hotspot at its centre. The panel heading receives focus; explicit dismissal
+returns focus to the map. Map listeners and the marker are cleaned up on unmount.
+
+Implementation: `useHotspotSelection.ts`, `services/hotspot.ts`, and
+`HotspotDetails.tsx` / `.css`. At the user's request, this feature currently uses
+English copy in `constants/hotspot.constants.ts`; localization is deferred and
+the existing locale dictionaries are unchanged.
+
+### Building the files
+
+`tiles/build_fire_tiles.py` makes the 12 monthly files of one year from its
+`fire_pixels_<year>.csv` (needs the Python packages `duckdb`, `numpy`, `pyarrow`
+and `tippecanoe`; on Windows tippecanoe runs inside WSL):
+
+```sh
+python tiles/build_fire_tiles.py --pixels <fire_pixels_2012.csv> --year 2012   --work-dir <big temp folder> --out tile-server/data
+```
+
+DuckDB builds one row per daily fire, one point per fire is written per month with
+its `minzoom`, tippecanoe writes the tiles (with `-r1`, otherwise tippecanoe's
+default drop rate removes nearly all dots when zoomed out). One year (about 8
+million fires) takes a few minutes; a month file is about 30 MB. There is nothing to
+register: the app lists the files of the tile server, so a new month appears on the
+slider by itself.
+Rows whose local date falls outside the year (an edge effect of the yearly files)
+are put into the first or last day of the year.
+
+## Time period
+
+A full-width strip at the bottom of the screen (`src/components/TimelineBar.tsx`; the
+map ends above it) has **one slider** over
+every month that has fire tiles (2002 to 2025 once all data exists; months without
+data are skipped), with a mark and a label at the start of each year. The summary
+shows the month in the active language. The list of months comes from the tile
+server's folder listing (`src/hooks/useFirePeriods.ts`, nginx `autoindex_format
+json`). The period is held in `AppLayout.tsx` as `{ year, month }`
+(`src/services/period.ts`); it starts on the month closest to July in the latest
+year that has data. All dates are UTC regardless of the display language. No external service.
+
+### Future months (forecast)
+
+The slider runs on past the last observed month into the months that have a
+`forecast_<year>_<MM>.pmtiles` file in the same tile folder. That part of the track
+has its own color with a "Future" label where it starts; while a future month is
+shown, a banner (`ForecastBanner`) says the dots are an estimate, not observed
+data, and the statistics panel only shows a note. The files have exactly the format
+of the observed ones and are drawn by the same layers. They come from the
+Chronos-2 forecast in `predictions/` (expected fires and FRP per 0.5° cell and
+month, `forecast/forecast_fires.py`, one file per country after
+`forecast/split_forecast_by_country.py`); `tiles/build_forecast_tiles.py` draws
+that many real past fires of the same cell and calendar month (last 3 observed
+years), scales their FRP to the forecast, and writes the files with
+`tiles/pmtiles_points.py` (pure Python, no tippecanoe):
+
+```sh
+python tiles/build_forecast_tiles.py   # predictions/ -> tile-server/data/forecast_*.pmtiles
+```
+
+## Statistics
+
+A tab on the right edge of the screen, halfway down (below the zoom and pencil
+buttons; an arrow that points left), slides out a panel of statistics for the
+shown month (`src/components/StatsPanel.tsx`, 23 rem wide,
+`--layout-stats-width`). The arrow turns to point right; pressing it again
+slides the panel back. The map does not move or resize: the panel covers it, and
+only the zoom and pencil buttons go with the panel's edge. While it is closed the
+panel is `inert`, so it cannot be reached with the keyboard.
+
+It shows: fires and total power (FRP) against the previous month; the fires
+against the same month a year earlier and against the average of that month in
+the earlier years; a chart of the fires per month of the year against the average of
+all years, with the shown month marked (`StatsSeasonChart.tsx`, plain SVG);
+the fires per day (`StatsDays.tsx`); the biggest fire with its place; how the
+fires split by strength (under 20, 20 to 100, 100 to 500, over 500 MW) and by
+satellite (MODIS only, both, VIIRS only; VIIRS sees smaller fires, so counts
+compare best between months with the same mix).
+
+Moving the slider updates the panel with the same 200 ms delay as the map's tiles
+(`useDebouncedValue`). A bar of the daily chart picks that day: it sets an optional
+`day` (1 to 31) in the shared period, shows the date in the timeline summary and
+filters the fire points by their `day` property (days since 2000-01-01); a click
+on the same bar, "Show the whole month" or the slider goes back to the month.
+"Show on map" flies to the biggest fire (`fitBounds` around its radius, centred
+in the part of the map the panel does not cover) and puts a **marker** on it: a
+light ring with a dark edge that pulses twice and then stays, with a label like "38,613 MW
+· Jul 3" (`src/hooks/useFireMarker.ts`, a MapLibre marker that is a button). It
+points the fire out among the many overlapping circles. It goes away when you touch
+the map (click, drag, scroll or zoom by hand; the app's own flight to the fire
+does not count), press the marker, change the month or search for a place.
+
+The numbers are not computed in the browser: `tiles/build_fire_tiles.py` writes
+them per month into `tile-server/data/fires_<year>.json` (fires, frp, days,
+strength, sensors, biggest; the format is in the script's header), and the app
+reads those files (`src/services/stats.ts`, `useYearStats`; validated, a missing
+year is skipped). `python tiles/build_fire_tiles.py ... --stats-only` rewrites just
+these files in seconds from the fire parquet, without tiles. The place of the
+biggest fire comes from the Photon geocoder's reverse lookup (nearest named place
+within 100 km; name and region in English, the country as an ISO code) once at
+build time; `--no-places` skips it. No new
+library.
+
 ## Language
 
-A language picker sits at the right end of the header, next to the Map and
-Calendar buttons (`src/components/LanguageSelect.tsx`). It shows the flag and
+A language picker sits at the right end of the header
+(`src/components/LanguageSelect.tsx`). It shows the flag and
 code of the current language; clicking opens a scrollable list with flag, code
 and the language's own name, and the field can also be typed into: a code
 (`ro`), a language name (English or native) or a country name finds it, arrows
 and Enter select, Escape closes. Flags are SVGs from the `flag-icons` package
 (MIT), loaded lazily; emoji flags do not render on Windows.
 
-`src/constants/languages.constants.ts` lists 108 languages: the main languages of
-every country in the FIRMS data folders. Each has a dictionary in
-`src/locales/<code>.ts` that is loaded only when the language is chosen (English
-is bundled as the fallback). Nine languages have no translation yet (empty
-dictionary, they show English): Sango, Swazi, Northern Ndebele, Hiri Motu,
-Chamorro, Tetum, Tongan, Fijian and Greenlandic. Most translations were written
-by an AI assistant and have not been reviewed by native speakers; fix wording by
-editing the locale file. Right-to-left languages (Arabic, Hebrew, Persian,
-Pashto, Sorani Kurdish, Urdu, Dhivehi) set `dir="rtl"` on the document and the
-layout mirrors, because the CSS uses logical properties.
+`src/constants/languages.constants.ts` lists the **eight languages** of the app:
+English, Romanian, Hungarian, German, French, Spanish, Chinese (simplified) and
+Hindi. Every one is translated completely: the interface, the statistics panel and
+the country of the biggest fire (written from its ISO code with
+`Intl.DisplayNames`; the place name and region next to it stay as the geocoder
+knows them, in English). Each has a dictionary in `src/locales/<code>.ts`, declared
+with `satisfies Translation`, so a missing key is a type error. English is bundled;
+the others load when chosen. The translations were written by an AI assistant and
+have not been reviewed by native speakers; fix wording by editing the locale file.
+The document `dir` follows the language entry (`ltr` for all eight; the CSS uses
+logical properties, so a right-to-left language can be added again).
 
 The choice is saved in `localStorage` and restored on the next visit; on the first
 visit the browser language is used when supported, otherwise English. Switching
@@ -132,7 +327,13 @@ Google Maps-like street map showing roads, buildings and labels, built with
 data, no API key), so the map only downloads the vector tiles for the visible
 area. Zooming far out turns it into a globe (MapLibre `globe` projection);
 zooming in blends it back into a flat map. Rotation and pitch are disabled.
-Fire hotspots will be drawn as layers on top of this map.
+A **globe button** (`src/components/HomeControl.tsx`) in the top-left corner,
+under the header, flies the map back to the view it has when the page loads: the whole Earth as a
+globe, seen from afar (`INITIAL_CENTER` and `INITIAL_ZOOM` in
+`constants/map.constants.ts`) and hides the
+fire marker. The browser tab always says just "FireLock" (the title is set in
+`AppLayout.tsx`, not per page).
+Fire hotspots are drawn as layers on top of this map.
 
 ## Search
 
@@ -160,7 +361,7 @@ box, spherical area, formatting).
 - **Drawing**: in draw mode the cursor is a crosshair, drag-pan and double-click
   zoom are off (restored afterwards), and mouse, pen and touch work through
   pointer events. Points closer than 3 px are skipped; the live stroke is a
-  dashed line. Escape, the button, or switching to the calendar view cancels.
+  dashed line. Escape or the button cancels.
   Moving or zooming the map during a stroke drops the stroke.
 - **Closing rules** (all in screen pixels, then converted with
   `map.unproject`, so the globe projection is handled by MapLibre): a stroke
@@ -179,11 +380,43 @@ box, spherical area, formatting).
   a small "Selected area: N km²" readout shows the approximate spherical area.
 - **State for later features**: `src/layouts/AppLayout.tsx` owns `selection: Polygon | null` and
   passes `selection` / `onSelectionChange` to `BaseMap`. `selectionInfo()` in
-  `src/services/geo.ts` returns its bounding box and area. The selection
-  survives switching to the calendar view and back.
+  `src/services/geo.ts` returns its bounding box and area.
 
-Everything runs in the browser; no external service is involved and nothing
-about the drawn area leaves the browser.
+Drawing runs in the browser. Once an area is selected, the fire cause panel
+sends it and the period to the fire cause service (see below).
+
+## Fire cause panel
+
+When an area is selected, a panel opens over the top-left corner of the map
+(`src/components/CausePanel.tsx`, calls in `src/services/fireCause.ts`). It
+lists the fires whose centre lies inside the area in the selected period (count,
+dates, total and strongest FRP), and the **Find likely cause** button asks the
+fire cause service for the probable cause: one of field or stubble burning,
+grass or vegetation fire, landfill or waste fire, forest fire, arson,
+lightning, industrial fire, or unknown, with a confidence (high, medium, low)
+and the reasons behind it (land use, season, the same spots in other years,
+fire size, and links to web reports with their English translation). Under
+the likely cause it shows a photo from the scene when one exists: the cover
+photo of the best matching news article, credited and linked to the article,
+loaded through the service (`/api/image/<id>`), never from the news site
+directly. Without such an article there is no picture (never a stock photo);
+a photo that fails to load is hidden.
+
+- The service is the Python API in `../cause-service/` (see its README): it
+  reads the fires from the tile server or local `harmonized/` folder (`fire_pixels_<year>.csv`, the file the
+  map tiles are built from, so the panel and the map show the same fires; or
+  the local fire_calendar.py output), asks Photon (place names), OpenStreetMap
+  Overpass (land use), a self-hosted degoog (web search) and a self-hosted
+  LibreTranslate (translation to English), and decides with English keyword
+  rules in `cause-service/rules/en.yaml`. An answer can take up to a minute.
+- The app reads `VITE_CAUSE_API_URL` (default `http://localhost:8090`; see
+  `.env.example`). The panel remounts when the area or the period changes.
+- Answers are validated in `fireCause.ts`; unknown codes are dropped. Every
+  reason, warning and error is a code translated in the `cause*` groups of
+  `src/locales/eng.ts` (also in Hungarian and Romanian).
+- When a service is down, the panel still answers and says which part is
+  missing; when the cause service itself is down, it shows an error with a
+  retry button.
 
 ## External services
 
@@ -195,5 +428,17 @@ them needs an API key.
 | [OpenFreeMap](https://openfreemap.org/)      | Base map: vector tiles, style, fonts, sprites | `https://tiles.openfreemap.org/styles/liberty`           | Free, no key or request limit; no uptime guarantee. Self-host or switch provider for production.                                             |
 | [Photon](https://photon.komoot.io/) (Komoot) | Search bar place-name autocomplete            | `https://photon.komoot.io/api/?q=<text>&limit=6&lang=en` | Built for search-as-you-type; public instance is for light use. Requests are debounced (250 ms, 2+ characters). Self-host for heavy traffic. |
 
-The text typed in the search bar is sent to Photon. OpenStreetMap data is used
-by both services and requires the attribution already shown on the map.
+The text typed in the search bar is sent to Photon. The tile build script also
+asks Photon, once per month at build time, for the place name of the biggest fire
+(only its coordinates are sent).
+OpenStreetMap data is used
+by both services and requires a credit on the map. It stays (the licences of
+OpenStreetMap and OpenMapTiles need it), but collapsed: only the (i) button in the
+bottom-right corner is shown, and pressing it opens the text.
+The fire cause panel calls the team's own fire cause service
+(`VITE_CAUSE_API_URL`) with the drawn area and the period. That service, not the
+browser, contacts Photon (reverse geocoding of the fire positions), the
+OpenStreetMap Overpass API (land use at the fires), the search engines enabled
+in its degoog instance (queries made of place names, the year and fire words),
+and its own LibreTranslate. No key is needed except the optional degoog key;
+see `../cause-service/README.md` for limits.

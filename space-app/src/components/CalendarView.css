@@ -1,4 +1,0 @@
-/* Leaves room for the fixed header. */
-.calendar-view {
-  padding-block-start: var(--layout-header-height);
-}

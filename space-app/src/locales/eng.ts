@@ -1,5 +1,4 @@
 export const eng = {
-  navigation: { label: 'View', map: 'Map', calendar: 'Calendar' },
   search: {
     label: 'Search for a place',
     button: 'Search',
@@ -10,6 +9,7 @@ export const eng = {
     title: 'Map',
     zoomIn: 'Zoom in',
     zoomOut: 'Zoom out',
+    home: 'Back to the starting view',
     attribution: 'Toggle attribution',
     feedback: 'Map feedback',
   },
@@ -27,14 +27,161 @@ export const eng = {
     placeholder: 'Language or code',
     noResults: 'No language found.',
   },
-  calendar: { label: 'Calendar view' },
+  forecast: {
+    future: 'Future',
+    summary: '{{period}} · forecast',
+    title: 'Forecast, not observed data',
+    body: 'The dots show the fires a time-series model expects in {{period}}, placed where fires burned in the same month of recent years. It is only an estimate, not guaranteed information: real fires can differ.',
+    stats: 'Statistics are only available for months with observed fires.',
+    close: 'Close the forecast warning',
+  },
+  fires: {
+    noData: 'No fire data yet.',
+    unavailable: 'Fire data cannot be loaded. Is the tile server running?',
+  },
+  timeline: {
+    label: 'Time period',
+    month: 'Month',
+    loading: 'Loading months…',
+    empty: 'No months with fire data',
+  },
+  stats: {
+    open: 'Show statistics',
+    close: 'Hide statistics',
+    title: 'Statistics',
+    loading: 'Loading statistics…',
+    unavailable: 'Statistics are not available.',
+    firesDetected: 'Fires detected',
+    totalPower: 'Total power (FRP)',
+    megawatts: '{{value}} MW',
+    vsMonth: 'vs {{month}}',
+    vsLastYear: 'vs {{period}} ({{fires}})',
+    vsAverage: 'vs average {{month}} {{years}}',
+    seasonTitle: 'Fires per month',
+    seasonAverage: 'Average of all years',
+    seasonDescription:
+      'Line chart of the fires per month: the average of all years and {{year}}, with {{month}} marked.',
+    daysTitle: 'Fires per day',
+    peakDay: 'Peak day',
+    quietestDay: 'Quietest day',
+    dayValue: '{{date}} · {{fires}}',
+    dayBar: '{{date}}: {{fires}} fires',
+    dayHint: 'Select a bar to show only that day on the map.',
+    showMonth: 'Show the whole month',
+    biggestTitle: 'Biggest fire of the month',
+    where: 'Where',
+    when: 'When',
+    power: 'Power',
+    radius: 'Radius',
+    coordinates: '{{lat}}, {{lng}}',
+    showOnMap: 'Show on map',
+    markerText: '{{power}} · {{date}}',
+    markerHide: '{{label}}. Press to hide the marker.',
+    strengthTitle: 'How strong the fires were',
+    strengthLow: 'under 20 MW',
+    strengthMid: '20–100 MW',
+    strengthHigh: '100–500 MW',
+    strengthExtreme: '500+ MW',
+    sensorsTitle: 'Which satellites saw them',
+    sensorModis: 'MODIS only',
+    sensorBoth: 'both',
+    sensorViirs: 'VIIRS only',
+    sensorsNote:
+      'VIIRS sees smaller fires, so counts compare best between months with the same satellite mix.',
+  },
+  cause: {
+    range: '{{start}} – {{end}}',
+    heading: 'Fires in the selected area',
+    loadingFires: 'Looking for fires…',
+    noFires: 'No fires in this area during the selected period.',
+    fires: 'Fires',
+    dates: 'Dates',
+    totalFrp: 'Total fire power',
+    maxFrp: 'Strongest fire',
+    frp: '{{value}} MW',
+    near: 'Near {{place}}',
+    placeInCountry: '{{place}}, {{country}}',
+    photoAlt: 'Photo from the news report: {{title}}',
+    photoCredit: 'Photo:',
+    photoNote:
+      'From a news report that matches this place and year; it may show a nearby fire.',
+    find: 'Find likely cause',
+    finding:
+      'Checking maps and the web. The first analysis can take several minutes.',
+    likelyCause: 'Likely cause',
+    confidence: 'Confidence: {{level}}',
+    why: 'Why',
+    sources: 'Web sources',
+    matched: 'Matched: {{phrases}}',
+    original: 'Original text',
+    translated: 'Translated to English automatically.',
+    disclaimer:
+      'An estimate from keyword rules, land use and season. Check the sources before relying on it.',
+    retry: 'Try again',
+  },
+  causeCategory: {
+    agricultural: 'Field or stubble burning',
+    vegetation: 'Grass or vegetation fire',
+    landfill: 'Landfill or waste fire',
+    wildfire: 'Forest fire or wildfire',
+    arson: 'Arson',
+    lightning: 'Lightning',
+    industrial: 'Industrial fire',
+    unknown: 'Unknown',
+  },
+  causeConfidence: {
+    high: 'high',
+    medium: 'medium',
+    low: 'low',
+    none: 'none',
+  },
+  causeLand: {
+    landfill: 'a landfill',
+    farmland: 'farmland',
+    grassland: 'grassland or scrub',
+    wetland: 'wetland',
+    forest: 'forest',
+    industrial: 'an industrial site',
+    airport: 'an airport',
+    residential: 'a built-up area',
+  },
+  causeReason: {
+    webSources: 'Web reports that support it: {{count}}.',
+    noWebReports: 'No news or web reports were found about these fires.',
+    landInside:
+      'In {{land}}: {{fires}} of the {{checked}} strongest fires (OpenStreetMap).',
+    landNear:
+      'Within 1 km of {{fires}} of the {{checked}} strongest fires: {{land}} (OpenStreetMap).',
+    season: 'The fires burned in {{months}}, when fields are often burned.',
+    recurring: 'Fires also burned at the same spots in {{years}}.',
+    smallFires:
+      'The strongest fire was {{frp}}, which is small for a wildfire.',
+    largeFires: 'The strongest fire was {{frp}}, as strong as a wildfire.',
+    tie: '{{first}} and {{second}} are about equally likely.',
+  },
+  causeWarning: {
+    historyUnavailable:
+      'Some other years could not be checked for nearby fires.',
+    placesUnavailable: 'Place names could not be looked up.',
+    landUseUnavailable:
+      'Land use could not be checked (OpenStreetMap did not answer).',
+    searchUnavailable: 'The web search did not answer.',
+    searchSkipped: 'No place names were found to search the web with.',
+    translationUnavailable:
+      'Translation was unavailable, so results in other languages could not be read.',
+  },
+  causeError: {
+    invalidArea: 'This area cannot be checked. Draw it again.',
+    areaTooLarge:
+      'The area is too large. Draw a smaller one (up to 25,000 km²).',
+    invalidDates: 'This period cannot be checked.',
+    unreachable: 'The fire cause service cannot be reached. Is it running?',
+    badAnswer: 'The fire cause service gave an unexpected answer.',
+    fireDataUnavailable:
+      'The fire data could not be loaded from the tile server. Is it reachable?',
+  },
   notFound: { heading: 'Page not found', backToMap: 'Back to map' },
-  pageTitles: { map: 'Map', calendar: 'Calendar', notFound: 'Page not found' },
 } as const
 export type Translation = {
   [K in keyof typeof eng]: { [P in keyof (typeof eng)[K]]: string }
-}
-/** A dictionary that may leave keys out: they fall back to English. */
-export type PartialTranslation = {
-  [K in keyof Translation]?: Partial<Translation[K]>
 }

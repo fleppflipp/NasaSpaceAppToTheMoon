@@ -1,0 +1,178 @@
+# Keyword rules for the likely cause of a fire. English only: every web result is translated to
+# English (LibreTranslate) before these rules read it.
+#
+# Matching: lower case, accents removed, whole words; a phrase is a sequence of words.
+# List the common forms (singular/plural, verb forms) that machine translation produces.
+# A match in the title counts double. A match right after a negation word is skipped.
+
+version: 1
+
+# A result must contain one of these to count as being about a fire at all (they point to no cause).
+fire_words:
+  - fire
+  - fires
+  - blaze
+  - blazes
+  - burning
+  - burned
+  - burnt
+  - burns
+  - flames
+  - wildfire
+  - wildfires
+  - firefighters
+  - fire brigade
+  - firemen
+  - smoke
+
+# Words in the original language are made from these (translated once per language) for the search.
+# Chosen because machine translation renders them as the words local news use: "a fire" gives
+# Romanian "un incendiu" (plain "fire" gives "foc", which news rarely uses), "firefighters" gives
+# "pompieri" / "tűzoltó". The first one is combined with every place name.
+query_words:
+  - a fire
+  - firefighters
+  - fire in vegetation
+  - forest fire
+
+negation:
+  words: [not, no, without, never, denied, unlike]
+  window: 3 # how many words before the phrase are checked
+
+# Cause categories. The ids are used by the web app for the labels.
+categories:
+  agricultural:
+    stubble burning: 3
+    burning stubble: 3
+    burning of stubble: 3
+    stubble: 2
+    crop residue: 3
+    crop residues: 3
+    agricultural waste: 3
+    agricultural burning: 3
+    field burning: 3
+    burning of fields: 3
+    burning fields: 2
+    cleaning the land: 2
+    land clearing: 2
+    plant debris: 2
+    plant residues: 2
+    vegetable waste: 2
+    farmers: 1
+    farmer: 1
+    agricultural land: 1
+    arable land: 1
+  vegetation:
+    vegetation fire: 2
+    vegetation fires: 2
+    dry vegetation: 2
+    dry grass: 2
+    grass fire: 2
+    grass fires: 2
+    grassland fire: 2
+    burning grass: 2
+    burning vegetation: 2
+    brush fire: 2
+    bush fire: 2
+    scrub fire: 2
+    reed: 2
+    reeds: 2
+    dry grassland: 2
+  landfill:
+    landfill: 3
+    landfills: 3
+    garbage dump: 3
+    rubbish dump: 3
+    waste dump: 3
+    dump: 2
+    garbage: 2
+    rubbish: 2
+    waste fire: 3
+    burning waste: 3
+    burning garbage: 3
+    household waste: 2
+    tires: 1
+  wildfire:
+    wildfire: 3
+    wildfires: 3
+    forest fire: 3
+    forest fires: 3
+    forest: 1
+    woodland: 2
+    forested area: 2
+    hectares of forest: 3
+    pine forest: 2
+  arson:
+    arson: 3
+    arsonist: 3
+    arsonists: 3
+    deliberately set: 3
+    set on fire: 2
+    set fire: 2
+    intentionally set: 3
+    started deliberately: 3
+    criminal fire: 3
+    pyromaniac: 3
+    criminal investigation: 1
+  lightning:
+    lightning: 3
+    lightning strike: 3
+    struck by lightning: 3
+    thunderstorm: 1
+    storm: 1
+  industrial:
+    factory: 2
+    plant: 1
+    industrial: 2
+    warehouse: 2
+    explosion: 2
+    refinery: 3
+    gas flare: 3
+    flaring: 3
+    chemical: 1
+
+# Evidence that does not come from the web: land use (OpenStreetMap), season and the fire data.
+# Each rule adds points to categories when its condition holds; "reason" is the code shown in the app.
+context:
+  - reason: landInside
+    when: { land: landfill, where: inside }
+    add: { landfill: 3 }
+  - reason: landNear
+    when: { land: landfill, where: near }
+    add: { landfill: 1.5 }
+  - reason: landInside
+    when: { land: farmland, where: inside }
+    add: { agricultural: 2 }
+  - reason: landInside
+    when: { land: grassland, where: inside }
+    add: { vegetation: 2 }
+  - reason: landInside
+    when: { land: wetland, where: inside }
+    add: { vegetation: 1.5 }
+  - reason: landInside
+    when: { land: forest, where: inside }
+    add: { wildfire: 2 }
+  - reason: landInside
+    when: { land: industrial, where: inside }
+    add: { industrial: 2 }
+  - reason: season
+    when: { months: [3, 4, 9, 10], land_any: [farmland, grassland] }
+    add: { agricultural: 1 }
+  - reason: recurring
+    when: { recurring: true }
+    add: { agricultural: 1 }
+  - reason: smallFires
+    when: { max_frp_below: 50 }
+    add: { wildfire: -1 }
+  - reason: largeFires
+    when: { max_frp_above: 500 }
+    add: { wildfire: 2 }
+
+# How sure the answer is.
+decision:
+  per_result_cap: 6 # points one result can give one category
+  tie_ratio: 0.8 # runner-up >= 80% of the winner -> "unknown"
+  high: { min_sources: 2, min_ratio: 2.0 } # >= 2 web domains and twice the runner-up
+  medium_context_points: 3 # without web sources: winner needs this many points and twice the runner-up
+  # Results must name the fires' year (text or URL); naming the month too counts fully.
+  date_factor: { exact: 1.0, year: 0.75 }

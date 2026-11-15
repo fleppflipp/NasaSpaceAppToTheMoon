@@ -1,0 +1,178 @@
+/* Full-width strip at the bottom: the month on the left, then the slider over all months with data and year labels under it. */
+.timeline {
+  position: fixed;
+  inset-block-end: var(--space-0);
+  inset-inline: var(--space-0);
+  z-index: var(--z-index-dropdown);
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(var(--space-32), max-content) 1fr;
+  align-content: center;
+  align-items: center;
+  column-gap: var(--space-5);
+  block-size: var(--layout-timeline-height);
+  padding-inline: var(--space-4);
+  border-block-start: var(--border-width-thin) solid var(--color-primary);
+  background-color: var(--color-background);
+  box-shadow: var(--shadow-sm);
+}
+
+.timeline__summary {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  min-inline-size: 0;
+  margin-block: var(--space-0);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
+ * One range input over the months. The visible track (with a mark at each year
+ * start) sits half a handle in from each edge, where the centre of the handle
+ * travels.
+ */
+.timeline__slider {
+  --timeline-thumb: var(--space-5);
+  grid-column: 2;
+  grid-row: 1;
+  position: relative;
+  flex: none;
+  block-size: var(--timeline-thumb);
+}
+
+.timeline__track {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline: calc(var(--timeline-thumb) / 2);
+  block-size: var(--space-2);
+  translate: 0 -50%;
+  border-radius: var(--radius-full);
+  background-color: var(--color-highlight);
+}
+
+/* The forecast months: the end of the track in another color, with a "FUTURE" label above where it starts. */
+.timeline__future {
+  position: absolute;
+  inset-block: var(--space-0);
+  inset-inline-end: var(--space-0);
+  border-start-end-radius: var(--radius-full);
+  border-end-end-radius: var(--radius-full);
+  background-color: var(--color-future);
+}
+
+.timeline__future-label {
+  position: absolute;
+  inset-block-end: calc(100% + var(--space-3));
+  padding: var(--space-0) var(--space-2);
+  border: var(--border-width-strong) solid var(--color-future);
+  border-radius: var(--radius-full);
+  color: var(--color-future-text);
+  background-color: var(--color-background);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-wide);
+  line-height: var(--line-height-heading);
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.timeline--future .timeline__range::-webkit-slider-thumb {
+  border-color: var(--color-future-text);
+  background-color: var(--color-future);
+}
+
+.timeline--future .timeline__range::-moz-range-thumb {
+  border-color: var(--color-future-text);
+  background-color: var(--color-future);
+}
+
+.timeline--future .timeline__summary {
+  color: var(--color-future-text);
+}
+
+.timeline__tick {
+  position: absolute;
+  inset-block-start: 100%;
+  inline-size: var(--border-width-thin);
+  block-size: var(--space-1);
+  background-color: var(--color-primary);
+}
+
+/* Year labels, centred under the marks of the slider track. */
+.timeline__years {
+  grid-column: 2;
+  grid-row: 2;
+  position: relative;
+  flex: none;
+  block-size: var(--font-size-xs);
+  margin-inline: calc(var(--space-5) / 2);
+}
+
+.timeline__year-label {
+  position: absolute;
+  inset-block-start: var(--space-0);
+  translate: -50% 0;
+  font-size: var(--font-size-xs);
+  line-height: 1;
+  color: var(--color-primary);
+}
+
+.timeline__range {
+  position: absolute;
+  inset: var(--space-0);
+  inline-size: 100%;
+  block-size: 100%;
+  margin: var(--space-0);
+  padding: var(--space-0);
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.timeline__range::-webkit-slider-runnable-track {
+  appearance: none;
+  background: transparent;
+  block-size: var(--timeline-thumb);
+}
+
+.timeline__range::-moz-range-track {
+  background: transparent;
+}
+
+.timeline__range::-webkit-slider-thumb {
+  appearance: none;
+  box-sizing: border-box;
+  inline-size: var(--timeline-thumb);
+  block-size: var(--timeline-thumb);
+  border: var(--border-width-strong) solid var(--color-primary);
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary);
+  cursor: grab;
+}
+
+.timeline__range::-moz-range-thumb {
+  box-sizing: border-box;
+  inline-size: var(--timeline-thumb);
+  block-size: var(--timeline-thumb);
+  border: var(--border-width-strong) solid var(--color-primary);
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary);
+  cursor: grab;
+}
+
+.timeline__range:focus-visible {
+  outline: none;
+}
+
+.timeline__range:focus-visible::-webkit-slider-thumb {
+  outline: var(--focus-width) solid var(--color-accent);
+  outline-offset: var(--focus-offset);
+}
+
+.timeline__range:focus-visible::-moz-range-thumb {
+  outline: var(--focus-width) solid var(--color-accent);
+  outline-offset: var(--focus-offset);
+}

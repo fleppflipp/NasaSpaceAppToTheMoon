@@ -1,7 +1,14 @@
-import type { PartialTranslation } from './eng'
+import { eng } from './eng'
+import type { Translation } from './eng'
 
 export default {
-  navigation: { label: 'Vista', map: 'Mapa', calendar: 'Calendario' },
+  cause: eng.cause,
+  causeCategory: eng.causeCategory,
+  causeConfidence: eng.causeConfidence,
+  causeLand: eng.causeLand,
+  causeReason: eng.causeReason,
+  causeWarning: eng.causeWarning,
+  causeError: eng.causeError,
   search: {
     label: 'Buscar un lugar',
     button: 'Buscar',
@@ -12,6 +19,7 @@ export default {
     title: 'Mapa',
     zoomIn: 'Acercar',
     zoomOut: 'Alejar',
+    home: 'Volver a la vista inicial',
     attribution: 'Mostrar u ocultar atribución',
     feedback: 'Comentarios sobre el mapa',
   },
@@ -29,11 +37,69 @@ export default {
     placeholder: 'Idioma o código',
     noResults: 'No se encontró ningún idioma.',
   },
-  calendar: { label: 'Vista de calendario' },
-  notFound: { heading: 'Página no encontrada', backToMap: 'Volver al mapa' },
-  pageTitles: {
-    map: 'Mapa',
-    calendar: 'Calendario',
-    notFound: 'Página no encontrada',
+  forecast: {
+    future: 'Futuro',
+    summary: '{{period}} · previsión',
+    title: 'Previsión, no datos observados',
+    body: 'Los puntos muestran los incendios que un modelo de series temporales espera en {{period}}, situados donde hubo incendios en el mismo mes de los últimos años. Es solo una estimación, no información garantizada: los incendios reales pueden ser distintos.',
+    stats:
+      'Las estadísticas solo están disponibles para meses con incendios observados.',
+    close: 'Cerrar el aviso de previsión',
   },
-} satisfies PartialTranslation
+  fires: {
+    noData: 'Aún no hay datos de incendios.',
+    unavailable:
+      'No se pueden cargar los datos de incendios. ¿Está en marcha el servidor de teselas?',
+  },
+  timeline: {
+    label: 'Periodo',
+    month: 'Mes',
+    loading: 'Cargando meses…',
+    empty: 'No hay meses con datos de incendios',
+  },
+  stats: {
+    open: 'Mostrar estadísticas',
+    close: 'Ocultar estadísticas',
+    title: 'Estadísticas',
+    loading: 'Cargando estadísticas…',
+    unavailable: 'Las estadísticas no están disponibles.',
+    firesDetected: 'Incendios detectados',
+    totalPower: 'Potencia total (FRP)',
+    megawatts: '{{value}} MW',
+    vsMonth: 'frente a {{month}}',
+    vsLastYear: 'frente a {{period}} ({{fires}})',
+    vsAverage: 'frente al promedio de {{month}} {{years}}',
+    seasonTitle: 'Incendios por mes',
+    seasonAverage: 'Promedio de todos los años',
+    seasonDescription:
+      'Gráfico de líneas de los incendios por mes: promedio de todos los años y {{year}}, con {{month}} marcado.',
+    daysTitle: 'Incendios por día',
+    peakDay: 'Día de mayor actividad',
+    quietestDay: 'Día más tranquilo',
+    dayValue: '{{date}} · {{fires}}',
+    dayBar: '{{date}}: {{fires}} incendios',
+    dayHint: 'Selecciona una barra para mostrar solo ese día en el mapa.',
+    showMonth: 'Mostrar todo el mes',
+    biggestTitle: 'Mayor incendio del mes',
+    where: 'Dónde',
+    when: 'Cuándo',
+    power: 'Potencia',
+    radius: 'Radio',
+    coordinates: '{{lat}}, {{lng}}',
+    showOnMap: 'Mostrar en el mapa',
+    markerText: '{{power}} · {{date}}',
+    markerHide: '{{label}}. Pulsa para ocultar la marca.',
+    strengthTitle: 'Intensidad de los incendios',
+    strengthLow: 'menos de 20 MW',
+    strengthMid: '20–100 MW',
+    strengthHigh: '100–500 MW',
+    strengthExtreme: '500+ MW',
+    sensorsTitle: 'Qué satélites los vieron',
+    sensorModis: 'solo MODIS',
+    sensorBoth: 'ambos',
+    sensorViirs: 'solo VIIRS',
+    sensorsNote:
+      'VIIRS detecta incendios más pequeños, así que las cifras se comparan mejor entre meses con la misma combinación de satélites.',
+  },
+  notFound: { heading: 'Página no encontrada', backToMap: 'Volver al mapa' },
+} satisfies Translation

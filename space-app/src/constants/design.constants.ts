@@ -66,7 +66,17 @@ export const LAYOUT = {
   'reading-width': '65ch',
   'grid-min': '16rem',
   'search-width': '26rem',
+  'stats-width': '23rem',
+  'hotspot-width': '22rem',
+  'hotspot-mobile-height': '45svh',
+  'sensor-image-width': '6rem',
+  'sensor-image-ratio': '4 / 3',
+  // Side panel on the map (fire cause).
+  'panel-width': '24rem',
   'header-height': '4rem',
+  'timeline-height': '3.25rem',
+  // Space taken by the fixed header; the time bar is a full-width strip at the bottom.
+  'top-offset': 'var(--layout-header-height)',
   'page-gutter': 'clamp(var(--space-4), 4vw, var(--space-16))',
   'section-gap': 'clamp(var(--space-8), 6vw, var(--space-24))',
   'content-gap': 'var(--space-4)',
@@ -113,9 +123,9 @@ export const FOCUS = {
 } as const
 
 export const SHADOW = {
-  sm: '0 1px 2px color-mix(in srgb, var(--color-forest) 12%, transparent)',
-  md: '0 4px 12px color-mix(in srgb, var(--color-forest) 14%, transparent)',
-  lg: '0 12px 32px color-mix(in srgb, var(--color-forest) 18%, transparent)',
+  sm: '0 1px 2px color-mix(in srgb, var(--color-navy) 12%, transparent)',
+  md: '0 4px 12px color-mix(in srgb, var(--color-navy) 14%, transparent)',
+  lg: '0 12px 32px color-mix(in srgb, var(--color-navy) 18%, transparent)',
 } as const
 
 export const OPACITY = {
@@ -127,6 +137,7 @@ export const DURATION = {
   fast: '120ms',
   normal: '200ms',
   slow: '320ms',
+  'star-twinkle': '5s',
 } as const
 
 export const EASING = {
@@ -138,8 +149,11 @@ export const EASING = {
 export const Z_INDEX = {
   base: '0',
   dropdown: '100',
+  // A panel that slides over the map: above the map and the time bar, below the header (and its menus).
+  panel: '150',
   sticky: '200',
   overlay: '300',
+  'map-details': '310',
   modal: '400',
   toast: '500',
   tooltip: '600',

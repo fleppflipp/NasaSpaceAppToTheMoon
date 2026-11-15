@@ -2,7 +2,7 @@
   <title>Fire Protection</title>
 
   <!-- Outer flame -->
-  <path fill="#283618" stroke="#ffffff" stroke-width="3" stroke-linejoin="round" d="M128 12
+  <path fill="#101c4a" stroke="#ffffff" stroke-width="3" stroke-linejoin="round" d="M128 12
        C142 43 151 65 137 91
        C164 74 176 43 169 23
        C207 62 204 100 179 133
@@ -16,18 +16,18 @@
        C132 50 127 29 128 12 Z"></path>
 
   <!-- Inner flames -->
-  <path fill="#bc6c25" d="M130 83
+  <path fill="#c9cee0" d="M130 83
        C145 111 134 132 119 151
        C111 162 105 176 109 191
        C86 174 87 151 99 132
        C110 116 125 101 130 83 Z"></path>
 
-  <path fill="#dda15e" d="M62 155
+  <path fill="#c9cee0" d="M62 155
        C69 174 79 183 91 188
        C82 204 83 215 94 229
        C65 214 51 189 62 155 Z"></path>
 
-  <path fill="#dda15e" d="M190 151
+  <path fill="#c9cee0" d="M190 151
        C185 173 174 185 162 191
        C175 207 169 220 157 231
        C190 214 204 181 190 151 Z"></path>
@@ -37,13 +37,13 @@
        V132
        C96 109 110 96 128 96
        C146 96 160 109 160 132
-       V157" fill="none" stroke="#606c38" stroke-width="13" stroke-linecap="round"></path>
+       V157" fill="none" stroke="#22398f" stroke-width="13" stroke-linecap="round"></path>
 
   <!-- Lock body -->
-  <rect x="82" y="148" width="92" height="80" rx="13" fill="#606c38" stroke="#283618" stroke-width="4"></rect>
+  <rect x="82" y="148" width="92" height="80" rx="13" fill="#22398f" stroke="#101c4a" stroke-width="4"></rect>
 
   <!-- Keyhole -->
-  <path fill="#fefae0" d="M128 170
+  <path fill="#d8dce4" d="M128 170
        A12 12 0 1 0 128 194
        L121 213
        H135

@@ -8,7 +8,7 @@ export default function NotFound() {
       className="section stack"
       style={{
         paddingInline: 'var(--space-4)',
-        marginBlockStart: 'var(--layout-header-height)',
+        marginBlockStart: 'var(--layout-top-offset)',
       }}
     >
       <h2>{t('notFound.heading')}</h2>
