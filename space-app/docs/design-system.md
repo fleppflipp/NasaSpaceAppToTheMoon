@@ -11,12 +11,12 @@ from TypeScript. Do not duplicate their values in component styles.
 
 ## Colors
 
-The palette is off-white paper, royal blue, deep navy and a soft lavender grey.
+The palette is a cool blue-grey, royal blue, deep navy and a soft lavender grey.
 Components use the role variables from `src/index.css`, not the raw colors:
 
 | Role variable        | Palette color | Value     | Used for                              |
 | -------------------- | ------------- | --------- | ------------------------------------- |
-| `--color-background` | `paper`       | `#edece9` | Page, panels, inputs                  |
+| `--color-background` | `grey`        | `#d8dce4` | Page, panels, inputs                  |
 | `--color-text`       | `navy`        | `#101c4a` | Text, button hover                    |
 | `--color-primary`    | `royal`       | `#22398f` | Buttons, borders, links, active items |
 | `--color-accent`     | `navy`        | `#101c4a` | Focus ring, active tool, emphasis     |

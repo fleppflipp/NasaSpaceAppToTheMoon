@@ -137,6 +137,7 @@ export const DURATION = {
   fast: '120ms',
   normal: '200ms',
   slow: '320ms',
+  'star-twinkle': '5s',
 } as const
 
 export const EASING = {
