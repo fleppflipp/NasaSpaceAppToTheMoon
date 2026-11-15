@@ -1,0 +1,51 @@
+# Fire cause service with its two helpers. Start:  docker compose up -d   (copy .env.example to .env first)
+#   cause-api       this service, http://localhost:8090 (the web app calls it)
+#   degoog          web search aggregator, http://localhost:4444 (only this machine; add engines in its UI)
+#   libretranslate  translation to English, http://localhost:5000 (only this machine)
+services:
+  cause-api:
+    build: .
+    container_name: firelock-cause-api
+    ports:
+      - "${CAUSE_PORT:-8090}:8090"
+    environment:
+      # Tile server folder with fire_pixels_<year>.csv; empty = the local fire_clusters files below.
+      FIRE_DATA_URL: ${FIRE_DATA_URL:-}
+      FIRE_PIXELS_DIR: /data/fire_pixels
+      DEGOOG_URL: http://degoog:4444
+      DEGOOG_API_KEY: ${DEGOOG_API_KEY:-}
+      DEGOOG_ENGINES: ${DEGOOG_ENGINES:-}
+      LIBRETRANSLATE_URL: http://libretranslate:5000
+      CAUSE_CORS_ORIGINS: ${CAUSE_CORS_ORIGINS:-http://localhost:5173,http://localhost:5174}
+    volumes:
+      - ${FIRE_CLUSTERS_DIR:-../new_outputs/fire_clusters}:/data/fire_clusters:ro
+      - ${FIRE_PIXELS_DIR:-../harmonized}:/data/fire_pixels:ro
+      - ./cache:/cache
+    depends_on: [degoog, libretranslate]
+    restart: unless-stopped
+
+  degoog:
+    image: ghcr.io/degoog-org/degoog:latest
+    container_name: firelock-degoog
+    ports:
+      - "127.0.0.1:4444:4444" # never expose degoog publicly: an unlocked instance runs extension code
+    environment:
+      DEGOOG_SETTINGS_PASSWORDS: ${DEGOOG_SETTINGS_PASSWORDS:?set DEGOOG_SETTINGS_PASSWORDS in .env}
+    volumes:
+      - ./degoog-data:/app/data
+    restart: unless-stopped
+
+  libretranslate:
+    image: libretranslate/libretranslate:latest
+    container_name: firelock-libretranslate
+    ports:
+      - "127.0.0.1:5000:5000"
+    environment:
+      # Languages to download (each is a few hundred MB). English must be included.
+      LT_LOAD_ONLY: ${LT_LANGUAGES:-en,ro,hu,es,pt,fr,de,it,pl,el,tr,ru,uk,bg}
+    volumes:
+      - libretranslate-models:/home/libretranslate/.local
+    restart: unless-stopped
+
+volumes:
+  libretranslate-models:

@@ -55,6 +55,8 @@ Work proceeds feature by feature, one feature at a time. Done so far:
    the strong fires (FRP) show, weaker ones grow in while zooming closer.
    Years 2002 to 2025 so far (about 7 GB in `tile-server/data`; 2002-2011 are MODIS only); more are added as the data team delivers
    `fire_pixels_<year>.csv`.
+   If the tile server listing is unavailable at startup, Vite dev/preview serves
+   the repository `data/` folder as a fallback for tiles and statistics.
 9. Statistics panel (`StatsPanel`): a tab on the right edge, halfway down,
    slides out a panel over the map (the map does not move; the zoom and pencil
    buttons go with it): change against the previous month, last year and the
@@ -62,6 +64,16 @@ Work proceeds feature by feature, one feature at a time. Done so far:
    per day (a bar picks a day), the biggest fire with its place ("Show on map"
    flies there and puts a labelled ring on it that pulses twice and stays until you touch the map), strength and satellite split. The numbers come from `tile-server/data/fires_<year>.json`,
    written by `tiles/build_fire_tiles.py` (`--stats-only` rewrites just them).
+
+9. Fire cause panel: with an area selected, `CausePanel` lists the fires
+   inside it in the selected month or day and, on request, the likely cause with its
+   reasons, web sources and, when a matching news article has one, a photo
+   from the scene (its cover photo, proxied by the service), from the Python
+   service in `cause-service/`, which reads the fires from local `harmonized/` or the tile server's
+   `fire_pixels_<year>.csv` (setting `FIRE_DATA_URL`) the same way the tiles do
+   (FastAPI; Photon, Overpass, a self-hosted degoog for web search and a
+   self-hosted LibreTranslate; English keyword rules in
+   `cause-service/rules/en.yaml`). The app calls it at `VITE_CAUSE_API_URL`.
 
 Planned next: selecting an area by latitude/longitude, FIRMS data
 harmonization, statistics for a selected area, CSV export.
@@ -122,6 +134,10 @@ Rules for the implementing agent:
 
 ## Repository layout
 
+- `csv-server/server.cjs`: localhost HTTP server for CSV files in `harmonized/`
+  and fire PMTiles and statistics JSON files in `data/`, with a JSON listing,
+  byte ranges and streamed downloads under `/tiles` (port 8081).
+
 - The app lives in `space-app/` (React 19, TypeScript, Vite). Run all npm
   commands from that folder.
 - `space-app/src/App.tsx` only mounts the router. `router/AppRouter.tsx` defines
@@ -140,6 +156,10 @@ Rules for the implementing agent:
   constants (`map.constants.ts`: initial zoom, `DRAW_MIN_ZOOM`, lasso limits).
 - `space-app/docs/design-system.md`: the design system guide. Read it before
   writing any UI.
+- `cause-service/`: the fire cause API (Python, FastAPI): `firecause/` (fires,
+  places, land use, search, translation, rules, pipeline, app), `rules/en.yaml`
+  (the keyword rules), `tests/` (pytest, no network), `docker-compose.yml`
+  (the API with degoog and LibreTranslate). See `cause-service/README.md`.
 
 ## Data pipeline
 

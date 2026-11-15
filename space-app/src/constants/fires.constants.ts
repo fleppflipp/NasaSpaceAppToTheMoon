@@ -21,6 +21,8 @@ export const FIRE_MARKER_PULSE_MS = 1200
 /** The layer inside every monthly file: one dot per fire (zoom 0-9, overscaled above). */
 export const FIRE_POINTS_LAYER = 'fires'
 
+export const FIRE_MAP_LAYERS = { points: 'fires-points' } as const
+
 /** The tiles hold the dots up to this zoom; closer in, the map enlarges them. */
 export const FIRE_POINTS_MAX_ZOOM = 9
 

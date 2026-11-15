@@ -1,4 +1,4 @@
-import { FIRE_TILE_BASE_URL } from '../constants/fires.constants'
+import { fireDataBaseUrl } from './fireTiles'
 
 /** The strongest fire of a month. */
 export interface BiggestFire {
@@ -157,7 +157,7 @@ export async function fetchYearStats(
   signal: AbortSignal,
 ): Promise<Map<number, MonthStats>> {
   const response = await fetch(
-    `${FIRE_TILE_BASE_URL}/fires_${String(year)}.json`,
+    `${fireDataBaseUrl()}/fires_${String(year)}.json`,
     // Ask the server whether the file changed (it is rewritten when the data is rebuilt).
     { signal, cache: 'no-cache' },
   )

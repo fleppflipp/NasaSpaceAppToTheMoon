@@ -6,6 +6,7 @@ import { COLOR_PALETTE } from '../constants/colorpallette.constatns'
 import {
   FIRE_FILL_OPACITY,
   FIRE_FRP_STOPS,
+  FIRE_MAP_LAYERS,
   FIRE_MIN_FRP_BY_ZOOM,
   FIRE_MIN_RADIUS_PX,
   FIRE_PERIOD_DEBOUNCE_MS,
@@ -20,7 +21,7 @@ import type { Period } from '../services/period'
 registerPmtilesProtocol()
 
 const SOURCE = 'fires'
-const POINTS = 'fires-points'
+const POINTS = FIRE_MAP_LAYERS.points
 
 /** Pixels per kilometre at zoom 0; it doubles with every zoom level. */
 const PX_PER_KM_AT_ZOOM_0 = 1000 / METRES_PER_PIXEL_AT_ZOOM_0

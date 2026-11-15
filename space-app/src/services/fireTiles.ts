@@ -5,6 +5,12 @@ import { comparePeriods } from './period'
 import type { Period } from './period'
 
 let registered = false
+let dataBaseUrl = FIRE_TILE_BASE_URL
+
+/** The source selected when the available periods were loaded. */
+export function fireDataBaseUrl(): string {
+  return dataBaseUrl
+}
 
 /** Lets MapLibre read `pmtiles://` sources (done once, before any map loads them). */
 export function registerPmtilesProtocol(): void {
@@ -19,7 +25,7 @@ export function registerPmtilesProtocol(): void {
 /** Source URL of the fire tiles of one month, from the tile server. */
 export function fireTileUrl({ year, month }: Period): string {
   const name = `fires_${String(year)}_${String(month).padStart(2, '0')}.pmtiles`
-  return `pmtiles://${FIRE_TILE_BASE_URL}/${name}`
+  return `pmtiles://${dataBaseUrl}/${name}`
 }
 
 const TILE_FILE = /^fires_(\d{4})_(\d{2})\.pmtiles$/
@@ -30,7 +36,27 @@ const TILE_FILE = /^fires_(\d{4})_(\d{2})\.pmtiles$/
  * without any change in the app.
  */
 export async function fetchFirePeriods(signal: AbortSignal): Promise<Period[]> {
-  const response = await fetch(`${FIRE_TILE_BASE_URL}/`, {
+  try {
+    const periods = await fetchPeriodsFrom(FIRE_TILE_BASE_URL, signal)
+    dataBaseUrl = FIRE_TILE_BASE_URL
+    return periods
+  } catch (error) {
+    if (signal.aborted) throw error
+    const localBaseUrl = new URL(
+      'local-fire-data',
+      document.baseURI,
+    ).href.replace(/\/$/, '')
+    const periods = await fetchPeriodsFrom(localBaseUrl, signal)
+    dataBaseUrl = localBaseUrl
+    return periods
+  }
+}
+
+async function fetchPeriodsFrom(
+  baseUrl: string,
+  signal: AbortSignal,
+): Promise<Period[]> {
+  const response = await fetch(`${baseUrl}/`, {
     signal,
     cache: 'no-store',
   })

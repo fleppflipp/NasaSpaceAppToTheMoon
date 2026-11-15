@@ -2,6 +2,17 @@
 
 React, TypeScript, and Vite.
 
+The optional local CSV server serves the annual `harmonized/fire_pixels_<year>.csv`
+files without loading them into memory. From the repository root, run
+`node csv-server/server.cjs` and browse `http://127.0.0.1:8081/tiles` for a JSON
+listing of CSV files in `harmonized/` and fire PMTiles and statistics JSON files
+in `data/`; append a filename to download it. PMTiles support HTTP byte ranges.
+The root URL also supports the listing and downloads. Set `CSV_PORT` to change the
+port. It listens only on this machine, requires no key or external service, and
+uses Node.js built-in modules. The cause service can use it with
+`FIRE_DATA_URL=http://127.0.0.1:8081/tiles` when running on the same host; a service
+inside Docker needs a host-accessible address instead.
+
 Shared colors, spacing, typography, and component sizing are documented in
 [the design system guide](docs/design-system.md).
 
@@ -90,6 +101,16 @@ month just points the source at another file. Start it with
 set it in `.env.local` to use a teammate's server). The tiles are not part of
 `dist/`.
 
+If the server's folder listing cannot be loaded at startup, the app uses the
+repository's `data/` folder instead. During `npm run dev` and `npm run preview`,
+the Vite server exposes its `fires_<year>_<MM>.pmtiles` and `fires_<year>.json`
+files at `/local-fire-data/`, with byte-range support. The map and statistics
+use the same source for the session; reload to retry the tile server. The local
+folder is not copied into the build. For another production host, configure an
+equivalent `/local-fire-data/` endpoint with a JSON directory listing and HTTP
+byte ranges, or keep the tile server available. This fallback covers map and
+statistics data; the fire cause service uses its own data configuration.
+
 Inside a file the layer `fires` holds the points (zoom 0-9; props `day` = days
 since 2000-01-01, `s` = 0 MODIS only / 1 both / 2 VIIRS only, `f` = FRP in MW, `r`
 = radius in km). The app overscales them above zoom 9. Every fire has a tippecanoe
@@ -109,6 +130,33 @@ Other people can connect to them in these ways:
   (`pmtiles show`) can open a file by its URL.
 - From the internet only through a tunnel or by copying the files to a static host
   with range requests (not set up).
+
+### Hotspot details
+
+Click a fire point to open its details. The panel reads only the rendered tile
+properties: event FRP, sensor group, event day and bounding radius.
+Dates retain the tiles' local solar day grouping. Coordinates
+are the point's event centre, not the cursor position. Missing values are shown
+as unavailable; zero FRP is valid.
+
+The `s` property identifies MODIS, VIIRS, or both, not a specific satellite.
+Bundled NASA/NOAA instrument photos and credit links accompany each sensor.
+No confidence values, detail API, CSV/JSON downloads, new dependencies, or tile
+rebuilds are needed. Photos ship with the frontend, so details require no new
+external service. See `src/assets/sensors/README.md` for image sources.
+
+The token-styled card sits inside the map on desktop and becomes a scrollable
+bottom panel on mobile. A ring marks the selected location.
+Escape, the close button, or clicking empty map space dismisses details. Changing
+the selected year/month/day, leaving the map, or entering draw mode clears them.
+Keyboard users can pan the focused map with arrow keys and press Enter to inspect
+a hotspot at its centre. The panel heading receives focus; explicit dismissal
+returns focus to the map. Map listeners and the marker are cleaned up on unmount.
+
+Implementation: `useHotspotSelection.ts`, `services/hotspot.ts`, and
+`HotspotDetails.tsx` / `.css`. At the user's request, this feature currently uses
+English copy in `constants/hotspot.constants.ts`; localization is deferred and
+the existing locale dictionaries are unchanged.
 
 ### Building the files
 
@@ -276,8 +324,41 @@ box, spherical area, formatting).
   passes `selection` / `onSelectionChange` to `BaseMap`. `selectionInfo()` in
   `src/services/geo.ts` returns its bounding box and area.
 
-Everything runs in the browser; no external service is involved and nothing
-about the drawn area leaves the browser.
+Drawing runs in the browser. Once an area is selected, the fire cause panel
+sends it and the period to the fire cause service (see below).
+
+## Fire cause panel
+
+When an area is selected, a panel opens over the top-left corner of the map
+(`src/components/CausePanel.tsx`, calls in `src/services/fireCause.ts`). It
+lists the fires whose centre lies inside the area in the selected period (count,
+dates, total and strongest FRP), and the **Find likely cause** button asks the
+fire cause service for the probable cause: one of field or stubble burning,
+grass or vegetation fire, landfill or waste fire, forest fire, arson,
+lightning, industrial fire, or unknown, with a confidence (high, medium, low)
+and the reasons behind it (land use, season, the same spots in other years,
+fire size, and links to web reports with their English translation). Under
+the likely cause it shows a photo from the scene when one exists: the cover
+photo of the best matching news article, credited and linked to the article,
+loaded through the service (`/api/image/<id>`), never from the news site
+directly. Without such an article there is no picture (never a stock photo);
+a photo that fails to load is hidden.
+
+- The service is the Python API in `../cause-service/` (see its README): it
+  reads the fires from the tile server or local `harmonized/` folder (`fire_pixels_<year>.csv`, the file the
+  map tiles are built from, so the panel and the map show the same fires; or
+  the local fire_calendar.py output), asks Photon (place names), OpenStreetMap
+  Overpass (land use), a self-hosted degoog (web search) and a self-hosted
+  LibreTranslate (translation to English), and decides with English keyword
+  rules in `cause-service/rules/en.yaml`. An answer can take up to a minute.
+- The app reads `VITE_CAUSE_API_URL` (default `http://localhost:8090`; see
+  `.env.example`). The panel remounts when the area or the period changes.
+- Answers are validated in `fireCause.ts`; unknown codes are dropped. Every
+  reason, warning and error is a code translated in the `cause*` groups of
+  `src/locales/eng.ts` (also in Hungarian and Romanian).
+- When a service is down, the panel still answers and says which part is
+  missing; when the cause service itself is down, it shows an error with a
+  retry button.
 
 ## External services
 
@@ -296,3 +377,10 @@ OpenStreetMap data is used
 by both services and requires a credit on the map. It stays (the licences of
 OpenStreetMap and OpenMapTiles need it), but collapsed: only the (i) button in the
 bottom-right corner is shown, and pressing it opens the text.
+The fire cause panel calls the team's own fire cause service
+(`VITE_CAUSE_API_URL`) with the drawn area and the period. That service, not the
+browser, contacts Photon (reverse geocoding of the fire positions), the
+OpenStreetMap Overpass API (land use at the fires), the search engines enabled
+in its degoog instance (queries made of place names, the year and fire words),
+and its own LibreTranslate. No key is needed except the optional degoog key;
+see `../cause-service/README.md` for limits.

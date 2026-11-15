@@ -67,6 +67,12 @@ export const LAYOUT = {
   'grid-min': '16rem',
   'search-width': '26rem',
   'stats-width': '23rem',
+  'hotspot-width': '22rem',
+  'hotspot-mobile-height': '45svh',
+  'sensor-image-width': '6rem',
+  'sensor-image-ratio': '4 / 3',
+  // Side panel on the map (fire cause).
+  'panel-width': '24rem',
   'header-height': '4rem',
   'timeline-height': '3.25rem',
   // Space taken by the fixed header; the time bar is a full-width strip at the bottom.
@@ -146,6 +152,7 @@ export const Z_INDEX = {
   panel: '150',
   sticky: '200',
   overlay: '300',
+  'map-details': '310',
   modal: '400',
   toast: '500',
   tooltip: '600',
