@@ -15,6 +15,7 @@ import { formatAreaKm2, selectionInfo } from '../services/geo'
 import type { Period } from '../services/period'
 import type { PeriodsStatus } from '../hooks/useFirePeriods'
 import type { Place } from '../services/places'
+import CausePanel from './CausePanel'
 import DrawControl from './DrawControl'
 import HomeControl from './HomeControl'
 import HotspotDetails from './HotspotDetails'
@@ -235,6 +236,14 @@ export default function BaseMap({
     () => (selection === null ? null : selectionInfo(selection)),
     [selection],
   )
+  // A new area or period starts the cause panel afresh (remount).
+  const panelKey = useMemo(
+    () =>
+      selection === null || period === null
+        ? ''
+        : `${String(period.year)}-${String(period.month)}-${String(period.day)}-${JSON.stringify(selection.coordinates)}`,
+    [selection, period],
+  )
 
   useEffect(() => {
     const map = mapRef.current
@@ -303,6 +312,9 @@ export default function BaseMap({
             }}
           />,
           homeHost,
+        )}
+        {selection === null || period === null ? null : (
+          <CausePanel key={panelKey} selection={selection} period={period} />
         )}
         <div className="map-status">
           <p className="map-status__message" role="status">

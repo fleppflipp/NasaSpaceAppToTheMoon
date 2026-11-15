@@ -71,6 +71,8 @@ export const LAYOUT = {
   'hotspot-mobile-height': '45svh',
   'sensor-image-width': '6rem',
   'sensor-image-ratio': '4 / 3',
+  // Side panel on the map (fire cause).
+  'panel-width': '24rem',
   'header-height': '4rem',
   'timeline-height': '3.25rem',
   // Space taken by the fixed header; the time bar is a full-width strip at the bottom.

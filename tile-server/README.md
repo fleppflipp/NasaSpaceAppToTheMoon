@@ -19,6 +19,10 @@ script `tiles/build_fire_tiles.py --out tile-server/data` writes them there). Th
 folder is git-ignored. Other settings (environment variables): `TILE_PORT`
 (default 8080) and `TILE_DATA_DIR` (default `./data`).
 
+Put `fire_pixels_<year>.csv` (all countries, the file the tiles are built from)
+in the same folder: the fire cause service (`cause-service/`, setting
+`FIRE_DATA_URL`) downloads it here, so the panel shows the same fires as the map.
+
 ## Use from the app
 
 The app reads `VITE_TILE_BASE_URL` (default `http://localhost:8080/tiles`; see

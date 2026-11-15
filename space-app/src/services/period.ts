@@ -56,3 +56,24 @@ export function fireDay({ year, month, day }: Period): number | null {
     ? null
     : (Date.UTC(year, month - 1, day) - Date.UTC(2000, 0, 1)) / MS_PER_DAY
 }
+
+/** Inclusive UTC date range for the selected month or day. */
+export function periodDateRange({ year, month, day }: Period): {
+  startDate: string
+  endDate: string
+} {
+  const start = new Date(Date.UTC(year, month - 1, day ?? 1))
+  const end = new Date(Date.UTC(year, month - 1, day ?? 1))
+  if (day === undefined) end.setUTCMonth(end.getUTCMonth() + 1, 0)
+  return {
+    startDate: start.toISOString().slice(0, 10),
+    endDate: end.toISOString().slice(0, 10),
+  }
+}
+
+export function formatDate(isoDate: string, language: string): string {
+  return new Intl.DateTimeFormat(language, {
+    dateStyle: 'medium',
+    timeZone: 'UTC',
+  }).format(new Date(isoDate + 'T00:00:00Z'))
+}

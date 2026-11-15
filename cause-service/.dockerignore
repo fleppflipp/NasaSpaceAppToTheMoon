@@ -1,0 +1,6 @@
+.venv
+cache
+degoog-data
+tests
+__pycache__
+.env

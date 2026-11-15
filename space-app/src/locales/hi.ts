@@ -1,6 +1,14 @@
+import { eng } from './eng'
 import type { Translation } from './eng'
 
 export default {
+  cause: eng.cause,
+  causeCategory: eng.causeCategory,
+  causeConfidence: eng.causeConfidence,
+  causeLand: eng.causeLand,
+  causeReason: eng.causeReason,
+  causeWarning: eng.causeWarning,
+  causeError: eng.causeError,
   search: {
     label: 'कोई स्थान खोजें',
     button: 'खोजें',

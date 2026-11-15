@@ -123,3 +123,6 @@ Desktop.ini
 duckdb_tmp/
 fire_pixels_*.csv
 fire_clusters_*.csv
+
+# Fire cause service: degoog settings and installed engines (local)
+/cause-service/degoog-data/
