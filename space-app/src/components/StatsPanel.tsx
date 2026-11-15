@@ -25,6 +25,8 @@ interface StatsPanelProps {
   periods: readonly Period[]
   /** The month the numbers are for (the app delays it while the slider is dragged). */
   period: Period | null
+  /** A future (forecast) month is shown: there are no observed numbers for it. */
+  forecast: boolean
   /** The day picked on the map, if any (not delayed, so its bar lights up at once). */
   selectedDay: number | undefined
   onSelectDay: (day: number | null) => void
@@ -95,6 +97,7 @@ export default function StatsPanel({
   onToggle,
   periods,
   period,
+  forecast,
   selectedDay,
   onSelectDay,
   onShowFire,
@@ -125,7 +128,9 @@ export default function StatsPanel({
     }).format(utcDate(p.year, p.month))
 
   let body: ReactNode
-  if (period === null || status === 'error') {
+  if (forecast) {
+    body = <p className="stats-note">{t('forecast.stats')}</p>
+  } else if (period === null || status === 'error') {
     body = <p className="stats-note">{t('stats.unavailable')}</p>
   } else if (status === 'loading') {
     body = <p className="stats-note">{t('stats.loading')}</p>

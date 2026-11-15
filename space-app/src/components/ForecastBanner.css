@@ -1,0 +1,80 @@
+/* Warning at the top of the map while a forecast month is shown. */
+.forecast-banner {
+  position: absolute;
+  inset-block-start: var(--space-4);
+  inset-inline-start: 50%;
+  translate: -50% 0;
+  z-index: var(--z-index-dropdown);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  inline-size: max-content;
+  max-inline-size: min(
+    var(--layout-container-sm),
+    calc(100% - var(--space-24))
+  );
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width-strong) solid var(--color-future);
+  border-radius: var(--radius-md);
+  background-color: var(--color-background);
+  box-shadow: var(--shadow-md);
+}
+
+[dir='rtl'] .forecast-banner {
+  translate: 50% 0;
+}
+
+.forecast-banner__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: var(--control-size-icon);
+  block-size: var(--control-size-icon);
+  border-radius: var(--radius-full);
+  color: var(--color-navy);
+  background-color: var(--color-future);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+.forecast-banner__text {
+  min-inline-size: 0;
+}
+
+.forecast-banner__title {
+  margin-block: var(--space-0);
+  color: var(--color-future-text);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+}
+
+.forecast-banner__close {
+  display: grid;
+  flex: none;
+  place-items: center;
+  min-inline-size: var(--control-size-icon);
+  min-block-size: var(--control-size-icon);
+  margin-block-start: calc(-1 * var(--space-1));
+  margin-inline-end: calc(-1 * var(--space-2));
+  padding: var(--space-1);
+  border-color: transparent;
+  color: var(--color-text);
+  background-color: transparent;
+}
+
+.forecast-banner__close:hover:not(:disabled) {
+  color: var(--color-navy);
+  background-color: var(--color-future);
+}
+
+.forecast-banner__close svg {
+  inline-size: var(--space-4);
+  block-size: var(--space-4);
+}
+
+.forecast-banner__body {
+  margin-block: var(--space-1) var(--space-0);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-compact);
+}

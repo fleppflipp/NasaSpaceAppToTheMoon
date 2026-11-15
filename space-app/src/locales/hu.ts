@@ -30,6 +30,15 @@ export default {
     placeholder: 'Nyelv vagy kód',
     noResults: 'Nincs ilyen nyelv.',
   },
+  forecast: {
+    future: 'Jövő',
+    summary: '{{period}} · előrejelzés',
+    title: 'Előrejelzés, nem megfigyelt adat',
+    body: 'A pontok azokat a tüzeket mutatják, amelyeket egy idősor-modell erre a hónapra ({{period}}) vár, olyan helyeken, ahol az elmúlt évek ugyanezen hónapjában égett. Ez csak becslés, nem garantált információ: a valódi tüzek eltérhetnek.',
+    stats:
+      'Statisztika csak megfigyelt tüzeket tartalmazó hónapokra érhető el.',
+    close: 'Előrejelzési figyelmeztetés bezárása',
+  },
   fires: {
     noData: 'Még nincs tűzadat.',
     unavailable: 'A tűzadatok nem tölthetők be. Fut a tile szerver?',

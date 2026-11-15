@@ -15,6 +15,7 @@ import type { Period } from '../services/period'
 import type { PeriodsStatus } from '../hooks/useFirePeriods'
 import type { Place } from '../services/places'
 import DrawControl from './DrawControl'
+import ForecastBanner from './ForecastBanner'
 import HomeControl from './HomeControl'
 import SpaceBackdrop from './SpaceBackdrop'
 import './BaseMap.css'
@@ -55,6 +56,8 @@ interface BaseMapProps {
   onSelectionChange: (selection: Polygon | null) => void
   /** Only fires inside this month are drawn; null when there is none to show. */
   period: Period | null
+  /** `period` is a future month: its forecast is drawn instead of fires. */
+  forecast: boolean
   /** Whether the list of months with fire data is loading, loaded or failed. */
   periodsStatus: PeriodsStatus
 }
@@ -68,6 +71,7 @@ export default function BaseMap({
   selection,
   onSelectionChange,
   period,
+  forecast,
   periodsStatus,
 }: BaseMapProps) {
   const { t } = useTranslation()
@@ -214,7 +218,7 @@ export default function BaseMap({
   const { canDraw, drawing, message, toggleDrawing, clearSelection } =
     useAreaSelection(mapRef, active, selection, onSelectionChange)
 
-  useFireLayers(mapRef, period)
+  useFireLayers(mapRef, period, forecast)
   useFireMarker(mapRef, fireMarker, onFireMarkerDismiss)
 
   // The statistics panel covers the right edge of the map; places are centred
@@ -274,6 +278,7 @@ export default function BaseMap({
       <SpaceBackdrop />
       {/* MapLibre adds its own accessible "Map" region inside this container. */}
       <div ref={containerRef} className="base-map" />
+      {forecast && period !== null ? <ForecastBanner period={period} /> : null}
       {createPortal(
         <DrawControl
           canDraw={canDraw}

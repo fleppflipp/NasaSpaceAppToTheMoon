@@ -30,6 +30,15 @@ export default {
     placeholder: 'Limbă sau cod',
     noResults: 'Nicio limbă găsită.',
   },
+  forecast: {
+    future: 'Viitor',
+    summary: '{{period}} · prognoză',
+    title: 'Prognoză, nu date observate',
+    body: 'Punctele arată incendiile pe care un model de serii temporale le așteaptă în {{period}}, plasate unde au ars incendii în aceeași lună din ultimii ani. Este doar o estimare, nu o informație garantată: incendiile reale pot fi diferite.',
+    stats:
+      'Statisticile sunt disponibile doar pentru lunile cu incendii observate.',
+    close: 'Închide avertismentul de prognoză',
+  },
   fires: {
     noData: 'Nu există încă date despre incendii.',
     unavailable:

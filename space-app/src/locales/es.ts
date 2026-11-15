@@ -29,6 +29,15 @@ export default {
     placeholder: 'Idioma o código',
     noResults: 'No se encontró ningún idioma.',
   },
+  forecast: {
+    future: 'Futuro',
+    summary: '{{period}} · previsión',
+    title: 'Previsión, no datos observados',
+    body: 'Los puntos muestran los incendios que un modelo de series temporales espera en {{period}}, situados donde hubo incendios en el mismo mes de los últimos años. Es solo una estimación, no información garantizada: los incendios reales pueden ser distintos.',
+    stats:
+      'Las estadísticas solo están disponibles para meses con incendios observados.',
+    close: 'Cerrar el aviso de previsión',
+  },
   fires: {
     noData: 'Aún no hay datos de incendios.',
     unavailable:

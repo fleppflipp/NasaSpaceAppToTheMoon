@@ -141,6 +141,25 @@ json`). The period is held in `AppLayout.tsx` as `{ year, month }`
 (`src/services/period.ts`); it starts on the month closest to July in the latest
 year that has data. All dates are UTC regardless of the display language. No external service.
 
+### Future months (forecast)
+
+The slider runs on past the last observed month into the months that have a
+`forecast_<year>_<MM>.pmtiles` file in the same tile folder. That part of the track
+has its own color with a "Future" label where it starts; while a future month is
+shown, a banner (`ForecastBanner`) says the dots are an estimate, not observed
+data, and the statistics panel only shows a note. The files have exactly the format
+of the observed ones and are drawn by the same layers. They come from the
+Chronos-2 forecast in `predictions/` (expected fires and FRP per 0.5° cell and
+month, `forecast/forecast_fires.py`, one file per country after
+`forecast/split_forecast_by_country.py`); `tiles/build_forecast_tiles.py` draws
+that many real past fires of the same cell and calendar month (last 3 observed
+years), scales their FRP to the forecast, and writes the files with
+`tiles/pmtiles_points.py` (pure Python, no tippecanoe):
+
+```sh
+python tiles/build_forecast_tiles.py   # predictions/ -> tile-server/data/forecast_*.pmtiles
+```
+
 ## Statistics
 
 A tab on the right edge of the screen, halfway down (below the zoom and pencil
