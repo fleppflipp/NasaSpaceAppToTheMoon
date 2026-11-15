@@ -52,6 +52,7 @@ export const CAUSE_REASONS = [
 
 /** Outside services that did not answer (the answer is then less complete). */
 export const CAUSE_WARNINGS = [
+  'historyUnavailable',
   'placesUnavailable',
   'landUseUnavailable',
   'searchUnavailable',

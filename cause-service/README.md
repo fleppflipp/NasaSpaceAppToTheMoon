@@ -16,8 +16,13 @@ in the web app, and shows the evidence behind the guess. The app's cause panel c
    server whether the file changed (ETag, size, date) and downloads it again if so; all years
    are downloaded in the background when the service starts. If the server cannot be reached,
    the copy already downloaded is used; with no copy the answer is `503 fireDataUnavailable`
-   (never "no fires"). Without `FIRE_DATA_URL`, the local `fire_clusters_<year>_<Country>.csv`
-   files of `fire_calendar.py` are read instead (one parquet per year in `cache/parquet/`).
+   (never "no fires"). Without `FIRE_DATA_URL`, local `fire_pixels_<year>.csv` files in
+   `FIRE_PIXELS_DIR` (default `../harmonized`) are converted on demand and cached; if none are
+   present, local `fire_clusters_<year>_<Country>.csv` files are used. A missing requested year
+   returns `fireDataUnavailable`. The first conversion of a large year can take several minutes.
+   Historical comparison uses years already converted to the cache, without waiting for other
+   years to be indexed. If any years are unavailable, the answer includes a warning; selecting
+   a year on the map causes that year to be indexed for subsequent comparisons.
 2. **Place names**: Photon reverse geocoding at the fires gives the nearest town, nearby
    villages, the county and the country, and from the country the search language.
 3. **Land use**: OpenStreetMap (Overpass API): which mapped areas contain the 5 strongest fires
@@ -97,7 +102,8 @@ degoog and LibreTranslate are then expected at `DEGOOG_URL` and `LIBRETRANSLATE_
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `FIRE_DATA_URL` | empty | Tile server folder with `fire_pixels_<year>.csv`, e.g. `http://10.62.232.178:8080/tiles` |
-| `FIRE_CLUSTERS_DIR` | `../new_outputs/fire_clusters` | Input fires when `FIRE_DATA_URL` is empty |
+| `FIRE_PIXELS_DIR` | `../harmonized` | Local pixel CSVs used when `FIRE_DATA_URL` is empty |
+| `FIRE_CLUSTERS_DIR` | `../new_outputs/fire_clusters` | Input fires when no pixel source is configured or available |
 | `DEGOOG_URL`, `DEGOOG_API_KEY`, `DEGOOG_ENGINES` | `http://localhost:4444`, empty, empty | degoog instance, its API key, engine ids to ask (empty = all enabled) |
 | `LIBRETRANSLATE_URL`, `LIBRETRANSLATE_API_KEY` | `http://localhost:5000`, empty | LibreTranslate |
 | `PHOTON_URL` | `https://photon.komoot.io` | Reverse geocoding |

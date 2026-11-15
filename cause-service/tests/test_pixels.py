@@ -6,7 +6,7 @@ import httpx
 import pytest
 
 from firecause.fires import FireStore, parse_area
-from firecause.pixels import PixelSourceError, RemotePixels
+from firecause.pixels import LocalPixels, PixelSourceError, RemotePixels
 
 HEADER = ("country,fire_id,pass_id,pass_fire_id,sensor,satellite,time_utc,local_date,daynight,lat,lon,"
           "scan_km,track_km,frp,bt_mir,bt_tir,confidence\n")
@@ -90,14 +90,52 @@ def test_server_away_uses_the_copy_here(tmp_path, server, monkeypatch):
     assert remote(tmp_path, server).years() == [2012]  # from the files already here
 
 
-def test_missing_year_gives_no_fires(tmp_path, server):
-    assert remote(tmp_path, server).parquet(2013) is None
+def test_missing_year_is_an_error_not_no_fires(tmp_path, server):
+    with pytest.raises(PixelSourceError):
+        remote(tmp_path, server).parquet(2013)
 
 
 def test_fire_store_reads_the_server(tmp_path, server):
     store = FireStore(tmp_path / "unused", tmp_path / "parquet", remote(tmp_path, server))
     fires = store.fires_in(parse_area(AREA), date(2012, 3, 18), date(2012, 3, 24))
     assert [(f.date, round(f.frp_mw, 1), f.satellites) for f in fires] == [("2012-03-21", 35.0, "Aqua+Terra")]
+
+
+def test_fire_store_reads_local_pixels_and_reports_missing_year(tmp_path):
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "fire_pixels_2012.csv").write_text(PIXELS)
+    local = LocalPixels(source, tmp_path / "cache")
+    store = FireStore(tmp_path / "unused", tmp_path / "parquet", local)
+    assert local.years() == [2012]
+    fires = store.fires_in(parse_area(AREA), date(2012, 3, 18), date(2012, 3, 24))
+    assert [(f.date, round(f.frp_mw, 1)) for f in fires] == [("2012-03-21", 35.0)]
+    with pytest.raises(PixelSourceError):
+        store.fires_in(parse_area(AREA), date(2013, 3, 18), date(2013, 3, 24))
+
+
+def test_local_pixels_accept_mixed_line_endings(tmp_path):
+    source = tmp_path / "source"
+    source.mkdir()
+    header, rows = PIXELS.split("\n", 1)
+    (source / "fire_pixels_2012.csv").write_bytes((header + "\n" + rows.replace("\n", "\r\n")).encode())
+    store = FireStore(tmp_path / "unused", tmp_path / "parquet", LocalPixels(source, tmp_path / "cache"))
+    assert len(store.fires_in(parse_area(AREA), date(2012, 3, 18), date(2012, 3, 24))) == 1
+
+
+def test_history_uses_cached_years_without_converting_the_rest(tmp_path):
+    source = tmp_path / "source"
+    source.mkdir()
+    for year in (2012, 2013, 2014):
+        (source / f"fire_pixels_{year}.csv").write_text(PIXELS.replace("2012-", f"{year}-"))
+    local = LocalPixels(source, tmp_path / "cache")
+    store = FireStore(tmp_path / "unused", tmp_path / "parquet", local)
+    fires = store.fires_in(parse_area(AREA), date(2012, 3, 18), date(2012, 3, 24))
+    local.parquet(2013)
+    years, complete = store.other_years_nearby(fires, 2012)
+    assert years == [2013]
+    assert not complete
+    assert not (tmp_path / "cache" / "fires_2014.parquet").exists()
 
 
 def test_server_away_with_nothing_here_is_an_error_not_no_fires(tmp_path, server):

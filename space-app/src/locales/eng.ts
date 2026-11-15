@@ -98,7 +98,8 @@ export const eng = {
     photoNote:
       'From a news report that matches this place and year; it may show a nearby fire.',
     find: 'Find likely cause',
-    finding: 'Checking maps and the web. This can take up to a minute.',
+    finding:
+      'Checking maps and the web. The first analysis can take several minutes.',
     likelyCause: 'Likely cause',
     confidence: 'Confidence: {{level}}',
     why: 'Why',
@@ -151,6 +152,8 @@ export const eng = {
     tie: '{{first}} and {{second}} are about equally likely.',
   },
   causeWarning: {
+    historyUnavailable:
+      'Some other years could not be checked for nearby fires.',
     placesUnavailable: 'Place names could not be looked up.',
     landUseUnavailable:
       'Land use could not be checked (OpenStreetMap did not answer).',

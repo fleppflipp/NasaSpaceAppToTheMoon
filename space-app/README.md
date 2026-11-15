@@ -2,6 +2,17 @@
 
 React, TypeScript, and Vite.
 
+The optional local CSV server serves the annual `harmonized/fire_pixels_<year>.csv`
+files without loading them into memory. From the repository root, run
+`node csv-server/server.cjs` and browse `http://127.0.0.1:8081/tiles` for a JSON
+listing of CSV files in `harmonized/` and fire PMTiles and statistics JSON files
+in `data/`; append a filename to download it. PMTiles support HTTP byte ranges.
+The root URL also supports the listing and downloads. Set `CSV_PORT` to change the
+port. It listens only on this machine, requires no key or external service, and
+uses Node.js built-in modules. The cause service can use it with
+`FIRE_DATA_URL=http://127.0.0.1:8081/tiles` when running on the same host; a service
+inside Docker needs a host-accessible address instead.
+
 Shared colors, spacing, typography, and component sizing are documented in
 [the design system guide](docs/design-system.md).
 
@@ -89,6 +100,16 @@ month just points the source at another file. Start it with
 `VITE_TILE_BASE_URL` (default `http://localhost:8080/tiles`, see `.env.example`;
 set it in `.env.local` to use a teammate's server). The tiles are not part of
 `dist/`.
+
+If the server's folder listing cannot be loaded at startup, the app uses the
+repository's `data/` folder instead. During `npm run dev` and `npm run preview`,
+the Vite server exposes its `fires_<year>_<MM>.pmtiles` and `fires_<year>.json`
+files at `/local-fire-data/`, with byte-range support. The map and statistics
+use the same source for the session; reload to retry the tile server. The local
+folder is not copied into the build. For another production host, configure an
+equivalent `/local-fire-data/` endpoint with a JSON directory listing and HTTP
+byte ranges, or keep the tile server available. This fallback covers map and
+statistics data; the fire cause service uses its own data configuration.
 
 Inside a file the layer `fires` holds the points (zoom 0-9; props `day` = days
 since 2000-01-01, `s` = 0 MODIS only / 1 both / 2 VIIRS only, `f` = FRP in MW, `r`
@@ -324,7 +345,7 @@ directly. Without such an article there is no picture (never a stock photo);
 a photo that fails to load is hidden.
 
 - The service is the Python API in `../cause-service/` (see its README): it
-  reads the fires from the tile server (`fire_pixels_<year>.csv`, the file the
+  reads the fires from the tile server or local `harmonized/` folder (`fire_pixels_<year>.csv`, the file the
   map tiles are built from, so the panel and the map show the same fires; or
   the local fire_calendar.py output), asks Photon (place names), OpenStreetMap
   Overpass (land use), a self-hosted degoog (web search) and a self-hosted

@@ -11,6 +11,7 @@ services:
     environment:
       # Tile server folder with fire_pixels_<year>.csv; empty = the local fire_clusters files below.
       FIRE_DATA_URL: ${FIRE_DATA_URL:-}
+      FIRE_PIXELS_DIR: /data/fire_pixels
       DEGOOG_URL: http://degoog:4444
       DEGOOG_API_KEY: ${DEGOOG_API_KEY:-}
       DEGOOG_ENGINES: ${DEGOOG_ENGINES:-}
@@ -18,6 +19,7 @@ services:
       CAUSE_CORS_ORIGINS: ${CAUSE_CORS_ORIGINS:-http://localhost:5173,http://localhost:5174}
     volumes:
       - ${FIRE_CLUSTERS_DIR:-../new_outputs/fire_clusters}:/data/fire_clusters:ro
+      - ${FIRE_PIXELS_DIR:-../harmonized}:/data/fire_pixels:ro
       - ./cache:/cache
     depends_on: [degoog, libretranslate]
     restart: unless-stopped

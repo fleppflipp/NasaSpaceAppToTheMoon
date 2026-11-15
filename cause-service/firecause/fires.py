@@ -17,7 +17,7 @@ from shapely.prepared import prep
 from shapely.geometry import shape
 from shapely.geometry.base import BaseGeometry
 
-from .pixels import RemotePixels
+from .pixels import LocalPixels, PixelSourceError, RemotePixels
 
 KM_PER_DEG_LAT = 111.195
 MAX_AREA_KM2 = 25_000  # bigger areas are refused (too many places for one search)
@@ -79,7 +79,7 @@ def parse_dates(start: str, end: str) -> tuple[date, date]:
 
 
 class FireStore:
-    def __init__(self, clusters_dir: Path, parquet_dir: Path, pixels: RemotePixels | None = None):
+    def __init__(self, clusters_dir: Path, parquet_dir: Path, pixels: RemotePixels | LocalPixels | None = None):
         """pixels set: fires come from the tile server's fire_pixels_<year>.csv; otherwise from the
         local fire_clusters_<year>_<Country>.csv files in clusters_dir."""
         self.clusters_dir = clusters_dir
@@ -99,7 +99,7 @@ class FireStore:
             return self.pixels.parquet(year)
         csvs = list(self.clusters_dir.glob(f"fire_clusters_{year}_*.csv"))
         if not csvs:
-            return None
+            raise PixelSourceError(f"No local fire data for {year}")
         out = self.parquet_dir / f"fire_clusters_{year}.parquet"
         newest = max(p.stat().st_mtime for p in csvs)
         with self._lock:
@@ -119,8 +119,9 @@ class FireStore:
         return out
 
     def _query(self, years: list[int], bbox: tuple[float, float, float, float], where: str,
-               params: list) -> list[tuple]:
-        files = [p for y in years if (p := self._parquet(y)) is not None]
+               params: list, files: list[Path] | None = None) -> list[tuple]:
+        if files is None:
+            files = [p for y in years if (p := self._parquet(y)) is not None]
         if not files:
             return []
         west, south, east, north = bbox
@@ -143,16 +144,22 @@ class FireStore:
         fires.sort(key=lambda f: (-f.frp_mw, f.date))
         return fires
 
-    def other_years_nearby(self, fires: list[Fire], year: int) -> list[int]:
-        """Other years with a fire within RECURRENCE_RADIUS_KM of one of these fires (same season or not)."""
+    def other_years_nearby(self, fires: list[Fire], year: int) -> tuple[list[int], bool]:
+        """Return nearby years and whether all available years were checked."""
         if not fires:
-            return []
+            return [], True
         others = [y for y in self.years() if y != year]
+        files = None
+        complete = True
+        if self.pixels is not None:
+            cached = self.pixels.cached_parquets()
+            complete = all(y in cached for y in others)
+            files = [cached[y] for y in others if y in cached]
         pad_lat = RECURRENCE_RADIUS_KM / KM_PER_DEG_LAT
         pad_lon = pad_lat / max(math.cos(math.radians(fires[0].lat)), 0.1)
         bbox = (min(f.lon for f in fires) - pad_lon, min(f.lat for f in fires) - pad_lat,
                 max(f.lon for f in fires) + pad_lon, max(f.lat for f in fires) + pad_lat)
-        rows = self._query(others, bbox, "TRUE", [])
+        rows = self._query(others, bbox, "TRUE", [], files)
         found = set()
         for r in rows:
             for f in fires[:50]:
@@ -161,7 +168,7 @@ class FireStore:
                 if math.hypot(dx, dy) <= RECURRENCE_RADIUS_KM:
                     found.add(int(r[0][:4]))
                     break
-        return sorted(found)
+        return sorted(found), complete
 
 
 def summary(fires: list[Fire], limit: int = 25) -> dict:

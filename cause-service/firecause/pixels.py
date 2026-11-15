@@ -30,6 +30,38 @@ class PixelSourceError(RuntimeError):
     pass
 
 
+class LocalPixels:
+    """Convert local yearly pixel CSVs to the same fire records as the tile builder."""
+
+    def __init__(self, source_dir: Path, work_dir: Path):
+        self.source_dir, self.work_dir = source_dir, work_dir
+        self._lock = threading.Lock()
+
+    def years(self) -> list[int]:
+        return sorted(int(match.group(1)) for path in self.source_dir.glob("fire_pixels_*.csv")
+                      if (match := YEAR_RE.fullmatch(path.name)))
+
+    def cached_parquets(self) -> dict[int, Path]:
+        files = {}
+        for year in self.years():
+            csv = self.source_dir / f"fire_pixels_{year}.csv"
+            out = self.work_dir / f"fires_{year}.parquet"
+            if out.is_file() and out.stat().st_mtime_ns >= csv.stat().st_mtime_ns:
+                files[year] = out
+        return files
+
+    def parquet(self, year: int) -> Path:
+        csv = self.source_dir / f"fire_pixels_{year}.csv"
+        out = self.work_dir / f"fires_{year}.parquet"
+        with self._lock:
+            if not csv.is_file():
+                raise PixelSourceError(f"No local fire data for {year}")
+            self.work_dir.mkdir(parents=True, exist_ok=True)
+            if not out.exists() or out.stat().st_mtime_ns < csv.stat().st_mtime_ns:
+                pixels_to_fires(csv, out)
+            return out
+
+
 def pixels_to_fires(csv: Path, out: Path) -> int:
     """fire_pixels CSV -> parquet, one row per fire. Returns the number of fires."""
     tmp = out.with_suffix(".tmp")
@@ -40,7 +72,8 @@ def pixels_to_fires(csv: Path, out: Path) -> int:
               WITH px AS (
                 SELECT country, fire_id, pass_id, satellite, CAST(local_date AS DATE) AS local_date,
                        lat, lon, scan_km, track_km, frp
-                FROM read_csv('{csv.as_posix()}', header = true, sample_size = 200000)
+                FROM read_csv('{csv.as_posix()}', header = true, sample_size = 200000,
+                              strict_mode = false, parallel = false)
               ), pass_total AS (
                 SELECT fire_id, pass_id, sum(frp) AS total FROM px GROUP BY fire_id, pass_id
               ), frp AS (
@@ -93,6 +126,10 @@ class RemotePixels:
         self._years = (time.time(), years)
         return years
 
+    def cached_parquets(self) -> dict[int, Path]:
+        return {int(match.group(1)): path for path in self.work_dir.glob("fires_*.parquet")
+                if (match := re.fullmatch(r"fires_(\d{4})\.parquet", path.name))}
+
     def _lock(self, year: int) -> threading.Lock:
         with self._locks_lock:
             return self._locks.setdefault(year, threading.Lock())
@@ -113,7 +150,7 @@ class RemotePixels:
                 raise PixelSourceError(f"{url}: {error}") from error  # never pretend "no fires"
             self._checked[year] = time.time()
             if head.status_code == 404:
-                return None
+                raise PixelSourceError(f"{url}: no fire data for {year}")
             if head.status_code != 200:
                 if out.exists():
                     return out

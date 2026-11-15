@@ -101,7 +101,8 @@ export default {
     photoNote:
       'Egy erre a helyre és évre illő híradásból; lehet, hogy egy közeli tüzet mutat.',
     find: 'Valószínű ok keresése',
-    finding: 'Térképek és a web ellenőrzése. Ez akár egy percig is tarthat.',
+    finding:
+      'Térképek és a web ellenőrzése. Az első elemzés több percig is tarthat.',
     likelyCause: 'Valószínű ok',
     confidence: 'Megbízhatóság: {{level}}',
     why: 'Miért',
@@ -153,6 +154,8 @@ export default {
     tie: '{{first}} és {{second}} nagyjából egyformán valószínű.',
   },
   causeWarning: {
+    historyUnavailable:
+      'Egyes más évek közeli tüzeit nem sikerült ellenőrizni.',
     placesUnavailable: 'A helyneveket nem sikerült lekérdezni.',
     landUseUnavailable:
       'A földhasználatot nem sikerült ellenőrizni (az OpenStreetMap nem válaszolt).',

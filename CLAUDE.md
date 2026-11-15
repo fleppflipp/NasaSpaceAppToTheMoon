@@ -55,6 +55,8 @@ Work proceeds feature by feature, one feature at a time. Done so far:
    the strong fires (FRP) show, weaker ones grow in while zooming closer.
    Years 2002 to 2025 so far (about 7 GB in `tile-server/data`; 2002-2011 are MODIS only); more are added as the data team delivers
    `fire_pixels_<year>.csv`.
+   If the tile server listing is unavailable at startup, Vite dev/preview serves
+   the repository `data/` folder as a fallback for tiles and statistics.
 9. Statistics panel (`StatsPanel`): a tab on the right edge, halfway down,
    slides out a panel over the map (the map does not move; the zoom and pencil
    buttons go with it): change against the previous month, last year and the
@@ -67,7 +69,7 @@ Work proceeds feature by feature, one feature at a time. Done so far:
    inside it in the selected month or day and, on request, the likely cause with its
    reasons, web sources and, when a matching news article has one, a photo
    from the scene (its cover photo, proxied by the service), from the Python
-   service in `cause-service/`, which reads the fires from the tile server's
+   service in `cause-service/`, which reads the fires from local `harmonized/` or the tile server's
    `fire_pixels_<year>.csv` (setting `FIRE_DATA_URL`) the same way the tiles do
    (FastAPI; Photon, Overpass, a self-hosted degoog for web search and a
    self-hosted LibreTranslate; English keyword rules in
@@ -131,6 +133,10 @@ Rules for the implementing agent:
   with the shared design tokens (see below).
 
 ## Repository layout
+
+- `csv-server/server.cjs`: localhost HTTP server for CSV files in `harmonized/`
+  and fire PMTiles and statistics JSON files in `data/`, with a JSON listing,
+  byte ranges and streamed downloads under `/tiles` (port 8081).
 
 - The app lives in `space-app/` (React 19, TypeScript, Vite). Run all npm
   commands from that folder.

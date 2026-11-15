@@ -102,7 +102,8 @@ export default {
     photoNote:
       'Dintr-o știre care se potrivește cu acest loc și an; poate arăta un incendiu din apropiere.',
     find: 'Găsește cauza probabilă',
-    finding: 'Se verifică hărțile și webul. Poate dura până la un minut.',
+    finding:
+      'Se verifică hărțile și webul. Prima analiză poate dura câteva minute.',
     likelyCause: 'Cauza probabilă',
     confidence: 'Încredere: {{level}}',
     why: 'De ce',
@@ -156,6 +157,8 @@ export default {
     tie: '{{first}} și {{second}} sunt cam la fel de probabile.',
   },
   causeWarning: {
+    historyUnavailable:
+      'Incendiile din apropiere din unii ani nu au putut fi verificate.',
     placesUnavailable: 'Numele locurilor nu au putut fi căutate.',
     landUseUnavailable:
       'Utilizarea terenului nu a putut fi verificată (OpenStreetMap nu a răspuns).',

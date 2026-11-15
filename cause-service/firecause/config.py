@@ -24,6 +24,8 @@ class Settings:
     # Tile server folder with fire_pixels_<year>.csv (e.g. http://10.62.232.178:8080/tiles).
     # Empty: read the local fire_clusters files above instead.
     fire_data_url: str = field(default_factory=lambda: _env("FIRE_DATA_URL", ""))
+    fire_pixels_dir: Path = field(default_factory=lambda: Path(
+        _env("FIRE_PIXELS_DIR", str(REPO_ROOT / "harmonized"))))
     degoog_url: str = field(default_factory=lambda: _env("DEGOOG_URL", "http://localhost:4444"))
     degoog_api_key: str = field(default_factory=lambda: _env("DEGOOG_API_KEY", ""))
     # Engine ids to ask (empty = every engine enabled in degoog).

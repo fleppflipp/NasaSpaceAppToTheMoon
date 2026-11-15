@@ -17,6 +17,8 @@ from . import fires as F
 from .images import ImageFinder
 from .landuse import LandUseFinder
 from .places import Place, PlaceFinder
+from .pixels import PixelSourceError
+import duckdb
 from .rules import MONTHS, Facts, Rules, Source, context_points, date_fit, decide, mentions_place, score_source
 from .search import Hit, SearchError, Searcher, dedupe
 from .translate import TranslationError, Translator
@@ -83,7 +85,13 @@ class CauseFinder:
             warnings.append("landUseUnavailable")
         answer["landUse"] = land
         answer["landUseChecked"] = checked
-        recurring = self.store.other_years_nearby(fires, year)
+        try:
+            recurring, history_complete = self.store.other_years_nearby(fires, year)
+            if not history_complete:
+                warnings.append("historyUnavailable")
+        except (PixelSourceError, duckdb.Error, OSError):
+            recurring = []
+            warnings.append("historyUnavailable")
         answer["recurringYears"] = recurring
 
         local_words = self.rules.query_words

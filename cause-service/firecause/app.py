@@ -13,6 +13,7 @@ Run:  uvicorn firecause.app:app --port 8090   (from the cause-service folder)
 from typing import Any
 
 import httpx
+import duckdb
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
@@ -24,7 +25,7 @@ from .fires import AreaError, FireStore, parse_area, parse_dates, summary
 from .images import ImageError, ImageFinder
 from .landuse import LandUseFinder
 from .pipeline import CauseFinder
-from .pixels import PixelSourceError, RemotePixels
+from .pixels import LocalPixels, PixelSourceError, RemotePixels
 from .places import PlaceFinder
 from .rules import Rules
 from .search import Searcher
@@ -45,6 +46,8 @@ def make_finder() -> CauseFinder:
     if settings.fire_data_url:
         pixels = RemotePixels(settings.fire_data_url, settings.cache_path.parent / "fire_pixels", client)
         pixels.warm_up()  # download every year now, so the first circling is quick
+    elif any(settings.fire_pixels_dir.glob("fire_pixels_*.csv")):
+        pixels = LocalPixels(settings.fire_pixels_dir, settings.cache_path.parent / "local_fire_pixels")
     return CauseFinder(
         store=FireStore(settings.fire_clusters_dir, settings.cache_path.parent / "parquet", pixels),
         rules=Rules.load(),
@@ -72,7 +75,8 @@ def create_app(finder: CauseFinder | None = None) -> FastAPI:
         return api.state.finder
 
     @api.exception_handler(PixelSourceError)
-    def fire_data_error(_request, _error: PixelSourceError) -> JSONResponse:
+    @api.exception_handler(duckdb.Error)
+    def fire_data_error(_request, _error: PixelSourceError | duckdb.Error) -> JSONResponse:
         return JSONResponse({"error": "fireDataUnavailable"}, status_code=503)
 
     @api.exception_handler(AreaError)
