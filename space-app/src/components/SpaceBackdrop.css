@@ -1,0 +1,53 @@
+/*
+ * The dark space around the globe. It lies under the map canvas, which is
+ * transparent outside the globe, so the stars only show around the Earth and
+ * disappear once the map fills the screen.
+ */
+.space-backdrop {
+  position: absolute;
+  inset: var(--space-0);
+  overflow: hidden;
+  background-color: var(--color-navy);
+  pointer-events: none;
+}
+
+.space-stars {
+  position: absolute;
+  inset: var(--space-0);
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.space-star {
+  fill: var(--color-grey);
+}
+
+.space-star--tinted {
+  fill: var(--color-lavender);
+}
+
+/* Some stars fade in and out slowly, each at its own moment. */
+@media (prefers-reduced-motion: no-preference) {
+  .space-star--twinkle {
+    animation: space-star-twinkle var(--duration-star-twinkle) ease-in-out
+      infinite alternate;
+  }
+
+  .space-star--twinkle:nth-child(3n) {
+    animation-delay: calc(var(--duration-star-twinkle) * -0.33);
+  }
+
+  .space-star--twinkle:nth-child(3n + 1) {
+    animation-delay: calc(var(--duration-star-twinkle) * -0.66);
+  }
+}
+
+@keyframes space-star-twinkle {
+  from {
+    fill-opacity: 1;
+  }
+
+  to {
+    fill-opacity: 0.25;
+  }
+}

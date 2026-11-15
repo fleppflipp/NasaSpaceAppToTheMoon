@@ -16,6 +16,7 @@ import type { PeriodsStatus } from '../hooks/useFirePeriods'
 import type { Place } from '../services/places'
 import DrawControl from './DrawControl'
 import HomeControl from './HomeControl'
+import SpaceBackdrop from './SpaceBackdrop'
 import './BaseMap.css'
 
 // Required with Vite so MapLibre can find its web worker.
@@ -270,6 +271,7 @@ export default function BaseMap({
       className={`map-view${statsOpen ? ' map-view--stats' : ''}`}
       hidden={!active}
     >
+      <SpaceBackdrop />
       {/* MapLibre adds its own accessible "Map" region inside this container. */}
       <div ref={containerRef} className="base-map" />
       {createPortal(

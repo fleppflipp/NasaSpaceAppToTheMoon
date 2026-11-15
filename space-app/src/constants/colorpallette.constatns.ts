@@ -1,6 +1,6 @@
 export const COLOR_PALETTE = {
-  // Brand: off-white paper, royal blue, deep navy and a soft lavender grey.
-  paper: '#edece9',
+  // Brand: cool blue-grey, royal blue, deep navy and a soft lavender grey.
+  grey: '#d8dce4',
   royal: '#22398f',
   navy: '#101c4a',
   lavender: '#c9cee0',

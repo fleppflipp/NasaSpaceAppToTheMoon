@@ -43,7 +43,7 @@
   <rect x="82" y="148" width="92" height="80" rx="13" fill="#22398f" stroke="#101c4a" stroke-width="4"></rect>
 
   <!-- Keyhole -->
-  <path fill="#edece9" d="M128 170
+  <path fill="#d8dce4" d="M128 170
        A12 12 0 1 0 128 194
        L121 213
        H135

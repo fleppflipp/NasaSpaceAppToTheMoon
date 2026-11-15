@@ -1,5 +1,5 @@
 :root {
-  --color-background: var(--color-paper);
+  --color-background: var(--color-grey);
   --color-text: var(--color-navy);
   --color-primary: var(--color-royal);
   --color-accent: var(--color-navy);
