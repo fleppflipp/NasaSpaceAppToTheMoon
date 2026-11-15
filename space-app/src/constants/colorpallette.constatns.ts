@@ -1,12 +1,12 @@
 export const COLOR_PALETTE = {
-  olive: '#606c38',
-  forest: '#283618',
-  cream: '#fefae0',
-  sand: '#dda15e',
-  copper: '#bc6c25',
+  // Brand: off-white paper, royal blue, deep navy and a soft lavender grey.
+  paper: '#edece9',
+  royal: '#22398f',
+  navy: '#101c4a',
+  lavender: '#c9cee0',
   // Area selection: translucent fill plus a darker solid outline.
-  selection: '#d64545',
-  'selection-outline': '#a31d1d',
+  selection: '#22398f',
+  'selection-outline': '#101c4a',
   // Fire ramp (yellow to dark red, by fire radiative power) and circle outline.
   'fire-low': '#fed976',
   'fire-mid': '#fd8d3c',

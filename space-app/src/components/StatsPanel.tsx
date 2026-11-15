@@ -330,17 +330,17 @@ export default function StatsPanel({
               {
                 label: t('stats.sensorModis'),
                 count: modis,
-                color: 'var(--color-sand)',
+                color: 'var(--color-lavender)',
               },
               {
                 label: t('stats.sensorBoth'),
                 count: both,
-                color: 'var(--color-olive)',
+                color: 'var(--color-royal)',
               },
               {
                 label: t('stats.sensorViirs'),
                 count: viirs,
-                color: 'var(--color-forest)',
+                color: 'var(--color-navy)',
               },
             ]}
           />

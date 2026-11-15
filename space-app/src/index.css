@@ -1,9 +1,9 @@
 :root {
-  --color-background: var(--color-cream);
-  --color-text: var(--color-forest);
-  --color-primary: var(--color-olive);
-  --color-accent: var(--color-copper);
-  --color-highlight: var(--color-sand);
+  --color-background: var(--color-paper);
+  --color-text: var(--color-navy);
+  --color-primary: var(--color-royal);
+  --color-accent: var(--color-navy);
+  --color-highlight: var(--color-lavender);
 
   font-family: var(--font-family-sans);
   font-weight: var(--font-weight-regular);

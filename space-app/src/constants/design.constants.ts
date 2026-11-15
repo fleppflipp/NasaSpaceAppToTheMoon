@@ -117,9 +117,9 @@ export const FOCUS = {
 } as const
 
 export const SHADOW = {
-  sm: '0 1px 2px color-mix(in srgb, var(--color-forest) 12%, transparent)',
-  md: '0 4px 12px color-mix(in srgb, var(--color-forest) 14%, transparent)',
-  lg: '0 12px 32px color-mix(in srgb, var(--color-forest) 18%, transparent)',
+  sm: '0 1px 2px color-mix(in srgb, var(--color-navy) 12%, transparent)',
+  md: '0 4px 12px color-mix(in srgb, var(--color-navy) 14%, transparent)',
+  lg: '0 12px 32px color-mix(in srgb, var(--color-navy) 18%, transparent)',
 } as const
 
 export const OPACITY = {
