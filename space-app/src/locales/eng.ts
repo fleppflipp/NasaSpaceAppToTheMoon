@@ -27,6 +27,14 @@ export const eng = {
     placeholder: 'Language or code',
     noResults: 'No language found.',
   },
+  forecast: {
+    future: 'Future',
+    summary: '{{period}} · forecast',
+    title: 'Forecast, not observed data',
+    body: 'The dots show the fires a time-series model expects in {{period}}, placed where fires burned in the same month of recent years. It is only an estimate, not guaranteed information: real fires can differ.',
+    stats: 'Statistics are only available for months with observed fires.',
+    close: 'Close the forecast warning',
+  },
   fires: {
     noData: 'No fire data yet.',
     unavailable: 'Fire data cannot be loaded. Is the tile server running?',

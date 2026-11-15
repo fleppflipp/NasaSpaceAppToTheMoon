@@ -53,6 +53,46 @@
   background-color: var(--color-highlight);
 }
 
+/* The forecast months: the end of the track in another color, with a "FUTURE" label above where it starts. */
+.timeline__future {
+  position: absolute;
+  inset-block: var(--space-0);
+  inset-inline-end: var(--space-0);
+  border-start-end-radius: var(--radius-full);
+  border-end-end-radius: var(--radius-full);
+  background-color: var(--color-future);
+}
+
+.timeline__future-label {
+  position: absolute;
+  inset-block-end: calc(100% + var(--space-3));
+  padding: var(--space-0) var(--space-2);
+  border: var(--border-width-strong) solid var(--color-future);
+  border-radius: var(--radius-full);
+  color: var(--color-future-text);
+  background-color: var(--color-background);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-wide);
+  line-height: var(--line-height-heading);
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.timeline--future .timeline__range::-webkit-slider-thumb {
+  border-color: var(--color-future-text);
+  background-color: var(--color-future);
+}
+
+.timeline--future .timeline__range::-moz-range-thumb {
+  border-color: var(--color-future-text);
+  background-color: var(--color-future);
+}
+
+.timeline--future .timeline__summary {
+  color: var(--color-future-text);
+}
+
 .timeline__tick {
   position: absolute;
   inset-block-start: 100%;

@@ -37,6 +37,14 @@ export default {
     placeholder: '语言或代码',
     noResults: '未找到语言。',
   },
+  forecast: {
+    future: '未来',
+    summary: '{{period}} · 预测',
+    title: '预测，非观测数据',
+    body: '圆点显示时间序列模型预计在 {{period}} 出现的火点，位置取自近几年同一月份实际发生火情的地点。这只是估计，并不保证准确：实际火情可能不同。',
+    stats: '统计数据仅适用于有观测火点的月份。',
+    close: '关闭预测提示',
+  },
   fires: {
     noData: '暂无火点数据。',
     unavailable: '无法加载火点数据。瓦片服务器是否在运行？',

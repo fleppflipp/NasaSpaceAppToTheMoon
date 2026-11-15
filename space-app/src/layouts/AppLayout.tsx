@@ -48,12 +48,19 @@ export default function AppLayout() {
   const [selection, setSelection] = useState<Polygon | null>(null)
   // The month to show, with an optional day picked in the statistics. It is
   // always one of the months that have data, the default until one is picked.
-  const { periods, status } = useFirePeriods()
+  // The slider runs over the observed months, then the forecast months after them.
+  const { periods, futurePeriods, status } = useFirePeriods()
+  const timelinePeriods = useMemo(
+    () => [...periods, ...futurePeriods],
+    [periods, futurePeriods],
+  )
   const [chosen, setChosen] = useState<Period | null>(null)
   const period =
-    chosen !== null && periods.some((p) => isSamePeriod(p, chosen))
+    chosen !== null && timelinePeriods.some((p) => isSamePeriod(p, chosen))
       ? chosen
       : defaultPeriod(periods)
+  const isForecast =
+    period !== null && futurePeriods.some((p) => isSamePeriod(p, period))
   // The statistics follow the slider with the same delay as the map's tiles.
   const statsPeriod = useDebouncedValue(period, FIRE_PERIOD_DEBOUNCE_MS)
   const [statsOpen, setStatsOpen] = useState(false)
@@ -107,7 +114,8 @@ export default function AppLayout() {
         }}
       />
       <TimelineBar
-        periods={periods}
+        periods={timelinePeriods}
+        futureCount={futurePeriods.length}
         period={period}
         status={status}
         onChange={setChosen}
@@ -132,6 +140,7 @@ export default function AppLayout() {
         selection={selection}
         onSelectionChange={setSelection}
         period={period}
+        forecast={isForecast}
         periodsStatus={status}
       />
       {isMap ? (
@@ -142,6 +151,7 @@ export default function AppLayout() {
           }}
           periods={periods}
           period={statsPeriod}
+          forecast={isForecast}
           selectedDay={period?.day}
           onSelectDay={selectDay}
           onShowFire={(fire) => {

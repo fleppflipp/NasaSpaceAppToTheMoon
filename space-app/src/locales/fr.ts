@@ -37,6 +37,15 @@ export default {
     placeholder: 'Langue ou code',
     noResults: 'Aucune langue trouvée.',
   },
+  forecast: {
+    future: 'Futur',
+    summary: '{{period}} · prévision',
+    title: 'Prévision, pas des données observées',
+    body: 'Les points montrent les incendies qu’un modèle de séries temporelles prévoit en {{period}}, placés là où des incendies ont brûlé le même mois des dernières années. Ce n’est qu’une estimation, pas une information garantie : les incendies réels peuvent différer.',
+    stats:
+      'Les statistiques ne sont disponibles que pour les mois avec des incendies observés.',
+    close: 'Fermer l’avertissement de prévision',
+  },
   fires: {
     noData: 'Pas encore de données d’incendie.',
     unavailable:

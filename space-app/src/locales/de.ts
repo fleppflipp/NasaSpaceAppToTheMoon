@@ -37,6 +37,14 @@ export default {
     placeholder: 'Sprache oder Code',
     noResults: 'Keine Sprache gefunden.',
   },
+  forecast: {
+    future: 'Zukunft',
+    summary: '{{period}} · Prognose',
+    title: 'Prognose, keine beobachteten Daten',
+    body: 'Die Punkte zeigen die Brände, die ein Zeitreihenmodell im {{period}} erwartet, an Orten, an denen es im selben Monat der letzten Jahre gebrannt hat. Das ist nur eine Schätzung, keine gesicherte Information: echte Brände können abweichen.',
+    stats: 'Statistiken gibt es nur für Monate mit beobachteten Bränden.',
+    close: 'Prognosehinweis schließen',
+  },
   fires: {
     noData: 'Noch keine Branddaten.',
     unavailable:

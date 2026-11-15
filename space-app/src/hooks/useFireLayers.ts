@@ -108,14 +108,18 @@ function firstSymbolLayerId(map: MapLibreMap): string | undefined {
  * dots of that file. The tiles hold dots up to zoom 9; closer in they are
  * overscaled.
  */
-function showPeriod(map: MapLibreMap, period: Period | null): void {
+function showPeriod(
+  map: MapLibreMap,
+  period: Period | null,
+  forecast: boolean,
+): void {
   if (period === null) {
     if (map.getLayer(POINTS)) {
       map.setLayoutProperty(POINTS, 'visibility', 'none')
     }
     return
   }
-  const url = fireTileUrl(period)
+  const url = fireTileUrl(period, forecast)
   const source = map.getSource(SOURCE)
   if (source === undefined) {
     map.addSource(SOURCE, {
@@ -148,13 +152,16 @@ function showPeriod(map: MapLibreMap, period: Period | null): void {
 }
 
 /**
- * Draws the fires of the month; nothing is drawn while there is no period.
+ * Draws the fires of the month; nothing is drawn while there is no period. A
+ * future month (`forecast`) is drawn the same way from its forecast file.
  */
 export function useFireLayers(
   mapRef: RefObject<MapLibreMap | null>,
   period: Period | null,
+  forecast: boolean,
 ): void {
   const periodRef = useRef(period)
+  const forecastRef = useRef(forecast)
   // Layers can only be changed once the style has loaded.
   const styleReadyRef = useRef(false)
 
@@ -166,7 +173,7 @@ export function useFireLayers(
     }
     const handleStyleLoad = () => {
       styleReadyRef.current = true
-      showPeriod(map, periodRef.current)
+      showPeriod(map, periodRef.current, forecastRef.current)
     }
     map.on('style.load', handleStyleLoad)
     if (map.isStyleLoaded()) {
@@ -183,15 +190,16 @@ export function useFireLayers(
   // otherwise every step would start a new tile file and freeze the page.
   useEffect(() => {
     periodRef.current = period
+    forecastRef.current = forecast
     const map = mapRef.current
     if (map === null || !styleReadyRef.current) {
       return
     }
     const timer = window.setTimeout(() => {
-      showPeriod(map, period)
+      showPeriod(map, period, forecast)
     }, FIRE_PERIOD_DEBOUNCE_MS)
     return () => {
       window.clearTimeout(timer)
     }
-  }, [mapRef, period])
+  }, [mapRef, period, forecast])
 }

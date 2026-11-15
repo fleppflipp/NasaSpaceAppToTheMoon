@@ -4,26 +4,32 @@ import type { Period } from '../services/period'
 
 export type PeriodsStatus = 'loading' | 'ready' | 'error'
 
-/** The months that have fire tiles on the tile server (earliest first). */
-export function useFirePeriods(): {
+interface FirePeriodsState {
+  /** Months with observed fires (earliest first). */
   periods: readonly Period[]
+  /** Forecast months after the last observed one (earliest first). */
+  futurePeriods: readonly Period[]
   status: PeriodsStatus
-} {
-  const [state, setState] = useState<{
-    periods: readonly Period[]
-    status: PeriodsStatus
-  }>({ periods: [], status: 'loading' })
+}
+
+/** The months that have fire tiles, and the future months that have a forecast, on the tile server. */
+export function useFirePeriods(): FirePeriodsState {
+  const [state, setState] = useState<FirePeriodsState>({
+    periods: [],
+    futurePeriods: [],
+    status: 'loading',
+  })
 
   useEffect(() => {
     const controller = new AbortController()
     fetchFirePeriods(controller.signal)
-      .then((periods) => {
-        setState({ periods, status: 'ready' })
+      .then(({ observed, future }) => {
+        setState({ periods: observed, futurePeriods: future, status: 'ready' })
       })
       .catch(() => {
         // A failed list is shown to the user (status 'error'); an abort is not a failure.
         if (!controller.signal.aborted) {
-          setState({ periods: [], status: 'error' })
+          setState({ periods: [], futurePeriods: [], status: 'error' })
         }
       })
     return () => {
