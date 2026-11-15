@@ -110,6 +110,33 @@ Other people can connect to them in these ways:
 - From the internet only through a tunnel or by copying the files to a static host
   with range requests (not set up).
 
+### Hotspot details
+
+Click a fire point to open its details. The panel reads only the rendered tile
+properties: event FRP, sensor group, event day and bounding radius.
+Dates retain the tiles' local solar day grouping. Coordinates
+are the point's event centre, not the cursor position. Missing values are shown
+as unavailable; zero FRP is valid.
+
+The `s` property identifies MODIS, VIIRS, or both, not a specific satellite.
+Bundled NASA/NOAA instrument photos and credit links accompany each sensor.
+No confidence values, detail API, CSV/JSON downloads, new dependencies, or tile
+rebuilds are needed. Photos ship with the frontend, so details require no new
+external service. See `src/assets/sensors/README.md` for image sources.
+
+The token-styled card sits inside the map on desktop and becomes a scrollable
+bottom panel on mobile. A ring marks the selected location.
+Escape, the close button, or clicking empty map space dismisses details. Changing
+the selected year/month/day, leaving the map, or entering draw mode clears them.
+Keyboard users can pan the focused map with arrow keys and press Enter to inspect
+a hotspot at its centre. The panel heading receives focus; explicit dismissal
+returns focus to the map. Map listeners and the marker are cleaned up on unmount.
+
+Implementation: `useHotspotSelection.ts`, `services/hotspot.ts`, and
+`HotspotDetails.tsx` / `.css`. At the user's request, this feature currently uses
+English copy in `constants/hotspot.constants.ts`; localization is deferred and
+the existing locale dictionaries are unchanged.
+
 ### Building the files
 
 `tiles/build_fire_tiles.py` makes the 12 monthly files of one year from its

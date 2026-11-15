@@ -8,6 +8,7 @@ import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 import { INITIAL_CENTER, INITIAL_ZOOM } from '../constants/map.constants'
 import { useAreaSelection } from '../hooks/useAreaSelection'
 import { useFireLayers } from '../hooks/useFireLayers'
+import { useHotspotSelection } from '../hooks/useHotspotSelection'
 import { useFireMarker } from '../hooks/useFireMarker'
 import type { FireMarker } from '../hooks/useFireMarker'
 import { formatAreaKm2, selectionInfo } from '../services/geo'
@@ -16,6 +17,7 @@ import type { PeriodsStatus } from '../hooks/useFirePeriods'
 import type { Place } from '../services/places'
 import DrawControl from './DrawControl'
 import HomeControl from './HomeControl'
+import HotspotDetails from './HotspotDetails'
 import './BaseMap.css'
 
 // Required with Vite so MapLibre can find its web worker.
@@ -214,6 +216,12 @@ export default function BaseMap({
     useAreaSelection(mapRef, active, selection, onSelectionChange)
 
   useFireLayers(mapRef, period)
+  const { hotspot, closeHotspot } = useHotspotSelection(
+    mapRef,
+    period,
+    active,
+    drawing,
+  )
   useFireMarker(mapRef, fireMarker, onFireMarkerDismiss)
 
   // The statistics panel covers the right edge of the map; places are centred
@@ -266,50 +274,59 @@ export default function BaseMap({
   }, [target])
 
   return (
-    <div
-      className={`map-view${statsOpen ? ' map-view--stats' : ''}`}
-      hidden={!active}
-    >
-      {/* MapLibre adds its own accessible "Map" region inside this container. */}
-      <div ref={containerRef} className="base-map" />
-      {createPortal(
-        <DrawControl
-          canDraw={canDraw}
-          drawing={drawing}
-          hasSelection={selection !== null}
-          onToggle={toggleDrawing}
-          onClear={clearSelection}
-        />,
-        controlHost,
-      )}
-      {createPortal(
-        <HomeControl
-          onHome={() => {
-            onFireMarkerDismiss()
-            mapRef.current?.flyTo({
-              center: INITIAL_CENTER,
-              zoom: INITIAL_ZOOM,
-              duration: FLY_DURATION_MS,
-            })
-          }}
-        />,
-        homeHost,
-      )}
-      <div className="map-status">
-        <p className="map-status__message" role="status">
-          {message === null ? '' : t(`draw.${message}`)}
-        </p>
-        {periodsStatus === 'error' ? (
-          <p className="map-status__message">{t('fires.unavailable')}</p>
-        ) : periodsStatus === 'ready' && period === null ? (
-          <p className="map-status__message">{t('fires.noData')}</p>
-        ) : null}
-        {info === null ? null : (
-          <p className="map-status__readout">
-            {t('draw.selectedArea', { area: formatAreaKm2(info.areaKm2) })}
-          </p>
+    <>
+      <div
+        className={`map-view${statsOpen ? ' map-view--stats' : ''}`}
+        hidden={!active}
+      >
+        {/* MapLibre adds its own accessible "Map" region inside this container. */}
+        <div ref={containerRef} className="base-map" />
+        {createPortal(
+          <DrawControl
+            canDraw={canDraw}
+            drawing={drawing}
+            hasSelection={selection !== null}
+            onToggle={toggleDrawing}
+            onClear={clearSelection}
+          />,
+          controlHost,
         )}
+        {createPortal(
+          <HomeControl
+            onHome={() => {
+              onFireMarkerDismiss()
+              mapRef.current?.flyTo({
+                center: INITIAL_CENTER,
+                zoom: INITIAL_ZOOM,
+                duration: FLY_DURATION_MS,
+              })
+            }}
+          />,
+          homeHost,
+        )}
+        <div className="map-status">
+          <p className="map-status__message" role="status">
+            {message === null ? '' : t(`draw.${message}`)}
+          </p>
+          {periodsStatus === 'error' ? (
+            <p className="map-status__message">{t('fires.unavailable')}</p>
+          ) : periodsStatus === 'ready' && period === null ? (
+            <p className="map-status__message">{t('fires.noData')}</p>
+          ) : null}
+          {info === null ? null : (
+            <p className="map-status__readout">
+              {t('draw.selectedArea', { area: formatAreaKm2(info.areaKm2) })}
+            </p>
+          )}
+        </div>
       </div>
-    </div>
+      {hotspot === null ? null : (
+        <HotspotDetails
+          hotspot={hotspot}
+          calendarOpen={false}
+          onClose={closeHotspot}
+        />
+      )}
+    </>
   )
 }
