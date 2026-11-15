@@ -62,6 +62,11 @@ Work proceeds feature by feature, one feature at a time. Done so far:
    per day (a bar picks a day), the biggest fire with its place ("Show on map"
    flies there and puts a labelled ring on it that pulses twice and stays until you touch the map), strength and satellite split. The numbers come from `tile-server/data/fires_<year>.json`,
    written by `tiles/build_fire_tiles.py` (`--stats-only` rewrites just them).
+10. Future months: the slider continues past the last observed month into the
+   months with a `tile-server/data/forecast_<year>_<MM>.pmtiles` file (same format
+   as the observed files), colored and labelled "Future", with a banner saying it
+   is an estimate (`ForecastBanner`). 2026-2027 so far, from the Chronos-2 forecast
+   in `predictions/` (see Data pipeline).
 
 Planned next: selecting an area by latitude/longitude, FIRMS data
 harmonization, statistics for a selected area, CSV export.
@@ -166,6 +171,17 @@ into data for the app. Outputs are local and ignored by git too.
   `numpy`, `pyarrow`; the venv at
   `DATAirelock_workenv` has them. See the "Fire layer" section of
   `space-app/README.md` for how the PMTiles are served and used.
+- `forecast/forecast_fires.py` (Chronos-2, zero-shot): expected fires and FRP
+  (q10/q50/q90) per 0.5° cell and month, 24 months ahead, in
+  `predictions/<year>/fire_forecast_<year>_<Country>.csv`. It was run on fires
+  read back from the PMTiles (no country there, so grouped into continent boxes);
+  `forecast/split_forecast_by_country.py` then gives each cell its real country
+  (from `new_outputs/fire_clusters`) and writes one file per country.
+- `tiles/build_forecast_tiles.py`: `predictions/` to
+  `tile-server/data/forecast_<year>_<MM>.pmtiles`: per cell it draws the forecast
+  number of real past fires of the same cell and calendar month (last 3 observed
+  years) and scales their FRP; `tiles/pmtiles_points.py` reads and writes the
+  point PMTiles in pure Python.
 - Principle agreed in the planning chat: harmonize toward the coarser common
   denominator (MODIS-equivalent counts for the calendar); the map shows only real
   detections, never invented locations.
