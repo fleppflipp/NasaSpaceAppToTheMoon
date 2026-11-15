@@ -53,6 +53,16 @@ Work proceeds feature by feature, one feature at a time. Done so far:
    Years 2012 to 2015 so far; more are added as the data team delivers
    `fire_pixels_<year>.csv`.
 
+9. Fire cause panel: with an area selected, `CausePanel` lists the fires
+   inside it in the selected week and, on request, the likely cause with its
+   reasons, web sources and, when a matching news article has one, a photo
+   from the scene (its cover photo, proxied by the service), from the Python
+   service in `cause-service/`, which reads the fires from the tile server's
+   `fire_pixels_<year>.csv` (setting `FIRE_DATA_URL`) the same way the tiles do
+   (FastAPI; Photon, Overpass, a self-hosted degoog for web search and a
+   self-hosted LibreTranslate; English keyword rules in
+   `cause-service/rules/en.yaml`). The app calls it at `VITE_CAUSE_API_URL`.
+
 Planned next: selecting an area by latitude/longitude, FIRMS data
 harmonization, hotspot layers, the calendar and charts, CSV export.
 
@@ -130,6 +140,10 @@ Rules for the implementing agent:
   constants (`map.constants.ts`: initial zoom, `DRAW_MIN_ZOOM`, lasso limits).
 - `space-app/docs/design-system.md`: the design system guide. Read it before
   writing any UI.
+- `cause-service/`: the fire cause API (Python, FastAPI): `firecause/` (fires,
+  places, land use, search, translation, rules, pipeline, app), `rules/en.yaml`
+  (the keyword rules), `tests/` (pytest, no network), `docker-compose.yml`
+  (the API with degoog and LibreTranslate). See `cause-service/README.md`.
 
 ## Data pipeline
 

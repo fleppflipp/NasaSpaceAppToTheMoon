@@ -14,6 +14,10 @@ docker compose logs -f   # see requests
 docker compose down      # stop
 ```
 
+Put `fire_pixels_<year>.csv` (all countries, the file the tiles are built from) next to them
+as well: the fire cause service (`cause-service/`, setting `FIRE_DATA_URL`) downloads it from
+here, so the cause panel shows the same fires as the map.
+
 Put the `fires_<year>_w<NN>.pmtiles` files into `tile-server/data/` (the build
 script `tiles/build_fire_tiles.py --out tile-server/data` writes them there). The
 folder is git-ignored. Other settings (environment variables): `TILE_PORT`

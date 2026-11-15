@@ -11,6 +11,7 @@ import { useFireLayers } from '../hooks/useFireLayers'
 import { formatAreaKm2, selectionInfo } from '../services/geo'
 import type { Period } from '../services/period'
 import type { Place } from '../services/places'
+import CausePanel from './CausePanel'
 import DrawControl from './DrawControl'
 import './BaseMap.css'
 
@@ -145,6 +146,14 @@ export default function BaseMap({
     () => (selection === null ? null : selectionInfo(selection)),
     [selection],
   )
+  // A new area or period starts the cause panel afresh (remount).
+  const panelKey = useMemo(
+    () =>
+      selection === null
+        ? ''
+        : `${String(period.year)}-${String(period.week)}-${JSON.stringify(selection.coordinates)}`,
+    [selection, period],
+  )
 
   useEffect(() => {
     const map = mapRef.current
@@ -182,6 +191,9 @@ export default function BaseMap({
           onClear={clearSelection}
         />,
         controlHost,
+      )}
+      {selection === null ? null : (
+        <CausePanel key={panelKey} selection={selection} period={period} />
       )}
       <div className="map-status">
         <p className="map-status__message" role="status">

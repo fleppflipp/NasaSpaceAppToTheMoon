@@ -218,8 +218,41 @@ box, spherical area, formatting).
   `src/services/geo.ts` returns its bounding box and area. The selection
   survives switching to the calendar view and back.
 
-Everything runs in the browser; no external service is involved and nothing
-about the drawn area leaves the browser.
+Drawing runs in the browser. Once an area is selected, the fire cause panel
+sends it and the week to the fire cause service (see below).
+
+## Fire cause panel
+
+When an area is selected, a panel opens over the top-left corner of the map
+(`src/components/CausePanel.tsx`, calls in `src/services/fireCause.ts`). It
+lists the fires whose centre lies inside the area in the selected week (count,
+dates, total and strongest FRP), and the **Find likely cause** button asks the
+fire cause service for the probable cause: one of field or stubble burning,
+grass or vegetation fire, landfill or waste fire, forest fire, arson,
+lightning, industrial fire, or unknown, with a confidence (high, medium, low)
+and the reasons behind it (land use, season, the same spots in other years,
+fire size, and links to web reports with their English translation). Under
+the likely cause it shows a photo from the scene when one exists: the cover
+photo of the best matching news article, credited and linked to the article,
+loaded through the service (`/api/image/<id>`), never from the news site
+directly. Without such an article there is no picture (never a stock photo);
+a photo that fails to load is hidden.
+
+- The service is the Python API in `../cause-service/` (see its README): it
+  reads the fires from the tile server (`fire_pixels_<year>.csv`, the file the
+  map tiles are built from, so the panel and the map show the same fires; or
+  the local fire_calendar.py output), asks Photon (place names), OpenStreetMap
+  Overpass (land use), a self-hosted degoog (web search) and a self-hosted
+  LibreTranslate (translation to English), and decides with English keyword
+  rules in `cause-service/rules/en.yaml`. An answer can take up to a minute.
+- The app reads `VITE_CAUSE_API_URL` (default `http://localhost:8090`; see
+  `.env.example`). The panel remounts when the area or the week changes.
+- Answers are validated in `fireCause.ts`; unknown codes are dropped. Every
+  reason, warning and error is a code translated in the `cause*` groups of
+  `src/locales/eng.ts` (also in Hungarian and Romanian).
+- When a service is down, the panel still answers and says which part is
+  missing; when the cause service itself is down, it shows an error with a
+  retry button.
 
 ## External services
 
@@ -233,3 +266,11 @@ them needs an API key.
 
 The text typed in the search bar is sent to Photon. OpenStreetMap data is used
 by both services and requires the attribution already shown on the map.
+
+The fire cause panel calls the team's own fire cause service
+(`VITE_CAUSE_API_URL`) with the drawn area and the week. That service, not the
+browser, contacts Photon (reverse geocoding of the fire positions), the
+OpenStreetMap Overpass API (land use at the fires), the search engines enabled
+in its degoog instance (queries made of place names, the year and fire words),
+and its own LibreTranslate. No key is needed except the optional degoog key;
+see `../cause-service/README.md` for limits.
